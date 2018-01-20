@@ -1,10 +1,4 @@
 language: android
-#before_install: 
-#- cd myapplication
-#- echo $PWD " folder !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-#- sudo apt-get install ant
-#before_install: echo $pwd folder
-#install: ant deps
 
 android:
   components:
