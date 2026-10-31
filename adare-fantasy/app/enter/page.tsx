@@ -26,9 +26,12 @@ export default function EnterPage() {
   useEffect(() => {
     if (!ready || seeded.current) return;
     seeded.current = true;
+    // The demo card's "Séamus Ryan / Bogey Merchants" is a preview, not the
+    // visitor's identity — pre-filling it made typed names read "Séamus RyanAoife".
+    if (state.isDemo) return;
     setManager(state.manager);
     setTeamName(state.teamName);
-  }, [ready, state.manager, state.teamName]);
+  }, [ready, state.manager, state.teamName, state.isDemo]);
   const receipt = paid && state.entry.ref
     ? { ref: state.entry.ref, amount: state.entry.amount, plan: state.entry.plan ?? "single" }
     : null;
