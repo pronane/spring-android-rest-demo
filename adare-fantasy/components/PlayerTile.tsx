@@ -72,10 +72,14 @@ export function PlayerTile({
             <CountryChip code={player.countryCode} />
             <span className="truncate text-[10.5px] text-cream/40">{player.role}</span>
           </div>
+          <p className="mt-1 text-[10.5px] text-cream/45 sm:hidden">
+            <span className="tnum text-cream/75">{credits(player.price)}m</span> · {player.projected} proj ·{" "}
+            {player.ownership}% owned
+          </p>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 divide-x divide-white/10 rounded-lg border border-white/[0.08] bg-forest-950/40 py-2 pl-2 text-center">
+      <div className="mt-3 hidden grid-cols-3 divide-x divide-white/10 sm:grid rounded-lg border border-white/[0.08] bg-forest-950/40 py-2 pl-2 text-center">
         <div>
           <p className="tnum font-display text-[15px] text-cream">{credits(player.price)}m</p>
           <p className="text-[9px] uppercase tracking-[0.12em] text-cream/35">Price</p>

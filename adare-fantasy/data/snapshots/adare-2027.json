@@ -1,0 +1,46 @@
+{
+  "editionId": "adare-2027",
+  "fetchedAt": "2026-10-31T00:45:00.000Z",
+  "sources": [
+    {
+      "name": "Wikipedia",
+      "license": "CC BY-SA 4.0",
+      "url": "https://en.wikipedia.org/wiki/2027_Ryder_Cup"
+    },
+    {
+      "name": "Wikidata",
+      "license": "CC0",
+      "url": "https://www.wikidata.org/wiki/Q136488386"
+    },
+    {
+      "name": "Open-Meteo",
+      "license": "CC BY 4.0",
+      "url": "https://open-meteo.com/"
+    }
+  ],
+  "wikipedia": {
+    "title": "2027 Ryder Cup",
+    "extract": "The 46th Ryder Cup Matches will be held at Adare Manor, a golf course in County Limerick, Ireland, on 17–19 September 2027. It will be the first Ryder Cup held in Ireland since 2006. The Irish government is expected to spend €58 million on the event, with €22.5 million of that cost going to an event licence fee from the European Tour.",
+    "description": "Golf tournament in Ireland",
+    "contentUrl": "https://en.wikipedia.org/wiki/2027_Ryder_Cup"
+  },
+  "wikidata": {
+    "label": "2027 Ryder Cup",
+    "description": "golf tournament in Ireland",
+    "sitelink": "2027 Ryder Cup",
+    "entity": "Q136488386"
+  },
+  "conditions": {
+    "timezone": "Europe/Dublin",
+    "observedAt": "2026-10-31T00:45",
+    "temperatureC": 12.9,
+    "windKph": 13,
+    "windDirection": 149,
+    "weatherCode": 3,
+    "daily": {
+      "time": ["2026-10-31", "2026-11-01", "2026-11-02"],
+      "wind_speed_10m_max": [13.7, 11.2, 13.7],
+      "precipitation_probability_max": [25, 2, 0]
+    }
+  }
+}

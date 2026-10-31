@@ -2,12 +2,13 @@
   "name": "adare-fantasy",
   "version": "0.1.0",
   "private": true,
-  "description": "Fantasy league for the 2027 Ryder Cup at Adare Manor — first draft",
+  "description": "Fantasy league for the 2027 Ryder Cup at Adare Manor \u2014 first draft",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "data:refresh": "node scripts/refresh-data.mjs"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

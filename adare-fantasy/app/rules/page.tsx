@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Eyebrow, SectionHead } from "@/components/ui";
-import { BUDGET, MAX_PER_SIDE, SCHEDULE, SCORING, SQUAD_SIZE, TOURNAMENT } from "@/lib/data";
+import { SCHEDULE, SCORING, TOURNAMENT } from "@/lib/data";
+import { MODE_LIST, PLATFORM, PRIZE_SPLIT } from "@/lib/tournaments";
 
 const MATCH_ROWS = [
   {
@@ -47,7 +48,7 @@ const FAQ = [
   },
   {
     q: "Can I pick six Americans?",
-    a: `No. You need at least one player from each side and no more than ${MAX_PER_SIDE} from either. It keeps the game honest: you cannot win by simply backing the winning team.`,
+    a: "No. You need at least one player from each side and no more than four (Classic Six) or six (Captain's Dozen) from either. It keeps the game honest: you cannot win by simply backing the winning team.",
   },
   {
     q: "How is the captain chosen?",
@@ -66,7 +67,7 @@ const FAQ = [
 export default function RulesPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
-      <Eyebrow>Scoring &amp; rules · draft v0.1</Eyebrow>
+      <Eyebrow>{PLATFORM.name} · scoring &amp; rules · v0.2</Eyebrow>
       <h1 className="mt-2 max-w-3xl text-balance text-4xl text-cream sm:text-5xl">
         Simple enough to explain in the pub. Deep enough to argue about until Sunday.
       </h1>
@@ -202,9 +203,9 @@ export default function RulesPage() {
         <SectionHead eyebrow="Squad rules" title="What you can and cannot do" />
         <div className="grid gap-4 sm:grid-cols-2">
           {[
-            { k: "Squad size", v: `${SQUAD_SIZE} players` },
-            { k: "Budget", v: `${BUDGET}m credits` },
-            { k: "Max per side", v: `${MAX_PER_SIDE} players` },
+            { k: "Classic Six", v: "6 players · 100m" },
+            { k: "Captain's Dozen", v: "12 players · 200m" },
+            { k: "Max per side", v: "4 (classic) / 6 (dozen)" },
             { k: "Min per side", v: "1 player" },
             { k: "Free transfers", v: `${SCORING.freeTransfers} before the lock` },
             { k: "Armband", v: "1, movable before the lock" },
@@ -218,6 +219,128 @@ export default function RulesPage() {
             </div>
           ))}
         </div>
+      </section>
+
+
+      {/* MODES */}
+      <section className="mt-14">
+        <SectionHead
+          eyebrow="Two ways to play"
+          title="Quick six, or a full dozen"
+          sub="Same scoring, different commitment. Pick the mode when you build your card — switching modes starts a fresh card because the budgets differ."
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {MODE_LIST.map((mode) => (
+            <div key={mode.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-lg text-cream">{mode.name}</h3>
+                <span className="rounded-full border border-white/12 px-2.5 py-0.5 text-[10px] text-cream/50">
+                  {mode.squadSize} players
+                </span>
+              </div>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-cream/50">{mode.blurb}</p>
+              <p className="mt-3 text-[11px] text-cream/35">
+                {mode.budget}m budget · max {mode.maxPerSide} per side · same entry fee
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PREDICTOR */}
+      <section className="mt-14">
+        <SectionHead
+          eyebrow="The predictor"
+          title="Call all 28, plus the awards"
+          sub="Included in the entry. Pick a winner (or a halve) in every match, then name MVP, top scorer and rookie of the week. Predictions score alongside your card."
+        />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { label: "Correct match", value: "+2", note: "28 matches on the card" },
+            { label: "Correct award", value: "+5", note: "MVP · top scorer · rookie" },
+            { label: "Exact scoreline", value: "+10", note: "call the final cup score" },
+          ].map((row) => (
+            <div key={row.label} className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+              <div className="flex items-baseline justify-between">
+                <p className="text-[12.5px] text-cream/80">{row.label}</p>
+                <p className="font-display text-lg text-gold-soft tnum">{row.value}</p>
+              </div>
+              <p className="mt-1 text-[10.5px] text-cream/35">{row.note}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ENTRY */}
+      <section id="entry" className="mt-14 scroll-mt-24">
+        <SectionHead
+          eyebrow="Entry and prizes"
+          title="€10 in, 95% paid out"
+          sub="One payment covers the card game, the predictor and every league you join. Private leagues can add their own buy-in and sponsor pot on top."
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
+            <p className="eyebrow text-cream/40">Global prize pool split</p>
+            <ul className="mt-3 space-y-2">
+              {PRIZE_SPLIT.map((row) => (
+                <li key={row.label} className="flex items-center justify-between text-[12px]">
+                  <span className="text-cream/60">{row.label}</span>
+                  <span className="tnum text-cream/85">{Math.round(row.share * 100)}%</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+            <p className="eyebrow text-cream/40">Sponsors and leagues</p>
+            <ul className="mt-3 space-y-2 text-[12px] text-cream/55">
+              <li>Commissioners can attach a sponsor to a private league.</li>
+              <li>Buy-ins are held separately from the global pool.</li>
+              <li>Sponsored prizes sit on top — the global split is unaffected.</li>
+              <li>Demo checkout: no card is charged and no card data is stored.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* DATA */}
+      <section id="data" className="mt-14 scroll-mt-24">
+        <SectionHead
+          eyebrow="Data sources"
+          title="Free sources, cached snapshots"
+          sub="Twenty-Eight only uses openly licensed data. Facts and conditions are refreshed into checked-in snapshots, so the app never depends on a third-party service at render time."
+        />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            {
+              name: "Wikipedia / Wikidata",
+              use: "Edition facts, venue, dates, captains",
+              licence: "CC BY-SA · no key",
+            },
+            {
+              name: "Open-Meteo",
+              use: "Adare wind, rain and temperature",
+              licence: "CC BY 4.0 · no key",
+            },
+            {
+              name: "Projection model",
+              use: "Prices, ownership and pairings until the field is named",
+              licence: "First-party",
+            },
+          ].map((source) => (
+            <div key={source.name} className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+              <p className="text-[12.5px] font-medium text-cream/85">{source.name}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-cream/45">{source.use}</p>
+              <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-cream/25">
+                {source.licence}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] text-cream/30">
+          Refresh with <code className="rounded bg-white/[0.06] px-1.5 py-0.5">npm run data:refresh</code>{" "}
+          (writes <code className="rounded bg-white/[0.06] px-1.5 py-0.5">data/snapshots/</code>).
+          Official Ryder Cup scoring feeds are licensed and are a v1 cost.
+        </p>
       </section>
 
       {/* FAQ */}
@@ -242,7 +365,7 @@ export default function RulesPage() {
         <div>
           <p className="font-display text-xl text-cream">That is the whole rulebook.</p>
           <p className="mt-1 text-[12.5px] text-cream/45">
-            {SQUAD_SIZE} players, one captain, three days. Everything else is vibes.
+            One card, one captain, three days. Everything else is vibes.
           </p>
         </div>
         <Link

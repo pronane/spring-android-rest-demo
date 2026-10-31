@@ -9,27 +9,79 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { BUDGET, DEMO_SQUAD, LEAGUES, MAX_PER_SIDE, PLAYERS, PLAYER_BY_ID, SQUAD_SIZE, type League, type Player } from "./data";
-import { autoPick, projectedOf, sideCount, spendOf, validateSquad } from "./helpers";
+import { DEMO_SQUAD, LEAGUES, PLAYER_BY_ID, PLAYERS, type League, type Player } from "./data";
+import {
+  autoPick,
+  modeConfig,
+  projectedOf,
+  sideCount,
+  spendOf,
+  validateSquad,
+} from "./helpers";
+import { ACTIVE_EDITION_ID, MODES, type ModeId } from "./tournaments";
+import type { Pick } from "./sim";
 
-const STORAGE_KEY = "adare-fantasy:v1";
+const STORAGE_KEY = "twentyeight:v2";
+
+export type Awards = {
+  mvp: string | null;
+  topScorer: string | null;
+  rookie: string | null;
+};
+
+export type Entry = {
+  paid: boolean;
+  plan: string | null;
+  ref: string | null;
+  amount: number;
+  paidAt: string | null;
+};
 
 export type TeamState = {
+  editionId: string;
   manager: string;
   teamName: string;
   squad: string[];
   captain: string | null;
+  mode: ModeId;
+  predictions: Record<string, Pick>;
+  awards: Awards;
+  entry: Entry;
   joinedLeagues: string[];
   customLeagues: League[];
   updatedAt: string | null;
   isDemo: boolean;
 };
 
+const DEMO_PREDICTIONS: Record<string, Pick> = {
+  "fri-am-1": "europe",
+  "fri-am-2": "usa",
+  "fri-am-3": "half",
+  "fri-am-4": "europe",
+  "fri-pm-1": "europe",
+  "fri-pm-2": "europe",
+  "fri-pm-3": "usa",
+  "fri-pm-4": "half",
+  "sat-am-1": "usa",
+  "sat-am-2": "europe",
+};
+
 const DEMO_STATE: TeamState = {
+  editionId: ACTIVE_EDITION_ID,
   manager: "Séamus Ryan",
   teamName: "Bogey Merchants",
   squad: DEMO_SQUAD,
   captain: "rory",
+  mode: "classic",
+  predictions: DEMO_PREDICTIONS,
+  awards: { mvp: "rory", topScorer: "scheffler", rookie: "rasmus" },
+  entry: {
+    paid: true,
+    plan: "single",
+    ref: "TE-8F42-ADRE",
+    amount: 10,
+    paidAt: "2026-10-24T09:12:00.000Z",
+  },
   joinedLeagues: ["portrush-pints", "nineteenth-hole"],
   customLeagues: [],
   updatedAt: "2026-10-24T09:12:00.000Z",
@@ -37,10 +89,15 @@ const DEMO_STATE: TeamState = {
 };
 
 const EMPTY_STATE: TeamState = {
+  editionId: ACTIVE_EDITION_ID,
   manager: "",
   teamName: "",
   squad: [],
   captain: null,
+  mode: "classic",
+  predictions: {},
+  awards: { mvp: null, topScorer: null, rookie: null },
+  entry: { paid: false, plan: null, ref: null, amount: 0, paidAt: null },
   joinedLeagues: [],
   customLeagues: [],
   updatedAt: null,
@@ -51,40 +108,57 @@ type FantasyContextValue = {
   state: TeamState;
   ready: boolean;
   players: Player[];
+  mode: (typeof MODES)[ModeId];
   spend: number;
   remaining: number;
   projected: number;
   leagues: League[];
+  errors: string[];
+  isSaved: boolean;
+  paid: boolean;
+  setMode: (mode: ModeId) => void;
   togglePlayer: (id: string) => void;
   setCaptain: (id: string | null) => void;
   setIdentity: (manager: string, teamName: string) => void;
   saveTeam: () => void;
   autoFill: () => void;
   joinLeague: (code: string) => { ok: boolean; message: string };
-  createLeague: (name: string) => League;
+  createLeague: (name: string, buyIn?: number) => League;
   leaveLeague: (id: string) => void;
   resetTeam: () => void;
   loadDemo: () => void;
   clearSquad: () => void;
-  errors: string[];
-  isSaved: boolean;
+  setPrediction: (matchId: string, pick: Pick) => void;
+  clearPredictions: () => void;
+  setAward: (key: keyof Awards, playerId: string | null) => void;
+  setEntry: (entry: Partial<Entry>) => void;
+  hydrate: (partial: Partial<TeamState>) => void;
 };
 
 const FantasyContext = createContext<FantasyContextValue | null>(null);
+
+function normalise(raw: Partial<TeamState> | null): TeamState {
+  if (!raw) return DEMO_STATE;
+  const mode: ModeId = raw.mode === "full" ? "full" : "classic";
+  return {
+    ...DEMO_STATE,
+    ...raw,
+    mode,
+    predictions: raw.predictions && typeof raw.predictions === "object" ? raw.predictions : {},
+    awards: { ...EMPTY_STATE.awards, ...(raw.awards ?? {}) },
+    entry: { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
+    squad: Array.isArray(raw.squad) ? raw.squad.slice(0, MODES[mode].squadSize) : [],
+    joinedLeagues: Array.isArray(raw.joinedLeagues) ? raw.joinedLeagues : [],
+    customLeagues: Array.isArray(raw.customLeagues) ? raw.customLeagues : [],
+  };
+}
 
 function readStored(): TeamState {
   if (typeof window === "undefined") return DEMO_STATE;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEMO_STATE;
-    const parsed = JSON.parse(raw) as TeamState;
-    return {
-      ...DEMO_STATE,
-      ...parsed,
-      squad: Array.isArray(parsed.squad) ? parsed.squad : [],
-      joinedLeagues: Array.isArray(parsed.joinedLeagues) ? parsed.joinedLeagues : [],
-      customLeagues: Array.isArray(parsed.customLeagues) ? parsed.customLeagues : [],
-    };
+    return normalise(JSON.parse(raw) as Partial<TeamState>);
   } catch {
     return DEMO_STATE;
   }
@@ -104,26 +178,36 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
-      /* storage unavailable — demo still works in memory */
+      /* storage unavailable — the demo still works in memory */
     }
   }, [state, ready]);
 
+  const setMode = useCallback((mode: ModeId) => {
+    setState((prev) => {
+      if (prev.mode === mode) return prev;
+      // Budgets and squad sizes differ, so a mode switch starts a fresh card.
+      return { ...prev, mode, squad: [], captain: null, isDemo: false };
+    });
+  }, []);
+
   const togglePlayer = useCallback((id: string) => {
     setState((prev) => {
+      const cfg = MODES[prev.mode];
       const inSquad = prev.squad.includes(id);
       if (inSquad) {
         return {
           ...prev,
           squad: prev.squad.filter((x) => x !== id),
           captain: prev.captain === id ? null : prev.captain,
+          isDemo: false,
         };
       }
       const player = PLAYER_BY_ID[id];
       if (!player) return prev;
-      if (prev.squad.length >= SQUAD_SIZE) return prev;
-      if (sideCount(prev.squad, player.side) >= MAX_PER_SIDE) return prev;
-      if (spendOf(prev.squad) + player.price > BUDGET) return prev;
-      return { ...prev, squad: [...prev.squad, id] };
+      if (prev.squad.length >= cfg.squadSize) return prev;
+      if (sideCount(prev.squad, player.side) >= cfg.maxPerSide) return prev;
+      if (spendOf(prev.squad) + player.price > cfg.budget) return prev;
+      return { ...prev, squad: [...prev.squad, id], isDemo: false };
     });
   }, []);
 
@@ -136,60 +220,66 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const saveTeam = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      isDemo: false,
-      updatedAt: new Date().toISOString(),
-    }));
+    setState((prev) => ({ ...prev, isDemo: false, updatedAt: new Date().toISOString() }));
   }, []);
 
   const autoFill = useCallback(() => {
-    const { squad, captain } = autoPick();
-    setState((prev) => ({ ...prev, squad, captain, isDemo: false }));
+    setState((prev) => {
+      const { squad, captain } = autoPick(prev.mode);
+      return { ...prev, squad, captain, isDemo: false };
+    });
   }, []);
 
-  const joinLeague = useCallback((code: string) => {
-    const cleaned = code.trim().toUpperCase();
-    const existing = [...LEAGUES, ...state.customLeagues].find(
-      (l) => l.code === cleaned || l.id === cleaned.toLowerCase(),
-    );
-    if (!existing) {
-      return { ok: false, message: `No league found for “${cleaned}”. Try ADARE7.` };
-    }
-    if (state.joinedLeagues.includes(existing.id)) {
-      return { ok: false, message: `You are already in ${existing.name}.` };
-    }
-    setState((prev) => ({
-      ...prev,
-      joinedLeagues: [...prev.joinedLeagues, existing.id],
-    }));
-    return { ok: true, message: `Joined ${existing.name}. Good luck.` };
-  }, [state.customLeagues, state.joinedLeagues]);
+  const joinLeague = useCallback(
+    (code: string) => {
+      const cleaned = code.trim().toUpperCase();
+      const existing = [...LEAGUES, ...state.customLeagues].find(
+        (l) => l.code === cleaned || l.id === cleaned.toLowerCase(),
+      );
+      if (!existing) {
+        return { ok: false, message: `No league found for “${cleaned}”. Try ADARE7.` };
+      }
+      if (state.joinedLeagues.includes(existing.id)) {
+        return { ok: false, message: `You are already in ${existing.name}.` };
+      }
+      setState((prev) => ({
+        ...prev,
+        joinedLeagues: [...prev.joinedLeagues, existing.id],
+      }));
+      return { ok: true, message: `Joined ${existing.name}. Good luck.` };
+    },
+    [state.customLeagues, state.joinedLeagues],
+  );
 
-  const createLeague = useCallback((name: string) => {
-    const code = (name.replace(/[^a-zA-Z]/g, "").toUpperCase() + "27").slice(0, 6).padEnd(6, "X");
-    const league: League = {
-      id: `custom-${Date.now()}`,
-      name: name.trim() || "New league",
-      code,
-      visibility: "private",
-      blurb: "Your new private league. Share the code — the table fills up as mates join.",
-      members: [
-        {
-          manager: state.manager || "You",
-          team: state.teamName || "Your team",
-          points: projectedOf(state.squad, state.captain),
-          isYou: true,
-        },
-      ],
-    };
-    setState((prev) => ({
-      ...prev,
-      customLeagues: [...prev.customLeagues, league],
-      joinedLeagues: [...prev.joinedLeagues, league.id],
-    }));
-    return league;
-  }, [state.captain, state.manager, state.squad, state.teamName]);
+  const createLeague = useCallback(
+    (name: string, buyIn = 0) => {
+      const code = `${name.replace(/[^a-zA-Z]/g, "").toUpperCase()}27`.slice(0, 6).padEnd(6, "X");
+      const league: League = {
+        id: `custom-${Date.now()}`,
+        name: name.trim() || "New league",
+        code,
+        visibility: "private",
+        blurb: "Your new private league. Share the code — the table fills up as mates join.",
+        buyIn,
+        prizePool: buyIn * 8,
+        members: [
+          {
+            manager: state.manager || "You",
+            team: state.teamName || "Your team",
+            points: projectedOf(state.squad, state.captain, state.mode),
+            isYou: true,
+          },
+        ],
+      };
+      setState((prev) => ({
+        ...prev,
+        customLeagues: [...prev.customLeagues, league],
+        joinedLeagues: [...prev.joinedLeagues, league.id],
+      }));
+      return league;
+    },
+    [state.captain, state.manager, state.mode, state.squad, state.teamName],
+  );
 
   const leaveLeague = useCallback((id: string) => {
     setState((prev) => ({
@@ -210,15 +300,39 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, squad: [], captain: null, isDemo: false }));
   }, []);
 
-  const leagues = useMemo(
-    () => [...LEAGUES, ...state.customLeagues],
-    [state.customLeagues],
-  );
+  const setPrediction = useCallback((matchId: string, pick: Pick) => {
+    setState((prev) => ({
+      ...prev,
+      predictions: { ...prev.predictions, [matchId]: pick },
+      isDemo: false,
+    }));
+  }, []);
 
+  const clearPredictions = useCallback(() => {
+    setState((prev) => ({ ...prev, predictions: {} }));
+  }, []);
+
+  const setAward = useCallback((key: keyof Awards, playerId: string | null) => {
+    setState((prev) => ({
+      ...prev,
+      awards: { ...prev.awards, [key]: playerId },
+    }));
+  }, []);
+
+  const setEntry = useCallback((entry: Partial<Entry>) => {
+    setState((prev) => ({ ...prev, entry: { ...prev.entry, ...entry } }));
+  }, []);
+
+  const hydrate = useCallback((partial: Partial<TeamState>) => {
+    setState((prev) => normalise({ ...prev, ...partial }));
+  }, []);
+
+  const leagues = useMemo(() => [...LEAGUES, ...state.customLeagues], [state.customLeagues]);
+
+  const cfg = MODES[state.mode];
   const spend = spendOf(state.squad);
-  const projected = projectedOf(state.squad, state.captain);
-  const errors = useMemo(() => validateSquad(state.squad), [state.squad]);
-  const isSaved = state.updatedAt !== null && !state.isDemo;
+  const projected = projectedOf(state.squad, state.captain, state.mode);
+  const errors = useMemo(() => validateSquad(state.squad, state.mode), [state.squad, state.mode]);
 
   return (
     <FantasyContext.Provider
@@ -226,10 +340,15 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
         state,
         ready,
         players: PLAYERS,
+        mode: cfg,
         spend,
-        remaining: BUDGET - spend,
+        remaining: cfg.budget - spend,
         projected,
         leagues,
+        errors,
+        isSaved: state.updatedAt !== null && !state.isDemo,
+        paid: state.entry.paid,
+        setMode,
         togglePlayer,
         setCaptain,
         setIdentity,
@@ -241,8 +360,11 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
         resetTeam,
         loadDemo,
         clearSquad,
-        errors,
-        isSaved,
+        setPrediction,
+        clearPredictions,
+        setAward,
+        setEntry,
+        hydrate,
       }}
     >
       {children}
@@ -255,4 +377,3 @@ export function useFantasy(): FantasyContextValue {
   if (!ctx) throw new Error("useFantasy must be used inside <FantasyProvider>");
   return ctx;
 }
-

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PlayerTile } from "@/components/PlayerTile";
 import { Eyebrow, TeamDot } from "@/components/ui";
-import { BUDGET, MAX_PER_SIDE, PLAYERS, SQUAD_SIZE, type Side } from "@/lib/data";
+import { PLAYERS, type Side } from "@/lib/data";
 import { credits, spendOf } from "@/lib/helpers";
 import { useFantasy } from "@/lib/store";
 
@@ -12,7 +12,7 @@ type SideFilter = "all" | Side;
 type SortKey = "price" | "projected" | "ownership" | "rank" | "value";
 
 export default function PlayersPage() {
-  const { state, togglePlayer, projected, remaining, spend } = useFantasy();
+  const { state, togglePlayer, projected, remaining, spend, mode } = useFantasy();
   const [side, setSide] = useState<SideFilter>("all");
   const [sort, setSort] = useState<SortKey>("price");
   const [query, setQuery] = useState("");
@@ -49,11 +49,11 @@ export default function PlayersPage() {
 
   const blockedFor = (id: string): string | undefined => {
     if (state.squad.includes(id)) return undefined;
-    if (state.squad.length >= SQUAD_SIZE) return "Squad full";
+    if (state.squad.length >= mode.squadSize) return "Card full";
     const player = PLAYERS.find((p) => p.id === id)!;
     const sameSide = player.side === "europe" ? europeCount : state.squad.length - europeCount;
-    if (sameSide >= MAX_PER_SIDE) return `Max ${MAX_PER_SIDE} per side`;
-    if (spendOf(state.squad) + player.price > BUDGET) return "Over budget";
+    if (sameSide >= mode.maxPerSide) return `Max ${mode.maxPerSide} per side`;
+    if (spendOf(state.squad) + player.price > mode.budget) return "Over budget";
     return undefined;
   };
 
@@ -65,7 +65,7 @@ export default function PlayersPage() {
           <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Scout the field</h1>
           <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
             Every projected player on both sides, priced by the model. Tap a card to add him to
-            your six — you can draft from here or from the draft room.
+            your {mode.name} card — draft from here or from the draft room.
           </p>
         </div>
         <Link
@@ -168,8 +168,8 @@ export default function PlayersPage() {
       ) : null}
 
       <p className="mt-8 text-[11px] text-cream/30">
-        Spend so far {credits(spend)}m of {BUDGET}m. Prices are projections and will re-price when
-        the sides are named.
+        Spend so far {credits(spend)}m of {mode.budget}m. Prices are projections and will re-price
+        when the sides are named.
       </p>
     </div>
   );

@@ -11,13 +11,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Adare 2027 — Fantasy Ryder Cup",
+  title: "Twenty-Eight — Fantasy Ryder Cup",
   description:
-    "Draft six players, name a captain and take on your mates across the 46th Ryder Cup at Adare Manor, 17–19 September 2027.",
+    "Draft a card, call all 28 matches and follow the Ryder Cup live. Adare 2027, 17–19 September 2027.",
   openGraph: {
-    title: "Adare 2027 — Fantasy Ryder Cup",
+    title: "Twenty-Eight — Fantasy Ryder Cup",
     description:
-      "The fantasy league for the 100th anniversary Ryder Cup at Adare Manor. Pick six, ride the singles.",
+      "Cup fantasy, properly scored. Draft a card, call all 28 matches, follow every point live.",
     type: "website",
   },
 };

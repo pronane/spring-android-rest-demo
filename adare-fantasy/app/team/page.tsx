@@ -4,21 +4,14 @@ import Link from "next/link";
 import { LeagueTable } from "@/components/LeagueTable";
 import { SquadBoard, BudgetBar } from "@/components/SquadBoard";
 import { Eyebrow, Stat, TeamDot } from "@/components/ui";
-import {
-  GLOBAL_TOP,
-  LEAGUES,
-  PLAYER_BY_ID,
-  SCORING,
-  SQUAD_SIZE,
-  TOURNAMENT,
-  type LeagueMember,
-} from "@/lib/data";
+import { GLOBAL_TOP, LEAGUES, PLAYER_BY_ID, SCORING, type LeagueMember } from "@/lib/data";
 import { credits } from "@/lib/helpers";
 import { useFantasy } from "@/lib/store";
 
 export default function TeamPage() {
   const {
     state,
+    mode,
     projected,
     spend,
     remaining,
@@ -31,6 +24,7 @@ export default function TeamPage() {
     errors,
     leagues,
     ready,
+    paid,
   } = useFantasy();
 
   const hasTeam = state.squad.length > 0;
@@ -58,21 +52,27 @@ export default function TeamPage() {
   const primaryRank =
     1 + primaryMembers.filter((m) => !m.isYou && m.points > projected).length;
 
+  const picks = Object.values(state.predictions);
+  const predictedCount = picks.length;
+  const pickEurope = picks.filter((p) => p === "europe").length + picks.filter((p) => p === "half").length * 0.5;
+  const pickUsa = picks.filter((p) => p === "usa").length + picks.filter((p) => p === "half").length * 0.5;
+  const awardCount = Object.values(state.awards).filter(Boolean).length;
+
   if (!hasTeam) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
         <Eyebrow>My team</Eyebrow>
         <h1 className="mt-3 text-4xl text-cream">No card on file</h1>
         <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-cream/55">
-          You have not drafted a squad yet. Six players, {credits(100)}m, one captain — it takes
-          about ninety seconds and it is the only bit of admin you will do all week.
+          You have not drafted a card yet. Six players on {credits(100)}m — or a full dozen on 200m
+          — and one captain. It takes about ninety seconds.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link
             href="/draft"
             className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
           >
-            Draft your six
+            Draft your card
           </Link>
           <button
             type="button"
@@ -95,11 +95,9 @@ export default function TeamPage() {
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-cream/50">
             <span>{state.manager || "No manager name"}</span>
             <span aria-hidden>·</span>
-            <span>
-              {TOURNAMENT.venue}, {TOURNAMENT.village}
-            </span>
+            <span>{mode.name}</span>
             <span aria-hidden>·</span>
-            <span>Locks {TOURNAMENT.deadlineLabel}</span>
+            <span>Locks Fri 17 Sep · 07:35 IST</span>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -127,6 +125,20 @@ export default function TeamPage() {
           </button>
         </div>
       </div>
+
+      {!paid ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/35 bg-gold/[0.07] px-4 py-3">
+          <p className="text-[12.5px] text-cream/70">
+            This card is a draft. Pay the €10 entry to lock it in and appear on league tables.
+          </p>
+          <Link
+            href="/enter"
+            className="rounded-full bg-gold px-4 py-1.5 text-[12px] font-semibold text-forest-950"
+          >
+            Complete entry
+          </Link>
+        </div>
+      ) : null}
 
       {/* STAT STRIP */}
       <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.08] sm:grid-cols-3 lg:grid-cols-5">
@@ -169,7 +181,7 @@ export default function TeamPage() {
             <div>
               <p className="eyebrow text-cream/40">Team sheet</p>
               <h2 className="mt-1 text-xl text-cream">
-                {state.squad.length}/{SQUAD_SIZE} players
+                {state.squad.length}/{mode.squadSize} players
               </h2>
             </div>
             <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10.5px] text-cream/50 tnum">
@@ -184,11 +196,12 @@ export default function TeamPage() {
               onCaptain={setCaptain}
               onRemove={togglePlayer}
               variant="full"
+              size={mode.squadSize}
             />
           </div>
 
           <div className="mt-5">
-            <BudgetBar spend={spend} />
+            <BudgetBar spend={spend} budget={mode.budget} />
           </div>
 
           {errors.length > 0 ? (
@@ -213,7 +226,7 @@ export default function TeamPage() {
               href="/draft"
               className="rounded-full bg-gold py-2 text-center text-[12px] font-semibold text-forest-950 transition hover:bg-gold-soft"
             >
-              Edit squad
+              Edit card
             </Link>
           </div>
         </section>
@@ -291,6 +304,35 @@ export default function TeamPage() {
           </section>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="eyebrow text-cream/40">Match predictor</p>
+                <h2 className="mt-1 text-xl text-cream">Your call</h2>
+              </div>
+              <Link
+                href="/predict"
+                className="text-[11.5px] text-gold-soft/80 transition hover:text-gold"
+              >
+                {predictedCount === 0 ? "Start calling →" : "Edit →"}
+              </Link>
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-forest-950/50 px-4 py-3">
+              <div>
+                <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/35">Predicted cup</p>
+                <p className="font-display text-xl text-cream tnum">
+                  <span className="text-europe">{pickEurope % 1 === 0 ? pickEurope : pickEurope.toFixed(1)}</span>
+                  <span className="mx-1.5 text-cream/25">–</span>
+                  <span className="text-usa">{pickUsa % 1 === 0 ? pickUsa : pickUsa.toFixed(1)}</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="tnum text-[12px] text-cream/70">{predictedCount}/28 matches</p>
+                <p className="text-[11px] text-cream/35">{awardCount}/3 awards</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
             <p className="eyebrow text-cream/40">Team details</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <label className="block">
@@ -323,7 +365,7 @@ export default function TeamPage() {
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Stat label="Next deadline" value={TOURNAMENT.deadlineLabel} sub="Free transfers until then" />
+        <Stat label="Next deadline" value="Fri 17 Sep · 07:35" sub="Free transfers until then" />
         <Stat label="Scoring starts" value="Fri 17 Sep" sub="Foursomes · 08:10 IST" />
         <Stat label="Captain multiplier" value={`×${SCORING.captainMultiplier}`} sub="Match points only" />
       </div>

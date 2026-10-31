@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { ACTIVE_EDITION, PLATFORM } from "@/lib/tournaments";
 
-export function Emblem({ size = 36 }: { size?: number }) {
+export function Emblem({ size = 38 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -10,32 +11,59 @@ export function Emblem({ size = 36 }: { size?: number }) {
       aria-hidden
       className="shrink-0"
     >
-      <rect x="1" y="1" width="42" height="42" rx="12" stroke="#c9a44c" strokeOpacity="0.55" />
-      <rect x="5" y="5" width="34" height="34" rx="9" stroke="#c9a44c" strokeOpacity="0.18" />
-      <g fill="#e6cd94">
-        <circle cx="22" cy="15.5" r="5.1" />
-        <circle cx="15.6" cy="24.5" r="5.1" />
-        <circle cx="28.4" cy="24.5" r="5.1" />
-      </g>
-      <path d="M22 24.5c0 4.6.6 7.4 2.4 9.6" stroke="#e6cd94" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="22" cy="20.6" r="1.7" fill="#0b2a20" />
+      <rect x="1" y="1" width="42" height="42" rx="12" fill="#071a13" />
+      <rect
+        x="1.75"
+        y="1.75"
+        width="40.5"
+        height="40.5"
+        rx="11.25"
+        stroke="#c9a44c"
+        strokeOpacity="0.6"
+        strokeWidth="1.5"
+      />
+      <path d="M12 12.5h6" stroke="#c9a44c" strokeOpacity="0.55" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="33.5" cy="12" r="1.6" fill="#c9a44c" />
+      <text
+        x="22"
+        y="29.5"
+        textAnchor="middle"
+        fontFamily="Fraunces, Georgia, serif"
+        fontSize="17"
+        fontWeight="600"
+        fill="#f5efe2"
+        letterSpacing="-0.8"
+      >
+        28
+      </text>
+      <path
+        d="M13.5 33.5h17"
+        stroke="#c9a44c"
+        strokeOpacity="0.5"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
-export function Brand({ compact = false }: { compact?: boolean }) {
+export function Brand({
+  compact = false,
+  edition = true,
+}: {
+  compact?: boolean;
+  edition?: boolean;
+}) {
   return (
-    <Link href="/" className="group flex items-center gap-3">
+    <Link href="/" className="group flex items-center gap-2.5">
       <Emblem size={compact ? 32 : 38} />
       <span className="leading-none">
-        <span className="block font-display text-[17px] tracking-[0.02em] text-cream">
-          Adare <span className="text-gold-soft">2027</span>
+        <span className="block font-display text-[17px] tracking-[0.005em] text-cream">
+          {PLATFORM.name}
         </span>
-        {!compact && (
-          <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.26em] text-cream/45">
-            Fantasy Ryder Cup
-          </span>
-        )}
+        <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.24em] text-cream/45">
+          {edition ? `Cup fantasy · ${ACTIVE_EDITION.name}` : PLATFORM.tagline}
+        </span>
       </span>
     </Link>
   );

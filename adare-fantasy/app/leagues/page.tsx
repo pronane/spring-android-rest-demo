@@ -19,6 +19,7 @@ export default function LeaguesPage() {
   const myLeagues = leagues.filter((l) => state.joinedLeagues.includes(l.id));
   const [selectedId, setSelectedId] = useState<string | null>(myLeagues[0]?.id ?? null);
   const [createName, setCreateName] = useState("");
+  const [buyIn, setBuyIn] = useState(0);
   const [joinCode, setJoinCode] = useState("");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -54,7 +55,7 @@ export default function LeaguesPage() {
       setMessage({ ok: false, text: "Give your league a name first." });
       return;
     }
-    const league = createLeague(createName);
+    const league = createLeague(createName, buyIn);
     setSelectedId(league.id);
     setCreateName("");
     setMessage({ ok: true, text: `${league.name} created. Share the code ${league.code}.` });
@@ -77,7 +78,8 @@ export default function LeaguesPage() {
         <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Beat your own friends</h1>
         <p className="mt-3 text-[14px] leading-relaxed text-cream/55">
           The global table is fun. The private league is personal. Create one for the group chat,
-          share the six-character code, and settle it on Sunday evening at Adare.
+          set a buy-in or attach a sponsor, share the six-character code, and settle it on Sunday
+          evening at Adare.
         </p>
       </div>
 
@@ -97,6 +99,15 @@ export default function LeaguesPage() {
               placeholder="e.g. The 19th Hole Invitational"
               className="flex-1 rounded-full border border-white/12 bg-forest-950/60 px-4 py-2.5 text-[13px] text-cream placeholder:text-cream/30 focus:border-gold/50 focus:outline-none"
             />
+            <select
+              value={buyIn}
+              onChange={(e) => setBuyIn(Number(e.target.value))}
+              className="rounded-full border border-white/12 bg-forest-950/60 px-3 py-2.5 text-[12px] text-cream/80 focus:border-gold/50 focus:outline-none"
+            >
+              <option value={0} className="bg-forest-900">No buy-in</option>
+              <option value={10} className="bg-forest-900">€10 buy-in</option>
+              <option value={20} className="bg-forest-900">€20 buy-in</option>
+            </select>
             <button
               type="button"
               onClick={handleCreate}
@@ -179,6 +190,7 @@ export default function LeaguesPage() {
                     <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-cream/40">
                       <span>
                         {members.length} teams · {league.visibility}
+                        {league.buyIn ? ` · €${league.buyIn} buy-in` : ""}
                       </span>
                       <span className="tracking-[0.14em] text-gold-soft/70">{league.code}</span>
                     </div>
@@ -204,6 +216,11 @@ export default function LeaguesPage() {
                   </p>
                   <h2 className="mt-1 font-display text-2xl text-cream">{selected.name}</h2>
                   <p className="mt-1 max-w-md text-[12.5px] text-cream/45">{selected.blurb}</p>
+                  <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-cream/40">
+                    {selected.buyIn ? <span>€{selected.buyIn} buy-in</span> : <span>Free to enter</span>}
+                    {selected.prizePool ? <span>· €{selected.prizePool} league pot</span> : null}
+                    {selected.sponsor ? <span>· Sponsored by {selected.sponsor}</span> : null}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-2 text-[12px] tracking-[0.16em] text-gold-soft">
@@ -275,6 +292,7 @@ export default function LeaguesPage() {
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-[11px] text-cream/40 tnum">
                   {league.members.length} teams · {league.code}
+                  {league.buyIn ? ` · €${league.buyIn}` : ""}
                 </span>
                 <button
                   type="button"

@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { PlayerTile } from "@/components/PlayerTile";
 import { BudgetBar, SquadBoard } from "@/components/SquadBoard";
 import { Eyebrow, TeamDot } from "@/components/ui";
-import { BUDGET, MAX_PER_SIDE, PLAYERS, SQUAD_SIZE, TOURNAMENT, type Side } from "@/lib/data";
+import { PLAYERS, type Side } from "@/lib/data";
 import { credits, spendOf } from "@/lib/helpers";
 import { useFantasy } from "@/lib/store";
+import { ACTIVE_EDITION, MODE_LIST, type ModeId } from "@/lib/tournaments";
 
 type SideFilter = "all" | Side;
 type SortKey = "price" | "projected" | "ownership";
@@ -21,6 +22,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 export default function DraftPage() {
   const {
     state,
+    mode,
+    setMode,
     togglePlayer,
     setCaptain,
     autoFill,
@@ -30,6 +33,7 @@ export default function DraftPage() {
     remaining,
     projected,
     errors,
+    paid,
     ready,
   } = useFantasy();
 
@@ -51,30 +55,50 @@ export default function DraftPage() {
       .sort((a, b) => b[sort] - a[sort]);
   }, [side, sort, query]);
 
-  const europeCount = state.squad.filter((id) => PLAYERS.find((p) => p.id === id)?.side === "europe").length;
+  const europeCount = state.squad.filter(
+    (id) => PLAYERS.find((p) => p.id === id)?.side === "europe",
+  ).length;
   const usaCount = state.squad.length - europeCount;
-  const complete = state.squad.length === SQUAD_SIZE && errors.length === 0;
+  const complete = state.squad.length === mode.squadSize && errors.length === 0;
 
   const blockedFor = (id: string): string | undefined => {
     if (state.squad.includes(id)) return undefined;
-    if (state.squad.length >= SQUAD_SIZE) return "Squad full";
+    if (state.squad.length >= mode.squadSize) return "Card full";
     const player = PLAYERS.find((p) => p.id === id)!;
     const sameSide = player.side === "europe" ? europeCount : usaCount;
-    if (sameSide >= MAX_PER_SIDE) return `Max ${MAX_PER_SIDE} per side`;
-    if (spendOf(state.squad) + player.price > BUDGET) return "Over budget";
+    if (sameSide >= mode.maxPerSide) return `Max ${mode.maxPerSide} per side`;
+    if (spendOf(state.squad) + player.price > mode.budget) return "Over budget";
     return undefined;
+  };
+
+  const onSave = async () => {
+    saveTeam();
+    setSaved(true);
+    try {
+      await fetch("/api/entry", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode: state.mode,
+          squad: state.squad,
+          captain: state.captain,
+          predictions: state.predictions,
+        }),
+      });
+    } catch {
+      /* offline demo still saves locally */
+    }
   };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 pb-28 sm:px-6 lg:px-10 lg:pb-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Eyebrow>The draft</Eyebrow>
-          <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Pick your six</h1>
+          <Eyebrow>The draft · {ACTIVE_EDITION.name}</Eyebrow>
+          <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Build your card</h1>
           <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
-            {SQUAD_SIZE} players · {BUDGET}m budget · maximum {MAX_PER_SIDE} from either side ·
-            at least one from each. Name a captain to double his points. Locks{" "}
-            {TOURNAMENT.deadlineLabel}.
+            {mode.blurb} Locks {ACTIVE_EDITION.matchesLabel.split("–")[0]} at the first tee — free
+            transfers until then.
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
@@ -94,12 +118,57 @@ export default function DraftPage() {
         </div>
       </div>
 
+      {/* mode switch */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        {MODE_LIST.map((option) => {
+          const active = option.id === state.mode;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => {
+                setMode(option.id as ModeId);
+                setSaved(false);
+              }}
+              className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
+                active
+                  ? "border-gold/50 bg-gold/[0.07]"
+                  : "border-white/10 bg-white/[0.02] hover:border-white/25"
+              }`}
+            >
+              <span
+                className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border font-display text-[13px] ${
+                  active
+                    ? "border-gold bg-gold text-forest-950"
+                    : "border-white/20 text-cream/50"
+                }`}
+              >
+                {option.squadSize}
+              </span>
+              <span>
+                <span className="flex items-center gap-2 text-[13.5px] font-medium text-cream">
+                  {option.name}
+                  {active ? (
+                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em] text-gold-soft">
+                      Active
+                    </span>
+                  ) : null}
+                </span>
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-cream/45">
+                  {option.tagline} · {option.budget}m budget · max {option.maxPerSide} per side
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_356px]">
-        {/* POOL */}
+        {/* pool */}
         <div>
           <div className="lg:sticky lg:top-24 lg:z-30">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="relative w-full sm:flex-1 sm:min-w-[180px]">
+              <div className="relative w-full sm:min-w-[180px] sm:flex-1">
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/30"
                   width="14"
@@ -171,14 +240,14 @@ export default function DraftPage() {
           ) : null}
         </div>
 
-        {/* CARD */}
+        {/* card */}
         <aside id="card" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl border border-white/12 bg-forest-900/70 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/40">Matchday card</p>
+                <p className="eyebrow text-cream/40">{mode.name}</p>
                 <p className="mt-1 font-display text-lg text-cream">
-                  {state.squad.length}/{SQUAD_SIZE} picked
+                  {state.squad.length}/{mode.squadSize} picked
                 </p>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-cream/50">
@@ -192,7 +261,7 @@ export default function DraftPage() {
             </div>
 
             <div className="mt-4">
-              <BudgetBar spend={spend} budget={BUDGET} />
+              <BudgetBar spend={spend} budget={mode.budget} />
             </div>
 
             <div className="mt-4">
@@ -201,7 +270,7 @@ export default function DraftPage() {
                 captain={state.captain}
                 onCaptain={setCaptain}
                 onRemove={togglePlayer}
-                variant="compact"
+                size={mode.squadSize}
               />
             </div>
 
@@ -209,16 +278,19 @@ export default function DraftPage() {
               {errors.length === 0 ? (
                 <p className="flex items-center gap-2 rounded-lg bg-shamrock/10 px-3 py-2 text-[11.5px] text-shamrock">
                   <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-                    <path d="M2 6.4 4.7 9 10 3.4" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+                    <path
+                      d="M2 6.4 4.7 9 10 3.4"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
                   </svg>
-                  Legal squad. {state.captain ? "Captain set." : "Now pick a captain."}
+                  Legal card. {state.captain ? "Captain set." : "Now pick a captain."}
                 </p>
               ) : (
                 errors.map((error) => (
-                  <p
-                    key={error}
-                    className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa"
-                  >
+                  <p key={error} className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
                     {error}
                   </p>
                 ))
@@ -226,21 +298,27 @@ export default function DraftPage() {
             </div>
 
             <div className="mt-4 grid gap-2">
-              <button
-                type="button"
-                disabled={!complete}
-                onClick={() => {
-                  saveTeam();
-                  setSaved(true);
-                }}
-                className={`rounded-full py-2.5 text-[13px] font-semibold transition ${
-                  complete
-                    ? "bg-gold text-forest-950 hover:bg-gold-soft"
-                    : "cursor-not-allowed bg-white/10 text-cream/30"
-                }`}
-              >
-                {saved ? "Team saved ✓" : "Save my team"}
-              </button>
+              {paid ? (
+                <button
+                  type="button"
+                  disabled={!complete}
+                  onClick={onSave}
+                  className={`rounded-full py-2.5 text-[13px] font-semibold transition ${
+                    complete
+                      ? "bg-gold text-forest-950 hover:bg-gold-soft"
+                      : "cursor-not-allowed bg-white/10 text-cream/30"
+                  }`}
+                >
+                  {saved ? "Card saved ✓" : "Save my card"}
+                </button>
+              ) : (
+                <Link
+                  href="/enter"
+                  className="rounded-full bg-gold py-2.5 text-center text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+                >
+                  Enter €10 to save
+                </Link>
+              )}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -276,7 +354,8 @@ export default function DraftPage() {
             ) : (
               <p className="mt-3 text-[10.5px] leading-relaxed text-cream/30">
                 Tap <span className="rounded bg-gold/20 px-1 text-gold-soft">C</span> to make a
-                player captain — his match points double. Free to enter, no card required.
+                player captain — his match points double.
+                {paid ? " Entry paid." : " Drafting is free; the card saves once you enter."}
               </p>
             )}
           </div>
@@ -285,16 +364,20 @@ export default function DraftPage() {
             <p className="eyebrow text-cream/35">Need a steer?</p>
             <ul className="mt-2 space-y-2 text-[11.5px] leading-relaxed text-cream/45">
               <li>
-                <span className="text-cream/75">Balance the sides.</span> Europe have won 3 of the
-                last 4 on home soil; the USA still own the top of the world rankings.
+                <span className="text-cream/75">Balance the sides.</span> Europe have won three of the
+                last four on home soil; the USA own the top of the rankings.
               </li>
               <li>
-                <span className="text-cream/75">Five-match men.</span> Scheffler, McIlroy and
-                Åberg are the likeliest to play every session.
+                <span className="text-cream/75">Five-match men.</span> Scheffler, McIlroy and Åberg
+                are the likeliest to play every session.
               </li>
               <li>
-                <span className="text-cream/75">Home-weather picks.</span> Wind and rain in
-                Limerick rewards Lowry, MacIntyre and Fleetwood.
+                <span className="text-cream/75">Home-weather picks.</span> Wind and rain in Limerick
+                rewards Lowry, MacIntyre and Fleetwood.
+              </li>
+              <li>
+                <span className="text-cream/75">Dozen mode.</span> Twelve players covers every
+                session — but the captaincy matters less of your total.
               </li>
             </ul>
           </div>
@@ -306,7 +389,7 @@ export default function DraftPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.16em] text-cream/40">
-              {state.squad.length}/{SQUAD_SIZE} picked
+              {state.squad.length}/{mode.squadSize} picked · {mode.short}
             </p>
             <p className="tnum text-[13px] text-cream/85">
               {credits(remaining)}m left · {projected.toFixed(0)} projected
@@ -318,19 +401,25 @@ export default function DraftPage() {
           >
             View card
           </a>
-          <button
-            type="button"
-            disabled={!complete}
-            onClick={() => {
-              saveTeam();
-              setSaved(true);
-            }}
-            className={`rounded-full px-4 py-2 text-[12px] font-semibold ${
-              complete ? "bg-gold text-forest-950" : "bg-white/10 text-cream/30"
-            }`}
-          >
-            {saved ? "Saved ✓" : "Save"}
-          </button>
+          {paid ? (
+            <button
+              type="button"
+              disabled={!complete}
+              onClick={onSave}
+              className={`rounded-full px-4 py-2 text-[12px] font-semibold ${
+                complete ? "bg-gold text-forest-950" : "bg-white/10 text-cream/30"
+              }`}
+            >
+              {saved ? "Saved ✓" : "Save"}
+            </button>
+          ) : (
+            <Link
+              href="/enter"
+              className="rounded-full bg-gold px-4 py-2 text-[12px] font-semibold text-forest-950"
+            >
+              Enter
+            </Link>
+          )}
         </div>
       </div>
     </div>

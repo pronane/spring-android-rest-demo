@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PLAYER_BY_ID, SQUAD_SIZE, type Player } from "@/lib/data";
+import { PLAYER_BY_ID, type Player } from "@/lib/data";
 import { credits } from "@/lib/helpers";
 import { CountryChip, TeamDot } from "./ui";
 
@@ -11,16 +11,18 @@ export function SquadBoard({
   onCaptain,
   onRemove,
   variant = "compact",
+  size = 6,
 }: {
   squad: string[];
   captain: string | null;
   onCaptain?: (id: string) => void;
   onRemove?: (id: string) => void;
   variant?: "compact" | "full";
+  size?: number;
 }) {
   return (
     <ol className="space-y-2">
-      {Array.from({ length: SQUAD_SIZE }).map((_, index) => {
+      {Array.from({ length: size }).map((_, index) => {
         const id = squad[index];
         const player: Player | undefined = id ? PLAYER_BY_ID[id] : undefined;
         const isCaptain = player && captain === player.id;
@@ -135,13 +137,14 @@ export function SquadEmpty({ label = "No team yet" }: { label?: string }) {
     <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.02] p-6 text-center">
       <p className="font-display text-lg text-cream/80">{label}</p>
       <p className="mx-auto mt-2 max-w-xs text-[13px] text-cream/45">
-        Pick six players within a 100m budget and name one captain. Takes about ninety seconds.
+        Pick your card before the lock — Classic Six (100m) or a full Captain&apos;s Dozen (200m) —
+        and name one captain.
       </p>
       <Link
         href="/draft"
         className="mt-4 inline-flex rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
       >
-        Draft your six
+        Draft your card
       </Link>
     </div>
   );

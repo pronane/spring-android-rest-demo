@@ -8,7 +8,7 @@ import { TeamDot } from "./ui";
 import { SquadEmpty } from "./SquadBoard";
 
 export function HomeTeamCard() {
-  const { state, projected, spend, ready } = useFantasy();
+  const { state, projected, spend, ready, mode } = useFantasy();
   const hasTeam = state.squad.length > 0;
 
   if (!hasTeam) {
@@ -27,7 +27,7 @@ export function HomeTeamCard() {
           <p className="eyebrow text-cream/40">Your card</p>
           <h3 className="mt-1.5 font-display text-2xl text-cream">{state.teamName || "Untitled"}</h3>
           <p className="text-[12px] text-cream/45">
-            {state.manager || "You"} · {state.joinedLeagues.length} league
+            {state.manager || "You"} · {mode.name} · {state.joinedLeagues.length} league
             {state.joinedLeagues.length === 1 ? "" : "s"}
           </p>
         </div>

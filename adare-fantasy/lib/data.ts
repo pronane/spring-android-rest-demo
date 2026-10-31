@@ -537,6 +537,9 @@ export type League = {
   visibility: "private" | "public";
   members: LeagueMember[];
   blurb: string;
+  sponsor?: string;
+  buyIn?: number;
+  prizePool?: number;
 };
 
 export const LEAGUES: League[] = [
@@ -546,6 +549,9 @@ export const LEAGUES: League[] = [
     code: "ADARE7",
     visibility: "private",
     blurb: "Eight lads, one campervan, and a forfeit we cannot legally describe.",
+    sponsor: "Adare Village Distillery",
+    buyIn: 20,
+    prizePool: 160,
     members: [
       { manager: "Declan Byrne", team: "The Chipping Clancy's", points: 412 },
       { manager: "Aoife Nolan", team: "Adare Ambush", points: 405 },
@@ -562,6 +568,9 @@ export const LEAGUES: League[] = [
     code: "19HOLE",
     visibility: "public",
     blurb: "The biggest open league on Adare 2027. Everyone is welcome, nobody is safe.",
+    sponsor: "Shannon Airport",
+    buyIn: 0,
+    prizePool: 0,
     members: [
       { manager: "Elena Ruiz", team: "Birdie Juice", points: 418 },
       { manager: "Tom Whelan", team: "Adare Eagles", points: 409.5 },
@@ -577,6 +586,9 @@ export const LEAGUES: League[] = [
     code: "PARISH",
     visibility: "public",
     blurb: "The parish versus the world. Bragging rights at Mass on Monday.",
+    sponsor: "Limerick County Board",
+    buyIn: 0,
+    prizePool: 0,
     members: [
       { manager: "Fr. Brendan", team: "Holy Putts", points: 410 },
       { manager: "Sinead O'Dea", team: "Camogie Chips", points: 403 },
@@ -591,6 +603,8 @@ export const LEAGUES: League[] = [
     code: "SUNDAY",
     visibility: "public",
     blurb: "Twelve singles, twelve pints. The purist's league for people who read the tee times.",
+    buyIn: 0,
+    prizePool: 0,
     members: [
       { manager: "Hugo Bennett", team: "Back Nine Bandits", points: 406 },
       { manager: "Maeve Costello", team: "The Draw", points: 397 },
@@ -605,6 +619,8 @@ export const LEAGUES: League[] = [
     code: "LINKS1",
     visibility: "public",
     blurb: "Wind, rain and a soft spot for the Scottish and Irish picks.",
+    buyIn: 0,
+    prizePool: 0,
     members: [
       { manager: "Ross Ferguson", team: "Into the Wind", points: 414 },
       { manager: "Siobhan Byrne", team: "Brolly Brigade", points: 401 },
@@ -618,6 +634,9 @@ export const LEAGUES: League[] = [
     code: "HACKER",
     visibility: "private",
     blurb: "Six mid-handicappers who have watched more YouTube than golf.",
+    sponsor: "Fairway Coffee Co.",
+    buyIn: 10,
+    prizePool: 40,
     members: [
       { manager: "Graham Hughes", team: "Slice of Life", points: 384 },
       { manager: "Fiona Marsh", team: "Fairway to Heaven", points: 377.5 },
