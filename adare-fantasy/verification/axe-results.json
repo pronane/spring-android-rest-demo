@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "clean": 30,
-  "total": 30,
+  "clean": 34,
+  "total": 34,
   "results": [
     {
       "route": "/",
@@ -150,6 +150,26 @@
     },
     {
       "route": "/team",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "/team/transfers",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/team/transfers",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "/t/TE-9FB247-ADRE",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/t/TE-9FB247-ADRE",
       "width": 1440,
       "violations": []
     }

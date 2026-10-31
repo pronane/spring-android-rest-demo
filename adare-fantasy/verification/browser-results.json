@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 24,
-  "total": 24,
+  "passed": 35,
+  "total": 35,
   "results": [
     {
       "name": "fresh visitor is offered a paid entry, not a card",
@@ -26,7 +26,7 @@
     {
       "name": "the payment page issues an entry ref",
       "pass": true,
-      "detail": "TE-25D10D-ADRE"
+      "detail": "TE-0557E2-ADRE"
     },
     {
       "name": "paying lands on a settled order",
@@ -90,6 +90,61 @@
     },
     {
       "name": "account shows the server-side points breakdown",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the transfer page opens for a saved card",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "it shows the window and the allowance",
+      "pass": true,
+      "detail": "Skip to content / 28 / Twenty-Eight / CUP FANTASY · ADARE 2027"
+    },
+    {
+      "name": "it offers a replacement for the picked player",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "a swap goes through on the server",
+      "pass": true,
+      "detail": "Done — that change was free."
+    },
+    {
+      "name": "the swap lands in the history",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the armband can be given per day",
+      "pass": true,
+      "detail": "DeChambeau"
+    },
+    {
+      "name": "the account page offers a share card",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the account page explains the invite",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "a public card renders on its own url",
+      "pass": true,
+      "detail": "TE-A70F85-ADRE"
+    },
+    {
+      "name": "the public card shows points and a rank",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "a visitor can enter from the shared card",
       "pass": true,
       "detail": ""
     },

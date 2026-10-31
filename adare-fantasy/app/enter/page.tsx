@@ -20,6 +20,19 @@ export default function EnterPage() {
   const seeded = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [invite, setInvite] = useState<string | null>(null);
+
+  // An invite is carried in the URL, kept in localStorage in case the visitor
+  // goes off to sign in first, and sent with the checkout. The server only
+  // honours it once the order settles.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    const stored = window.localStorage.getItem("twentyeight:ref");
+    const code = (fromUrl || stored || "").trim().toUpperCase();
+    if (!code) return;
+    window.localStorage.setItem("twentyeight:ref", code);
+    setInvite(code);
+  }, []);
 
   // The store renders the demo team on the server, so identity has to be
   // adopted once the real (localStorage) state is ready — otherwise the fields
@@ -64,7 +77,7 @@ export default function EnterPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ planId: plan.id }),
+        body: JSON.stringify({ planId: plan.id, referralCode: invite ?? undefined }),
       });
       const data = (await res.json()) as { error?: string; url?: string; provider?: string };
       if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout could not be opened.");
@@ -89,6 +102,12 @@ export default function EnterPage() {
           no upsell, no premium armband and no second charge at the first tee.
         </p>
       </div>
+
+      {invite ? (
+        <p className="mt-5 inline-flex rounded-full border border-shamrock/35 bg-shamrock/[0.07] px-4 py-1.5 text-[11.5px] text-shamrock">
+          Invited by {invite} — both cards get a free transfer when you join.
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div>

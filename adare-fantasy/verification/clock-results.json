@@ -1,0 +1,52 @@
+{
+  "base": "http://127.0.0.1:3000",
+  "passed": 9,
+  "total": 9,
+  "results": [
+    {
+      "name": "the window is open between sessions",
+      "pass": true,
+      "detail": "{\"id\":\"fri-sat\",\"label\":\"Friday night\",\"opens\":570,\"closes\":1440}"
+    },
+    {
+      "name": "two free changes are available",
+      "pass": true,
+      "detail": "2 free"
+    },
+    {
+      "name": "three changes are allowed inside a window",
+      "pass": true,
+      "detail": "3 swaps"
+    },
+    {
+      "name": "the first two are free and the third costs four",
+      "pass": true,
+      "detail": "paid 4"
+    },
+    {
+      "name": "the allowance is spent",
+      "pass": true,
+      "detail": "0 left, next 4"
+    },
+    {
+      "name": "every change is in the history with its price",
+      "pass": true,
+      "detail": "[\"scheffler->dechambeau 0\",\"dechambeau->scheffler 0\",\"scheffler->dechambeau 4\"]"
+    },
+    {
+      "name": "the penalty comes off the total, not the card",
+      "pass": true,
+      "detail": "gross 62, net 58"
+    },
+    {
+      "name": "the table shows the penalty on the row",
+      "pass": true,
+      "detail": "4"
+    },
+    {
+      "name": "the table scores only what is finished at this minute",
+      "pass": true,
+      "detail": "8/28 at minute 600"
+    }
+  ]
+}

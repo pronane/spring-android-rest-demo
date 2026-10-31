@@ -19,6 +19,7 @@ type Body = {
   predictions?: unknown;
   awards?: unknown;
   pinpoint?: unknown;
+  sessionCaptains?: unknown;
 };
 
 /**
@@ -82,7 +83,26 @@ export async function PUT(request: Request) {
     if (rawPinpoint[day.id] !== undefined) pinpoint[day.id] = cleanGuess(rawPinpoint[day.id]);
   }
 
-  const user = await updateTeam(userId, { mode, squad, captain, predictions, awards, pinpoint });
+  // The armband per day, if the player set one. Each must be on the card.
+  let sessionCaptains: Record<string, string | null> | undefined;
+  if (body.sessionCaptains && typeof body.sessionCaptains === "object") {
+    sessionCaptains = {};
+    for (const day of ["fri", "sat", "sun"] as const) {
+      const value = (body.sessionCaptains as Record<string, unknown>)[day];
+      if (value === null) sessionCaptains[day] = null;
+      else if (typeof value === "string" && squad.includes(value)) sessionCaptains[day] = value;
+    }
+  }
+
+  const user = await updateTeam(userId, {
+    mode,
+    squad,
+    captain,
+    predictions,
+    awards,
+    pinpoint,
+    ...(sessionCaptains ? { sessionCaptains } : {}),
+  });
   if (!user) {
     return NextResponse.json(
       { error: "No paid entry on this account yet." },

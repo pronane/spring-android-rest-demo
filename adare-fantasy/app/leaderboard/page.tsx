@@ -14,6 +14,11 @@ type Standings = {
     finals: number;
     total: number;
     cup: { europe: number; usa: number };
+    minute?: number;
+    phase?: "pre" | "live" | "done";
+    inPlay?: number;
+    provisional?: boolean;
+    clock?: string;
   };
   scope: { kind: "global" | "league"; id?: string; name?: string };
   total: number;
@@ -23,7 +28,8 @@ type LeagueOption = { id: string; name: string; code: string };
 
 const SOURCE_LABEL: Record<Results["source"], string> = {
   simulation: "Simulated final",
-  mixed: "Simulated + corrections",
+  feed: "Live feed",
+  mixed: "Feed + corrections",
   admin: "Operator results",
 };
 
@@ -87,6 +93,13 @@ export default function LeaderboardPage() {
             Card points plus predictor points, scored on the server from the same results the live
             page shows. {meta ? `${meta.finals}/${meta.total} matches in.` : ""}
           </p>
+          {meta?.provisional ? (
+            <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-full border border-gold/35 bg-gold/[0.07] px-3 py-1.5 text-[11px] text-gold-soft">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden />
+              Provisional — only finished matches are scored
+              {(meta.inPlay ?? 0) > 0 ? ` · ${meta.inPlay} match${meta.inPlay === 1 ? "" : "es"} in play` : ""}
+            </p>
+          ) : null}
         </div>
         {meta ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-right">
@@ -98,7 +111,7 @@ export default function LeaderboardPage() {
               {meta.cup.europe} <span className="text-cream/40">–</span> {meta.cup.usa}
             </p>
             <p className="text-[10.5px] text-cream/60">
-              {meta.source === "simulation" ? "Demo feed · re-scores live" : `Updated ${new Date(meta.updatedAt).toLocaleString("en-IE")}`}
+              {meta.clock}
             </p>
           </div>
         ) : null}

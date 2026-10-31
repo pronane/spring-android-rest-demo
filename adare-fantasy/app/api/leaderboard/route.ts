@@ -13,12 +13,15 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const leagueId = url.searchParams.get("league") ?? undefined;
   const limitParam = Number(url.searchParams.get("limit"));
+  // A replay of the weekend: score only the matches finished at `at` minutes.
+  const atParam = Number(url.searchParams.get("at"));
   const me = await currentUserId();
 
   const standings = await getStandings({
     leagueId,
     me,
     limit: Number.isFinite(limitParam) && limitParam > 0 ? limitParam : undefined,
+    at: url.searchParams.has("at") && Number.isFinite(atParam) ? Math.max(0, Math.min(3300, atParam)) : undefined,
   });
 
   if (leagueId && standings.scope.kind === "league" && !standings.scope.name) {

@@ -42,6 +42,41 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 ---
 
+## What's new in v0.6
+
+- **The server scores the weekend, not the browser.** `lib/server/clock.ts` is the one clock: a
+  snapshot is the matches **finished at that minute**, so a mid-Sunday request scores the 24 matches
+  in the books rather than guessing the last four. The table, a private league, the account
+  breakdown, the share card and the API all read the same snapshot. `SCORING_CLOCK=live` follows
+  real time from the first tee; `SCORING_CLOCK=at:1500` replays Saturday afternoon;
+  `?at=1500` does it for a single request. A partial table is labelled **provisional**, with the
+  session and the count of matches in play.
+- **The feed is read on the server.** `lib/server/feed.ts` fetches `LIVE_FEED_URL` once per 20 s and
+  overlays the provider's finals and events onto the simulation's pairings — so the same numbers
+  reach a webhook, a cron job and a browser. `/api/live` uses the same reader, and a broken feed
+  still falls back instead of emptying the page.
+- **Transfers with a cost.** After the lock each entry has **two free changes** for the edition;
+  after that each one is **−4 points**, taken off the total (the card itself is untouched, and the
+  breakdown shows both). Swaps are only possible in the **windows between sessions** — before the
+  first tee, Friday night, Saturday night — and are refused while a match is under way. Every rule
+  is re-checked on the server (`lib/server/transfers.ts`), including the budget and the six-a-side
+  cap, and every swap is recorded with its window and price.
+- **The armband, day by day.** You can name a captain per day (Fri / Sat / Sun); that day's match
+  points double, and leaving a day blank means nobody is doubled. The overall captain is still the
+  fallback, so older cards keep scoring exactly as before, and the breakdown reports what the
+  doubling was worth.
+- **A card you can share.** Every entry has a public page at `/t/<entry ref>` — team, manager,
+  points, rank, the six players and the cup — rendered on the server from the same snapshot, with
+  an Open Graph image generated per entry (`/t/<ref>/opengraph-image`) and copy / WhatsApp / X
+  buttons. It previews properly when someone shares it.
+- **Invites that pay for themselves.** The invite code *is* the entry ref. Enter with `?ref=` and,
+  once your order settles, both cards get one extra free transfer — idempotent, so a retried
+  webhook cannot stack credits. The account page shows who joined on your link and what it earned.
+- **Rules under test.** `scoring:check` grows to **55** assertions (per-day armband, penalties,
+  windows, clock); the API suite adds 26 (transfers, armband, referrals, share page, `?at=` replays),
+  the browser suite adds 11, and `verification/harness/clock.mjs` covers the overnight window and the
+  −4 penalty against a server started with `SCORING_CLOCK=at:600` — 266 checks in all.
+
 ## What's new in v0.5
 
 - **Payments are real.** `POST /api/checkout` no longer grants anything: it opens a **pending order**
@@ -87,12 +122,14 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 - **Email sign-in links.** Sign in on a new device from `/account` with a one-time, 15-minute link. Your saved card syncs down. Set `RESEND_API_KEY` (and `MAIL_FROM`, `APP_URL`) to send real email; in development the link is shown on screen.
 - **Pinpoint** (`/pinpoint`). Guess nearest-the-pin (feet) and longest drive (yards) for each day; 10 points for a perfect call. Results are simulated until a live feed is connected.
 
-- **Live scores adapter.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 30 s, and fantasy points follow them. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation.
+- **Live scores adapter, read on the server.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 20 s. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation. Since v0.6 the same reader feeds the scoring snapshot, so the table follows the provider's finals rather than the browser's copy of them.
 
 Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`,
 `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`, `ADMIN_TOKEN` (enables the admin endpoints; they fail
 closed when unset), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_BASE` (point the Stripe
-client at a stub), `PAYMENTS_PROVIDER` (`demo` or `stripe`; defaults to `stripe` when a key is set).
+client at a stub), `PAYMENTS_PROVIDER` (`demo` or `stripe`; defaults to `stripe` when a key is set),
+and the scoring clock: `SCORING_CLOCK` (`live`, or `at:<minute>` to replay a moment; unset scores the
+finished weekend) and `FIRST_TEE_AT` (defaults to `2027-09-17T07:35:00+01:00`).
 
 ---
 
