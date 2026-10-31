@@ -1,0 +1,16 @@
+{
+  "name": "twenty-eight-verification",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "api": "node api.mjs",
+    "checks": "node checks.mjs",
+    "audit": "node audit.mjs",
+    "record": "node record.mjs && node record-live.mjs && node takeover.mjs",
+    "encode": "node encode.mjs"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^138.0.0",
+    "puppeteer-core": "^24.0.0"
+  }
+}

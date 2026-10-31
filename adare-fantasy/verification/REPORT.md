@@ -4,10 +4,15 @@
 card validation, demo 'paid' state"*), then run an end-to-end verification of the app served from a
 production build (`next build && next start`).
 
+**Re-run:** 31 October 2026 on `master` at `03fa805` (merge of PR #5 — the two fixes below), with a
+clean store. Videos and screenshots in this folder are from that run; the harness that produced them
+is in [`harness/`](harness).
+
 **Date:** 31 October 2026 · **Runner:** headless Chromium 141 via Puppeteer, axe-core 4.14, Node 22
 
-**Result: 58/58 automated checks pass** — 17 API, 19 browser, 22 accessibility — after fixing two
-regressions found during the review. Evidence is in [`screenshots/`](screenshots) and
+**Result: 54/54 automated checks pass** — 17 API, 15 browser, 22 accessibility — after fixing two
+regressions found during the review. The re-run also produced 23 screenshots and 3 videos from 20
+scripted steps with zero console errors. Evidence is in [`screenshots/`](screenshots) and
 [`videos/`](videos).
 
 ---
@@ -71,51 +76,51 @@ regressions introduced by this commit; all are fixed on this branch (section 3).
 
 ### 3.1 API contract — 17/17 (`api-results.json`)
 
-| Check | Expected | Result |
-|---|---|---|
-| Invalid email rejected | 400 | ✅ |
-| Account created, session cookie issued | 200 + `signedIn` | ✅ |
-| Existing email without its session (takeover) | **409** | ✅ |
-| Existing email *with* its own session | 200 | ✅ |
-| Card write without a session | 401 | ✅ |
-| Card write before paying | 402 | ✅ |
-| Unknown checkout plan | 400 | ✅ |
-| Checkout records a paid entry + `TE-XXXXXX-ADRE` | 200 | ✅ |
-| Valid Captain's Dozen saves | 200 | ✅ |
-| Bogus match ids / pick values dropped | sanitised | ✅ |
-| Unknown player ids nulled in awards | sanitised | ✅ |
-| 7 players in Classic Six | 422 | ✅ |
-| 100.5m card on a 100m budget | 422 `You are 0.5m over the 100m budget` | ✅ |
-| Captain not in the squad | 422 | ✅ |
-| Six USA players (one-sided card) | 422 | ✅ |
-| Tampered session cookie | 401 | ✅ |
-| Session returns the saved card | 12 players, captain set | ✅ |
+Called against the production server with a clean store. Every row is an HTTP status the client
+depends on, not an implementation detail.
 
-### 3.2 Browser end-to-end — 19/19 (`browser-results.json`)
-
-Run against the production server (`next start`) with a clean database.
-
-| Check | Result |
+| Check | Observed |
 |---|---|
-| Fresh visitor sees the demo card, not a paid account | ✅ header CTA "Enter · €10" |
-| Fresh visitor gets the checkout form, not a receipt | ✅ |
-| Checkout is **not** pre-filled with the demo identity | ✅ empty manager field (new) |
-| Unpaid draft offers entry instead of save | ✅ "Enter €10 to save" |
-| Checkout returns a receipt | ✅ `TE-CFF87A-ADRE` |
-| **The paid entry survives a reload** | ✅ header CTA "My card" (regression fix) |
-| Captain's Dozen auto-picks a legal 12 | ✅ 12/12, within budget |
-| Card saves to the server | ✅ "Card saved ✓" |
-| Predictor fills all 28 matches | ✅ 28/28 |
-| Picks save to the server | ✅ "Picks saved ✓" |
-| Account shows the saved card | ✅ 12 players, server-side |
-| Account shows the paid receipt | ✅ same reference |
-| Desktop flow recorded | ✅ 859 frames |
-| Live clock advances while playing | ✅ |
-| Live flow recorded | ✅ 317 frames |
-| Mobile checkout completes | ✅ receipt on a 390px viewport |
-| Mobile account reads the paid session | ✅ manager name from the server |
-| Mobile flow recorded | ✅ 112 frames |
-| A second browser cannot claim an existing email | ✅ 409 shown as an alert |
+| invalid email rejected | status 400 |
+| account created with a session cookie | status 200 |
+| takeover blocked without the session | status 409 |
+| unauthenticated write rejected | status 401 |
+| unpaid write rejected | status 402 |
+| unknown plan rejected | status 400 |
+| checkout issues a receipt ref | TE-7C943E-ADRE |
+| session cookie is httpOnly + SameSite | Path=/; Expires=Sun, 28 Feb 2027 08:25:04 GMT; Max-Age=10368000; HttpOnly; SameSite=lax |
+| valid twelve-player card saves | status 200 |
+| unknown match ids dropped | {"fri-am-1":"europe"} |
+| invalid awards nulled |  |
+| unknown player id rejected | 422: Your card includes a player who is no longer in the pool. |
+| wrong squad size rejected | 422: Pick 6 players — you have 7. |
+| over-budget card rejected | 422: You are 0.5m over the 100m budget. |
+| captain must be on the card | 422: Pick a captain from your card. |
+| tampered cookie rejected | status 401 |
+| session returns the saved card | 12 players |
+
+### 3.2 Browser end-to-end — 15/15 (`browser-results.json`)
+
+Run against the production server (`next start`) with a clean database, one fresh browser profile per
+persona. This is also the pass the videos were recorded from.
+
+| Check | Observed |
+|---|---|
+| fresh visitor is offered a paid entry, not a card | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Live \| Leagues \| Rules \| |
+| entry page lists three paid plans and no free tier | ✅ |
+| checkout does not pre-fill the demo identity | ✅ |
+| unpaid card cannot be saved | ✅ |
+| payment issues a receipt | TE-F6DAE0-ADRE |
+| header shows My card after paying | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Live \| Leagues \| Rules \| |
+| paid state survives a reload | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Live \| Leagues \| Rules \| |
+| twelve-player card saves | ✅ |
+| predictor fills all 28 matches | 28/28 |
+| picks save to the server | ✅ |
+| account shows the saved twelve-player card | ✅ |
+| private league is created with a join code | ✅ |
+| mobile home offers the paid entry CTA | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Live \| Leagues \| Rules \| |
+| mobile checkout completes | ✅ |
+| second browser cannot take over the account | ✅ |
 
 ### 3.3 Accessibility — 22/22 (`axe-results.json`)
 
@@ -136,25 +141,36 @@ including the new paid and unpaid states.
 
 ## 4. Evidence
 
-### Videos (1280×800 unless noted, H.264, 30 fps)
+Recorded on `03fa805` from a production build with an empty `.data` directory. Every screenshot in
+[`screenshots/`](screenshots) is a step from the videos; [`capture-log.json`](capture-log.json) maps
+each file to the URL it was taken on.
 
-| File | Length | What it shows |
-|---|---|---|
-| [`videos/01-end-to-end-desktop.mp4`](videos/01-end-to-end-desktop.mp4) | 35 s | Home → checkout → receipt → Captain's Dozen auto-pick → save → predictor 28/28 → save picks → account → create a league |
-| [`videos/02-live-simulation.mp4`](videos/02-live-simulation.mp4) | 18 s | Sunday singles at 4× from `?t=2700`, clock and cup score moving, jump to the final putt |
-| [`videos/03-mobile-flow.mp4`](videos/03-mobile-flow.mp4) | 13 s | 390×844: home → auto-pick → checkout → receipt → account |
+### Videos (H.264, 30 fps, constant frame rate)
 
-### Screenshots (21)
+| File | Length | Viewport | What it shows |
+|---|---|---|---|
+| [`videos/01-end-to-end-desktop.mp4`](videos/01-end-to-end-desktop.mp4) | 44 s | 1280×800 | Home → checkout (€10, receipt `TE-…-ADRE`) → Captain's Dozen → auto-pick → save → predictor → favourites auto-pick 28/28 → save picks → account → create a private league → live |
+| [`videos/02-mobile-flow.mp4`](videos/02-mobile-flow.mp4) | 14 s | 390×844 | Home → checkout → receipt → auto-pick → save → account (paid entry, 6 players) |
+| [`videos/03-live-simulation.mp4`](videos/03-live-simulation.mp4) | 26 s | 1280×800 | Sunday singles at 4× from `?t=2700` to the cup being decided, **Europe 16.5 – 11.5 USA** |
+
+Frames come from the DevTools screencast and are re-timed from the real gap between repaints, so the
+pacing matches the session rather than the browser's frame cadence.
+
+### Screenshots (23)
 
 | # | File | Step |
 |---|---|---|
-| 01–03 | `fresh-home`, `fresh-enter`, `fresh-draft` | First visit: demo preview, unpaid state, entry CTA |
-| 04–07 | `desktop-home`, `desktop-enter`, `desktop-enter-filled`, `desktop-receipt` | Purchase flow |
-| 08–09 | `desktop-draft-dozen`, `desktop-draft-saved` | Captain's Dozen auto-pick and server save |
-| 10–13 | `desktop-predict`, `desktop-picks-saved`, `desktop-account`, `desktop-leagues` | Predictor, server-backed account, league creation |
-| 14–16 | `live-singles-start`, `live-singles-playing`, `live-final` | Live simulation playback |
-| 17–20 | `mobile-home`, `mobile-draft`, `mobile-receipt`, `mobile-account` | Mobile pass |
-| 21 | `takeover-blocked` | Second browser refused the existing email (409) |
+| 01 | `01-home.png` | Fresh visit, demo preview, `Enter · €10` |
+| 02–03 | `02-checkout-empty`, `03-checkout-filled` | Paid plans, empty form, filled form |
+| 04 | `04-receipt.png` | `TE-F…-ADRE` receipt, header flips to **My card** |
+| 05–07 | `05-draft-empty`, `06-draft-filled`, `07-card-saved` | Captain's Dozen, auto-pick, server save |
+| 08–10 | `08-predictor-empty`, `09-predictor-filled`, `10-picks-saved` | 28/28 picks, awards, saved |
+| 11 | `11-account.png` | Server-backed account, 12 players, receipt |
+| 12–14 | `12-leagues`, `13-league-form`, `14-league-created` | Private league with a join code |
+| 15 | `15-live.png` | Live page, Friday foursomes, 0–0 |
+| 16–20 | `16-mobile-home` … `20-mobile-account` | 390×844 purchase and save |
+| 21–22 | `21-live-sunday`, `22-live-final` | Simulation start and decided cup |
+| 23 | `23-takeover-blocked.png` | Second browser refused the existing email (409) |
 
 ---
 
@@ -163,16 +179,20 @@ including the new paid and unpaid states.
 ```bash
 cd adare-fantasy
 npm install
-rm -rf .data                      # clean server store
+rm -rf .data                       # clean server store
 npm run build
-SESSION_SECRET="$(openssl rand -hex 24)" npm start   # http://localhost:3000
+SESSION_SECRET="$(openssl rand -hex 24)" npm start      # http://localhost:3000
 
-# then, from the harness used for this report:
-node api-test.mjs                 # 17 API checks
-node flows.mjs                    # 19 browser checks + video frames
-node audit.mjs                    # axe-core across 11 routes x 2 viewports
-node encode.mjs                   # frames -> mp4
+cd verification/harness && npm install
+node api.mjs                       # 17 contract checks
+node record.mjs                    # desktop + mobile, frames and 20 screenshots
+node record-live.mjs               # the simulation clip
+node takeover.mjs                  # the blocked-takeover capture
+FFMPEG=$(command -v ffmpeg) node encode.mjs
 ```
+
+`BASE`, `OUT`, `CHROME_PATH`, `CHROME_LIBS` and `FFMPEG` are all overridable — see
+[`harness/README.md`](harness/README.md).
 
 ## 6. Limitations of this run
 

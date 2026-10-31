@@ -1,101 +1,82 @@
 {
-  "passed": 19,
-  "total": 19,
+  "base": "http://127.0.0.1:3000",
+  "passed": 15,
+  "total": 15,
   "results": [
     {
-      "name": "fresh visitor sees the demo card, not a paid account",
+      "name": "fresh visitor is offered a paid entry, not a card",
       "pass": true,
-      "detail": "header CTA is \"Enter · €10\""
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Live | Leagues | Rules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Live | Leagues | Rules"
     },
     {
-      "name": "fresh visitor gets the checkout form, not a receipt",
+      "name": "entry page lists three paid plans and no free tier",
       "pass": true,
-      "detail": "checkout visible"
+      "detail": ""
     },
     {
-      "name": "checkout is not pre-filled with the demo identity",
+      "name": "checkout does not pre-fill the demo identity",
       "pass": true,
-      "detail": "manager field is \"\""
+      "detail": ""
     },
     {
-      "name": "unpaid draft offers entry instead of save",
+      "name": "unpaid card cannot be saved",
       "pass": true,
-      "detail": "CTA reads Enter €10 to save"
+      "detail": ""
     },
     {
-      "name": "checkout returns a receipt reference",
+      "name": "payment issues a receipt",
       "pass": true,
-      "detail": "TE-CFF87A-ADRE"
+      "detail": "TE-F6DAE0-ADRE"
     },
     {
-      "name": "the paid entry survives a reload",
+      "name": "header shows My card after paying",
       "pass": true,
-      "detail": "header CTA is \"My card\""
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Live | Leagues | Rules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Live | Leagues | Rules"
     },
     {
-      "name": "Captain's Dozen auto-picks a legal 12",
+      "name": "paid state survives a reload",
       "pass": true,
-      "detail": "12/12, within budget"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Live | Leagues | Rules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Live | Leagues | Rules"
     },
     {
-      "name": "card saves to the server",
+      "name": "twelve-player card saves",
       "pass": true,
-      "detail": "Card saved ✓"
+      "detail": ""
     },
     {
       "name": "predictor fills all 28 matches",
       "pass": true,
-      "detail": "28/28 called"
+      "detail": "28/28"
     },
     {
       "name": "picks save to the server",
       "pass": true,
-      "detail": "Picks saved ✓"
+      "detail": ""
     },
     {
-      "name": "account shows the saved card",
+      "name": "account shows the saved twelve-player card",
       "pass": true,
-      "detail": "12 players server-side"
+      "detail": ""
     },
     {
-      "name": "account shows the paid receipt",
+      "name": "private league is created with a join code",
       "pass": true,
-      "detail": "TE-CFF87A-ADRE"
+      "detail": ""
     },
     {
-      "name": "desktop flow recorded",
+      "name": "mobile home offers the paid entry CTA",
       "pass": true,
-      "detail": "859 frames"
-    },
-    {
-      "name": "live clock advances while playing",
-      "pass": true,
-      "detail": "clock visible"
-    },
-    {
-      "name": "live flow recorded",
-      "pass": true,
-      "detail": "317 frames"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Live | Leagues | Rules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Live | Leagues | Rules"
     },
     {
       "name": "mobile checkout completes",
       "pass": true,
-      "detail": "receipt shown"
+      "detail": ""
     },
     {
-      "name": "mobile account reads the paid session",
+      "name": "second browser cannot take over the account",
       "pass": true,
-      "detail": "manager name from server"
-    },
-    {
-      "name": "mobile flow recorded",
-      "pass": true,
-      "detail": "112 frames"
-    },
-    {
-      "name": "a second browser cannot claim an existing email",
-      "pass": true,
-      "detail": "409 surfaced in the UI as an alert"
+      "detail": ""
     }
   ]
 }
