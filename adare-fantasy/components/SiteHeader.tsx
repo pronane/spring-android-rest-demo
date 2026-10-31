@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Brand } from "./Brand";
 import { useFantasy } from "@/lib/store";
-import { ENTRY_FEE, PLATFORM } from "@/lib/tournaments";
-import { eur } from "@/lib/helpers";
+import { PLATFORM } from "@/lib/tournaments";
 
 const LINKS = [
   { href: "/", label: "Home", short: "Home" },
   { href: "/draft", label: "Draft", short: "Draft" },
   { href: "/predict", label: "Predict", short: "Predict" },
+  { href: "/pinpoint", label: "Pinpoint", short: "Pin" },
   { href: "/live", label: "Live", short: "Live", live: true },
   { href: "/leagues", label: "Leagues", short: "Leagues" },
   { href: "/rules", label: "Rules", short: "Rules" },
@@ -90,7 +90,7 @@ export function SiteHeader() {
             href={paid ? "/team" : "/enter"}
             className="rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
           >
-            {paid ? "My card" : `Enter · ${eur(ENTRY_FEE)}`}
+            {paid ? "My card" : "Play free"}
           </Link>
         </div>
       </div>

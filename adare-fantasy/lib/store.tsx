@@ -20,6 +20,7 @@ import {
 } from "./helpers";
 import { ACTIVE_EDITION_ID, MODES, type ModeId } from "./tournaments";
 import type { Pick } from "./sim";
+import type { PinpointGuess } from "./pinpoint";
 
 const STORAGE_KEY = "twentyeight:v2";
 
@@ -46,6 +47,7 @@ export type TeamState = {
   mode: ModeId;
   predictions: Record<string, Pick>;
   awards: Awards;
+  pinpoint: Record<string, PinpointGuess>;
   entry: Entry;
   joinedLeagues: string[];
   customLeagues: League[];
@@ -75,6 +77,7 @@ const DEMO_STATE: TeamState = {
   mode: "classic",
   predictions: DEMO_PREDICTIONS,
   awards: { mvp: "rory", topScorer: "scheffler", rookie: "rasmus" },
+  pinpoint: {},
   // The demo card is a preview only. It used to carry a paid entry, so every
   // first-time visitor saw "My card", a receipt on /enter and an unlocked Save
   // button without ever paying.
@@ -94,6 +97,7 @@ const EMPTY_STATE: TeamState = {
   mode: "classic",
   predictions: {},
   awards: { mvp: null, topScorer: null, rookie: null },
+  pinpoint: {},
   entry: { paid: false, plan: null, ref: null, amount: 0, paidAt: null },
   joinedLeagues: [],
   customLeagues: [],
@@ -128,6 +132,7 @@ type FantasyContextValue = {
   setPrediction: (matchId: string, pick: Pick) => void;
   clearPredictions: () => void;
   setAward: (key: keyof Awards, playerId: string | null) => void;
+  setPinpoint: (dayId: string, guess: PinpointGuess) => void;
   setEntry: (entry: Partial<Entry>) => void;
   hydrate: (partial: Partial<TeamState>) => void;
 };
@@ -147,6 +152,7 @@ function normalise(raw: Partial<TeamState> | null): TeamState {
     captain: raw.captain && squad.includes(raw.captain) ? raw.captain : null,
     predictions: raw.predictions && typeof raw.predictions === "object" ? raw.predictions : {},
     awards: { ...EMPTY_STATE.awards, ...(raw.awards ?? {}) },
+    pinpoint: raw.pinpoint && typeof raw.pinpoint === "object" ? raw.pinpoint : {},
     // Older builds stored a "paid" demo entry; never treat the demo as paid.
     entry: raw.isDemo ? EMPTY_STATE.entry : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
     squad,
@@ -330,6 +336,10 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const setPinpoint = useCallback((dayId: string, guess: PinpointGuess) => {
+    setState((prev) => ({ ...prev, pinpoint: { ...prev.pinpoint, [dayId]: guess } }));
+  }, []);
+
   const setEntry = useCallback((entry: Partial<Entry>) => {
     setState((prev) => ({ ...prev, entry: { ...prev.entry, ...entry } }));
   }, []);
@@ -374,6 +384,7 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
         setPrediction,
         clearPredictions,
         setAward,
+        setPinpoint,
         setEntry,
         hydrate,
       }}

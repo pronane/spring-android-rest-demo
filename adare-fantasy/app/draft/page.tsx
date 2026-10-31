@@ -95,6 +95,7 @@ export default function DraftPage() {
           captain: state.captain,
           predictions: state.predictions,
           awards: state.awards,
+          pinpoint: state.pinpoint,
         }),
       });
       if (!res.ok && res.status !== 401) {
