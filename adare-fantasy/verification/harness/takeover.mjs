@@ -35,7 +35,7 @@ await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => /
 await sleep(1500);
 
 const text = await page.evaluate(() => document.body.innerText);
-await page.screenshot({ path: path.join(OUT, "shots", "23-takeover-blocked.png") });
+await page.screenshot({ path: path.join(OUT, "shots", "26-takeover-blocked.png") });
 await browser.close();
 
 const blocked = /already has an entry/i.test(text);

@@ -90,7 +90,7 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/enter">Enter · €{ENTRY_FEE}</ButtonLink>
+              <ButtonLink href="/enter">Enter · €{ENTRY_FEE} for prizes</ButtonLink>
               <ButtonLink href="/draft" variant="ghost">
                 Draft free first
               </ButtonLink>

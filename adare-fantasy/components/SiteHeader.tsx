@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { Brand } from "./Brand";
 import { useFantasy } from "@/lib/store";
 import { ENTRY_FEE, PLATFORM } from "@/lib/tournaments";
-import { eur } from "@/lib/helpers";
 
 const LINKS = [
   { href: "/", label: "Home", short: "Home" },
   { href: "/draft", label: "Draft", short: "Draft" },
   { href: "/predict", label: "Predict", short: "Predict" },
+  { href: "/pinpoint", label: "Pinpoint", short: "Pin" },
   { href: "/live", label: "Live", short: "Live", live: true },
   { href: "/leagues", label: "Leagues", short: "Leagues" },
   { href: "/rules", label: "Rules", short: "Rules" },
@@ -23,10 +23,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-forest-950/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
         <Brand />
 
-        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-0.5 lg:flex xl:gap-1">
           {LINKS.map((link) => {
             const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
@@ -34,7 +34,7 @@ export function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition ${
+                className={`relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-2 text-[13px] font-medium transition xl:px-3.5 ${
                   active
                     ? "bg-white/[0.08] text-cream"
                     : "text-cream/60 hover:bg-white/[0.04] hover:text-cream"
@@ -52,10 +52,10 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/editions"
-            className="hidden items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] text-cream/60 transition hover:border-gold/40 hover:text-cream xl:flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] text-cream/60 transition hover:border-gold/40 hover:text-cream 2xl:flex"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
             Adare 2027
@@ -69,7 +69,7 @@ export function SiteHeader() {
               className="hidden items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] py-1.5 pl-3 pr-1.5 transition hover:border-gold/40 sm:flex"
             >
               <span className="text-left leading-tight">
-                <span className="block max-w-[130px] truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/60">
+                <span className="block max-w-[92px] truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/60 xl:max-w-[130px]">
                   {state.teamName}
                 </span>
                 <span className="block text-[12px] font-medium text-cream/85">
@@ -89,9 +89,9 @@ export function SiteHeader() {
 
           <Link
             href={paid ? "/team" : "/enter"}
-            className="rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+            className="whitespace-nowrap rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
           >
-            {paid ? "My card" : `Enter · ${eur(ENTRY_FEE)}`}
+            {paid ? "My card" : `Enter · €${ENTRY_FEE}`}
           </Link>
         </div>
       </div>

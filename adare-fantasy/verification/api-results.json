@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 17,
-  "total": 17,
+  "passed": 26,
+  "total": 26,
   "results": [
     {
       "name": "invalid email rejected",
@@ -36,12 +36,12 @@
     {
       "name": "checkout issues a receipt ref",
       "pass": true,
-      "detail": "TE-7C943E-ADRE"
+      "detail": "TE-C14EB6-ADRE"
     },
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Sun, 28 Feb 2027 08:25:04 GMT; Max-Age=10368000; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 15:40:27 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -87,6 +87,51 @@
       "name": "session returns the saved card",
       "pass": true,
       "detail": "12 players"
+    },
+    {
+      "name": "league creation needs a session",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "league is created with a join code",
+      "pass": true,
+      "detail": "201 HARGV7"
+    },
+    {
+      "name": "league list includes the new league",
+      "pass": true,
+      "detail": "1 leagues"
+    },
+    {
+      "name": "joining your own league is refused",
+      "pass": true,
+      "detail": "404: You're already in Harness League."
+    },
+    {
+      "name": "unknown join code is refused",
+      "pass": true,
+      "detail": "404: No league has that code."
+    },
+    {
+      "name": "leaving drops the league",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "sign-in link does not reveal whether an email has an entry",
+      "pass": true,
+      "detail": "200 devLink=false"
+    },
+    {
+      "name": "sign-in link is not echoed in production",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "live endpoint falls back to the simulation without a feed",
+      "pass": true,
+      "detail": "simulation"
     }
   ]
 }

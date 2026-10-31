@@ -29,12 +29,27 @@ Two ways to play, one paid entry, a 28-match predictor, and a live Sunday you ca
 | Static demo data | **Free data layer** — Wikipedia, Wikidata and Open-Meteo snapshots refreshed by script |
 | Client-only state | **Session auth + server store** for entries, with cookies and HMAC signing |
 
-- Landing: `/` · Draft: `/draft` · Predictor: `/predict` · Live: `/live` · Entry: `/enter`
+- Landing: `/` · Draft: `/draft` · Predictor: `/predict` · Pinpoint: `/pinpoint` · Live: `/live` · Entry: `/enter`
 - Editions: `/editions` · Leagues: `/leagues` · My card: `/team` · Account: `/account`
 - Rules & scoring: `/rules` · Player pool: `/players`
 
 Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) is in
 [`screenshots/`](screenshots).
+
+---
+
+## What's new in v0.3
+
+- **Entry stays paid.** €10 single, €60 league pack, €24 season pass. There is no free tier: the plan
+  you buy decides whether your entry is prize-eligible, and that flag is recorded server-side at
+  checkout rather than inferred from the amount paid.
+- **Shared private leagues.** Leagues now live on the server: create one, share the code, and friends join from their own phones and see the same table (`/api/leagues`).
+- **Email sign-in links.** Sign in on a new device from `/account` with a one-time, 15-minute link. Your saved card syncs down. Set `RESEND_API_KEY` (and `MAIL_FROM`, `APP_URL`) to send real email; in development the link is shown on screen.
+- **Pinpoint** (`/pinpoint`). Guess nearest-the-pin (feet) and longest drive (yards) for each day; 10 points for a perfect call. Results are simulated until a live feed is connected.
+
+- **Live scores adapter.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 30 s, and fantasy points follow them. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation.
+
+Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`, `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`.
 
 ---
 
@@ -253,25 +268,25 @@ The first pass was designed for looks; this one is designed to be usable by ever
 | **Motion** | `prefers-reduced-motion` stops the live dot's ping, the smooth scroll and every transition. |
 | **Visual** | The near-invisible 86px numerals behind the "three ways in" cards were replaced with a soft gold wash — they measured 1.06:1, so they were texture rather than information. |
 
-Verified with **axe-core 4.14** across 11 routes at 390px and 1440px: **0 violations** (down from 30
+Verified with **axe-core 4.14** across 12 routes at 390px and 1440px: **0 violations** (down from 30
 violation types, mostly contrast). Keyboard, `aria-current`, toggle state, reduced motion and the
 checkout field metadata are asserted in the same scripted pass.
 
-## Verification (v0.2.2)
+## Verification (v0.3)
 
-`verification/` holds the review and end-to-end evidence, re-recorded on `03fa805` from a production
+`verification/` holds the review and end-to-end evidence, re-recorded on this branch from a production
 build with an empty store:
 
 - [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, the two regressions
   found and fixed (a paid entry being erased on reload, and the checkout pre-filling the demo
-  identity), and the full results table
+  identity), what PR #6 added here, and the full results table
 - [`verification/videos/`](verification/videos) — three recordings: the desktop purchase → draft →
-  predictor → account → league → live journey (44 s), the mobile pass (14 s), and Sunday singles at 4×
-  to a decided cup (26 s)
-- [`verification/screenshots/`](verification/screenshots) — 23 step-by-step captures, one per action
+  predictor → account → Pinpoint → league → live journey (46 s), the mobile pass (14 s), and Sunday
+  singles at 4× to a decided cup (27 s)
+- [`verification/screenshots/`](verification/screenshots) — 26 step-by-step captures, one per action
   in the videos, including a blocked account-takeover attempt
 - `api-results.json`, `browser-results.json`, `axe-results.json`, `capture-log.json` —
-  machine-readable results (17 API checks, 15 browser checks, 22 accessibility checks; all passing)
+  machine-readable results (26 API checks, 15 browser checks, 24 accessibility checks; all passing)
 - [`verification/harness/`](verification/harness) — the scripts that produced all of it
   (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
   `CHROME_PATH` and `FFMPEG` overridable; see its README

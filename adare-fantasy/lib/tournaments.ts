@@ -192,6 +192,7 @@ export const PLANS = [
     blurb: "One team, every game mode, all three days of scoring.",
     features: ["Classic Six or Captain's Dozen", "Match predictor included", "Live scoring & league tables"],
     highlight: true,
+    prizeEligible: true,
   },
   {
     id: "league-pack",
@@ -202,6 +203,7 @@ export const PLANS = [
     blurb: "Enter a full private league as commissioner — eight entries, one payment.",
     features: ["8 entries (€7.50 each)", "Commissioner tools + join code", "League sponsor slot"],
     highlight: false,
+    prizeEligible: true,
   },
   {
     id: "season",
@@ -212,6 +214,7 @@ export const PLANS = [
     blurb: "This cup plus Hazeltine 2029 and Camiral 2031, locked at today's price.",
     features: ["Adare 2027, 2029, 2031", "Archive editions included", "Priority entry when fields lock"],
     highlight: false,
+    prizeEligible: true,
   },
 ] as const;
 

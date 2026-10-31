@@ -104,7 +104,7 @@ export default function EnterPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
           {/* plans */}
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((option) => {
               const active = option.id === planId;
               return (
@@ -179,6 +179,11 @@ export default function EnterPage() {
                     View receipt
                   </Link>
                 </div>
+                {error ? (
+                  <p className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                    {error}
+                  </p>
+                ) : null}
                 <p className="mt-3 text-[10.5px] text-cream/60">
                   Demo checkout — no card was charged and no card data is stored.
                 </p>
