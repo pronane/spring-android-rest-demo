@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     potCents: board.potCents,
     awardedCents: board.awardedCents,
     paidOutCents: board.paidOutCents,
-    unclaimedCents: board.unclaimedCents,
+    pots: board.pots,
     awards: board.awards.map((row) => ({
       id: row.id,
       leagueId: row.leagueId,

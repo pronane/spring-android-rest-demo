@@ -246,6 +246,19 @@ error state. **0 violations.**
 
 ## 5. Evidence
 
+### The film
+
+[`demo/twenty-eight-start-to-finish.webm`](../demo/twenty-eight-start-to-finish.webm) — **2:48,
+1440×900 VP9, captions burned in** — is the whole product in one sitting: a paid entry, a drafted
+Captain's Dozen, 28 predictions, Pinpoint guesses, the points breakdown, the global table, a private
+league, Sunday singles finishing the cup, and an operator settling that league's prize pot. Recorded
+by [`demo/record-tour.mjs`](../demo/record-tour.mjs) against this build and rendered by
+[`demo/render-tour.mjs`](../demo/render-tour.mjs); [`demo/stills/`](../demo/stills) holds one frame per
+step from the same run. The console's pot picker was added because the film exposed a real gap: the
+API could settle a league pot but the page only offered the global one.
+
+### Screenshots and clips
+
 Recorded on this branch from a production build with an empty `.data` directory.
 [`capture-log.json`](capture-log.json) maps the 30 recorded steps to the URL each was taken on; the
 last three shots come from the live-simulation and takeover scripts.
