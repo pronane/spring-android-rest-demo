@@ -56,62 +56,67 @@
   },
   {
     "stage": "01-desktop",
-    "shot": "12-pinpoint-empty.png",
+    "shot": "12-leaderboard.png",
+    "url": "http://127.0.0.1:3000/leaderboard"
+  },
+  {
+    "stage": "01-desktop",
+    "shot": "13-pinpoint-empty.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "13-pinpoint-guess.png",
+    "shot": "14-pinpoint-guess.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "14-pinpoint-saved.png",
+    "shot": "15-pinpoint-saved.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "15-leagues.png",
+    "shot": "16-leagues.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "16-league-form.png",
+    "shot": "17-league-form.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "17-league-created.png",
+    "shot": "18-league-created.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "18-live.png",
+    "shot": "19-live.png",
     "url": "http://127.0.0.1:3000/live"
   },
   {
     "stage": "02-mobile",
-    "shot": "21-mobile-home.png",
+    "shot": "22-mobile-home.png",
     "url": "http://127.0.0.1:3000/"
   },
   {
     "stage": "02-mobile",
-    "shot": "22-mobile-checkout.png",
+    "shot": "23-mobile-checkout.png",
     "url": "http://127.0.0.1:3000/enter"
   },
   {
     "stage": "02-mobile",
-    "shot": "23-mobile-receipt.png",
+    "shot": "24-mobile-receipt.png",
     "url": "http://127.0.0.1:3000/enter"
   },
   {
     "stage": "02-mobile",
-    "shot": "24-mobile-draft.png",
+    "shot": "25-mobile-draft.png",
     "url": "http://127.0.0.1:3000/draft"
   },
   {
     "stage": "02-mobile",
-    "shot": "25-mobile-account.png",
+    "shot": "26-mobile-account.png",
     "url": "http://127.0.0.1:3000/account"
   }
 ]

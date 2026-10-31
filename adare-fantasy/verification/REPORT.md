@@ -1,14 +1,15 @@
-# Verification report — Twenty-Eight v0.3
+# Verification report — Twenty-Eight v0.4
 
-**Scope:** `master` at `03fa805` (the verified v0.2.2 state) plus the work from PR #6 — shared server
-leagues, one-time email sign-in links, the Pinpoint side game, a pluggable live-scores adapter and CI —
-landed here **without** the free-play tier, so a paid entry is still the only way in.
+**Scope:** the scoring engine. Points are now computed on the server from a results snapshot, the
+table exists at `/leaderboard`, the account shows the working, and an operator can correct a match, an
+event or an award without touching the store. Everything shipped earlier — paid entry, shared leagues,
+sign-in links, Pinpoint, the live adapter — behaves as it did.
 
 **Re-run:** 31 October 2026 against a production build (`next build && next start`) with an empty
 store. Videos, screenshots and the harness in [`harness/`](harness) all come from that run.
 
-**Result: 65/65 automated checks pass** — 26 API, 15 browser, 24 accessibility —
-with zero console errors while recording.
+**Result: 104/104 automated checks pass** — 38 API, 18 browser,
+26 accessibility, 22 scoring rules — with zero console errors while recording.
 
 ---
 
@@ -32,10 +33,11 @@ with zero console errors while recording.
 **Verdict:** the security work is sound and the fixes are real. Three issues were left, two of them
 regressions introduced by this commit; all are fixed on this branch (section 3).
 
+---
 
 ---
 
-## 2. PR #6 landed: leagues, sign-in links, Pinpoint, live feed
+## 2. Landed earlier: leagues, sign-in links, Pinpoint, live feed
 
 The branch behind PR #6 was written against `f107d9c` and conflicted with `master` in exactly one
 file, `lib/store.tsx`. Resolved in favour of the paid-entry fix (a stored paid entry still outranks the
@@ -64,43 +66,55 @@ demo flag), with Pinpoint state carried alongside it.
 
 ---
 
-## 2. Findings
+---
 
-| # | Severity | Finding | Status |
-|---|---|---|---|
-| 1 | **High** | **A paid entry was erased on reload.** `normalise()` discarded any stored entry when `isDemo` was true, but paying on the pre-loaded demo card never cleared that flag. Reproduced: localStorage held `entry.paid: true` **and** `isDemo: true`; after a reload the header fell back to "Enter · €10", `/draft` showed "Enter €10 to save" and the card could not be saved — the visitor had paid and lost the game. | **Fixed** |
-| 2 | Medium | **Checkout was pre-filled with the demo identity**, so typing produced `Séamus RyanAoife Byrne` / `Bogey MerchantsSunday Best`. | **Fixed** |
-| 3 | Medium | **Production now needs `SESSION_SECRET`, but the README still says no env vars are required.** Verified: without it, `POST /api/session` and any request carrying a session cookie return **500** with `SESSION_SECRET must be set (16+ chars) in production`, while pages still render 200 — so the failure only appears at checkout as "Could not create the account." | **Documented** (`.env.example` + README) |
-| 4 | Low | `/api/entry` validates the card **before** checking for a paid entry, so an unpaid user with an invalid squad sees `422` rather than `402`. Cosmetic; left as-is so the client keeps precise validation messages. | Noted, unchanged |
-| 5 | Low | The mutation queue in `lib/server/db.ts` is per-process: two Node instances sharing the JSON file can still lose a write. Already called out as the Postgres caveat in the README. | Noted, unchanged |
+## 3. This branch: the scoring engine
 
-### Fixes applied on this branch
+| Piece | What it does |
+|---|---|
+| `lib/scoring.ts` | Pure engine: `scoreCard`, `scorePredictions`, `scoreEntry`, `rankRows`. No I/O, no React, so it is tested directly and reused by every surface |
+| `lib/server/results.ts` | Builds the results snapshot: 28 finals from the seeded simulation, merged with operator corrections from the store |
+| `lib/server/standings.ts` | Scores every card and ranks it; powers the global table, league tables and the account breakdown |
+| `/api/leaderboard` | Global table, or `?league=<id>` for a league you belong to (404 otherwise) |
+| `/api/score` | The signed-in entry's breakdown: card points, prediction points, per-player rows |
+| `/api/admin/results` | `GET` / `POST` / `DELETE` corrections, bearer `ADMIN_TOKEN`, constant-time compare, **503 when unconfigured** so it fails closed |
+| `/leaderboard` | Global and per-league tabs, re-scores every 30 s, prize badges, "you" row, and a note on where the results came from |
 
-```diff
-# lib/store.tsx — a real payment outranks the demo flag
-- entry: raw.isDemo ? EMPTY_STATE.entry : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
-+ const storedEntry = raw.entry?.ref === LEGACY_DEMO_REF
-+   ? EMPTY_STATE.entry                                  // drop the old fake receipt only
-+   : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) };
-+ entry: storedEntry,
-+ isDemo: Boolean(raw.isDemo) && !storedEntry.paid,
+### Rules, and where they are enforced
 
-# lib/store.tsx — paying clears the demo flag at the source
-- setState((prev) => ({ ...prev, entry: { ...prev.entry, ...entry } }));
-+ setState((prev) => ({ ...prev, entry: { ...prev.entry, ...entry }, isDemo: entry.paid ? false : prev.isDemo }));
+| Rule | Value |
+|---|---|
+| Foursomes / fourball win · half | 5 · 2.5 |
+| Singles win · half | 6 · 3 |
+| Appearance | +1 per completed match |
+| Birdie · eagle · albatross | +1 · +4 · +8 |
+| Unbeaten, 3+ matches, cup complete | +5 |
+| Captain | match points doubled |
+| Twelve-man cards | total × 0.9, so both modes share one leaderboard |
+| Predictor | +2 per match, +5 per award, +10 exact scoreline (only once the cup is decided) |
+| Ranking | ties share a rank, the next entry skips |
 
-# app/enter/page.tsx — never pre-fill the demo identity
-+ if (state.isDemo) return;
-  setManager(state.manager);
-  setTeamName(state.teamName);
-```
+### Two bugs this work surfaced
 
+1. **Sign-in tokens were printed in production.** Without `RESEND_API_KEY`, `sendEmail` logged the whole
+   message, including a live 15-minute sign-in URL. Production now logs a redacted line; only
+   development prints the link.
+2. **The rules had drifted from the simulator.** The simulation's unbeaten bonus needs three matches and
+   a completed cup; an early cut of the engine used two matches and paid immediately, which would have
+   inflated every table. The engine now mirrors the simulator and `scripts/scoring-check.ts` pins both
+   facts.
 
 ---
 
 ## 4. Test results
 
-### 4.1 API contract — 26/26 (`api-results.json`)
+### 4.1 Scoring rules — 22/22 (`npm run scoring:check`)
+
+Runs in CI before the build. Covers captain doubling, halved matches, appearance points, event bonuses,
+the unbeaten rule and its completeness guard, the 0.9 scale, prediction scoring, the mid-event
+exact-scoreline guard, unknown players, empty cards and tie ranking.
+
+### 4.2 API contract — 38/38 (`api-results.json`)
 
 | Check | Observed |
 |---|---|
@@ -110,8 +124,8 @@ demo flag), with Pinpoint state carried alongside it.
 | unauthenticated write rejected | status 401 |
 | unpaid write rejected | status 402 |
 | unknown plan rejected | status 400 |
-| checkout issues a receipt ref | TE-C14EB6-ADRE |
-| session cookie is httpOnly + SameSite | Path=/; Expires=Sun, 28 Feb 2027 15:40:27 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax |
+| checkout issues a receipt ref | TE-2E6996-ADRE |
+| session cookie is httpOnly + SameSite | Path=/; Expires=Sun, 28 Feb 2027 17:35:12 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax |
 | valid twelve-player card saves | status 200 |
 | unknown match ids dropped | {"fri-am-1":"europe"} |
 | invalid awards nulled | ✅ |
@@ -122,7 +136,7 @@ demo flag), with Pinpoint state carried alongside it.
 | tampered cookie rejected | status 401 |
 | session returns the saved card | 12 players |
 | league creation needs a session | status 401 |
-| league is created with a join code | 201 HARGV7 |
+| league is created with a join code | 201 HAR6BK |
 | league list includes the new league | 1 leagues |
 | joining your own league is refused | 404: You're already in Harness League. |
 | unknown join code is refused | 404: No league has that code. |
@@ -130,43 +144,60 @@ demo flag), with Pinpoint state carried alongside it.
 | sign-in link does not reveal whether an email has an entry | 200 devLink=false |
 | sign-in link is not echoed in production | status 200 |
 | live endpoint falls back to the simulation without a feed | simulation |
+| score endpoint needs a session | status 401 |
+| score returns a breakdown for the saved card | total 314.3 |
+| global table scores every card server-side | 1 rows |
+| global table ranks in order | [314.3] |
+| results snapshot covers the whole cup | 28/28 |
+| card and predictor add up to the total | row totals consistent |
+| league table only scores that league | 1 rows |
+| league you are not in is refused | status 404 |
+| admin corrections reject a bad token | status 401 |
+| operator correction applies and drops unknown matches | applied 1, dropped ["ghost-match"] |
+| table re-scores from the correction | mixed |
+| clearing corrections returns to the simulation | simulation |
 
-### 4.2 Browser — 15/15 (`browser-results.json`)
+### 4.3 Browser — 18/18 (`browser-results.json`)
 
-Run against the production server with a clean database, one fresh browser profile per persona.
+One fresh profile per persona against the production server and a clean database.
 
 | Check | Observed |
 |---|---|
-| fresh visitor is offered a paid entry, not a card | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Pinpoint \| Liv |
+| fresh visitor is offered a paid entry, not a card | 28Twenty-EightCup fantasy · Adare 2027 \| HomeHome \| DraftDraft \| PredictPredict  |
 | entry page lists three paid plans and no free tier | ✅ |
 | checkout does not pre-fill the demo identity | ✅ |
 | unpaid card cannot be saved | ✅ |
-| payment issues a receipt | TE-7FF7A2-ADRE |
-| header shows My card after paying | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Pinpoint \| Liv |
-| paid state survives a reload | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Pinpoint \| Liv |
+| payment issues a receipt | TE-844A5C-ADRE |
+| header shows My card after paying | 28Twenty-EightCup fantasy · Adare 2027 \| HomeHome \| DraftDraft \| PredictPredict  |
+| paid state survives a reload | 28Twenty-EightCup fantasy · Adare 2027 \| HomeHome \| DraftDraft \| PredictPredict  |
 | twelve-player card saves | ✅ |
 | predictor fills all 28 matches | 28/28 |
 | picks save to the server | ✅ |
 | account shows the saved twelve-player card | ✅ |
 | private league is created with a join code | ✅ |
-| mobile home offers the paid entry CTA | 28Twenty-EightCup fantasy · Adare 2027 \| Home \| Draft \| Predict \| Pinpoint \| Liv |
+| mobile home offers the paid entry CTA | 28Twenty-EightCup fantasy · Adare 2027 \| HomeHome \| DraftDraft \| PredictPredict  |
 | mobile checkout completes | ✅ |
+| table lists the saved card with a rank | Skip to content / 28 / Twenty-Eight |
+| table shows a scored total | 449.0, 16.5, 11.5 |
+| account shows the server-side points breakdown | ✅ |
 | second browser cannot take over the account | ✅ |
 
-### 4.3 Accessibility — 24/24 (`axe-results.json`)
+### 4.4 Accessibility — 26/26 (`axe-results.json`)
 
-axe-core 4.14 on 12 routes × 2 viewports (390 / 1440) against the production build — now including
-`/pinpoint`. **0 violations.**
+axe-core 4.14 on 13 routes × 2 viewports (390 / 1440), `/leaderboard` included. **0 violations.**
 
-### 4.4 Production configuration
+### 4.5 Production configuration
 
 | Check | Result |
 |---|---|
 | `npm run build` | ✅ clean |
-| `npx tsc --noEmit` | ✅ clean |
-| All 12 routes render (production server) | ✅ 200 |
-| With `SESSION_SECRET` set, session + checkout work | ✅ |
-| Without `SESSION_SECRET`, cookie-signing routes fail loudly | ✅ 500 `SESSION_SECRET must be set…` |
+| `tsc --noEmit` | ✅ clean |
+| `npm run scoring:check` | ✅ 22/22 |
+| All 13 routes render | ✅ 200 |
+| With `SESSION_SECRET`, session + checkout work | ✅ |
+| Without `SESSION_SECRET`, cookie-signing routes fail loudly | ✅ 500 |
+| Without `ADMIN_TOKEN`, corrections are refused | ✅ 503 |
+| With `ADMIN_TOKEN`, a correction re-scores the table | ✅ `mixed` → `simulation` round-trip |
 
 ---
 
@@ -179,11 +210,11 @@ step from the videos; [`capture-log.json`](capture-log.json) maps each file to t
 
 | File | Length | Viewport | What it shows |
 |---|---|---|---|
-| [`videos/01-end-to-end-desktop.mp4`](videos/01-end-to-end-desktop.mp4) | 46 s | 1280×800 | Home → checkout (€10, receipt) → Captain's Dozen → auto-pick → save → predictor 28/28 → save picks → account → **Pinpoint guesses saved** → private league created → live |
+| [`videos/01-end-to-end-desktop.mp4`](videos/01-end-to-end-desktop.mp4) | 49 s | 1280×800 | Home → checkout (€10, receipt) → Captain's Dozen → auto-pick → save → predictor 28/28 → save picks → account (points) → **the table** → Pinpoint → league created → live |
 | [`videos/02-mobile-flow.mp4`](videos/02-mobile-flow.mp4) | 14 s | 390×844 | Home → checkout → receipt → auto-pick → save → account |
-| [`videos/03-live-simulation.mp4`](videos/03-live-simulation.mp4) | 27 s | 1280×800 | Sunday singles at 4× from `?t=2700` to a decided cup |
+| [`videos/03-live-simulation.mp4`](videos/03-live-simulation.mp4) | 25 s | 1280×800 | Sunday singles at 4× from `?t=2700` to a decided cup |
 
-### Screenshots (26)
+### Screenshots (27)
 
 | # | File | Step |
 |---|---|---|
@@ -192,13 +223,14 @@ step from the videos; [`capture-log.json`](capture-log.json) maps each file to t
 | 04 | `04-receipt` | Receipt, header flips to **My card** |
 | 05–07 | `05-draft-empty`, `06-draft-filled`, `07-card-saved` | Captain's Dozen, auto-pick, server save |
 | 08–10 | `08-predictor-empty`, `09-predictor-filled`, `10-picks-saved` | 28/28 picks, awards, saved |
-| 11 | `11-account` | Server-backed account, 12 players, receipt |
-| 12–14 | `12-pinpoint-empty`, `13-pinpoint-guess`, `14-pinpoint-saved` | Pinpoint guesses and save |
-| 15–17 | `15-leagues`, `16-league-form`, `17-league-created` | Shared league with a join code |
-| 18 | `18-live` | Live page, Friday foursomes |
-| 19–20 | `19-live-sunday`, `20-live-final` | Simulation start and decided cup |
-| 21–25 | `21-mobile-home` … `25-mobile-account` | 390×844 purchase and save |
-| 26 | `26-takeover-blocked` | Second browser refused the existing email (409) |
+| 11 | `11-account` | Account with the server-side points breakdown |
+| 12 | `12-leaderboard` | **The table**: rank, card, picks, total, prize badge |
+| 13–15 | `13-pinpoint-empty`, `14-pinpoint-guess`, `15-pinpoint-saved` | Pinpoint guesses and save |
+| 16–18 | `16-leagues`, `17-league-form`, `18-league-created` | Shared league with a join code |
+| 19 | `19-live` | Live page, Friday foursomes |
+| 20–21 | `20-live-sunday`, `21-live-final` | Simulation start and decided cup |
+| 22–26 | `22-mobile-home` … `26-mobile-account` | 390×844 purchase and save |
+| 27 | `27-takeover-blocked` | Second browser refused the existing email (409) |
 
 ---
 
@@ -207,33 +239,28 @@ step from the videos; [`capture-log.json`](capture-log.json) maps each file to t
 ```bash
 cd adare-fantasy
 npm install
-rm -rf .data                       # clean server store
+npm run scoring:check                 # 22 rule assertions, no server needed
+rm -rf .data
 npm run build
-SESSION_SECRET="$(openssl rand -hex 24)" npm start      # http://localhost:3000
+SESSION_SECRET="$(openssl rand -hex 24)" ADMIN_TOKEN="$(openssl rand -hex 24)" npm start
 
 cd verification/harness && npm install
-node api.mjs                       # 26 contract checks
-node checks.mjs                    # 15 browser assertions
-node audit.mjs                     # axe across 12 routes x 2 viewports
-node record.mjs                    # desktop + mobile: frames and 23 screenshots
-node record-live.mjs               # the simulation clip
-node takeover.mjs                  # the blocked-takeover capture
+ADMIN_TOKEN=… node api.mjs            # 38 contract checks
+node checks.mjs                       # 18 browser assertions
+node audit.mjs                        # axe across 13 routes x 2 viewports
+node record.mjs && node record-live.mjs && node takeover.mjs
 FFMPEG=$(command -v ffmpeg) node encode.mjs
 ```
-
-`BASE`, `OUT`, `CHROME_PATH`, `CHROME_LIBS` and `FFMPEG` are overridable — see
-[`harness/README.md`](harness/README.md).
 
 ---
 
 ## 7. Limitations of this run
 
-- "Deployed" means a production build on a Node host; the JSON store still will not survive a
-  serverless filesystem, so this is not a Vercel deployment.
-- Sign-in links are logged to the console when `RESEND_API_KEY` is unset — deliberate, so the flow is
-  testable without a mail account, but it means production must set `RESEND_API_KEY` **and** `APP_URL`
-  (the fallback uses the request's Host header).
-- Payments are simulated; no card data is collected or stored.
-- The first-tee lock (423) can only be exercised by moving the clock past 17 Sep 2027.
+- Results come from the seeded simulation; the live adapter is wired but has no provider behind it, so
+  the table shows a completed cup rather than a moving one.
+- Corrections live in the JSON store, so they are per-process like the rest of it — Postgres is the
+  production answer.
+- One global table rather than per-mode tables; the 0.9 scale keeps six- and twelve-man cards comparable
+  instead.
+- Payments are still simulated; sign-in links need `RESEND_API_KEY` and `APP_URL` in production.
 - Accessibility is automated (axe) plus scripted keyboard checks — no screen-reader session.
-- `/api/session/link` has no rate limit yet; a production build should throttle it per email and per IP.

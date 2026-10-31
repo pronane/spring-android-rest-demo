@@ -9,6 +9,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import type { ResultsOverride } from "@/lib/scoring";
 
 export type User = {
   id: string;
@@ -50,7 +51,14 @@ export type ServerLeague = {
 /** One-time email sign-in link. Only the SHA-256 of the token is stored. */
 type LoginToken = { hash: string; userId: string; expiresAt: string; used: boolean };
 
-type Db = { users: User[]; leagues: ServerLeague[]; loginTokens: LoginToken[]; version: number };
+type Db = {
+  users: User[];
+  leagues: ServerLeague[];
+  loginTokens: LoginToken[];
+  /** Operator corrections to match results and awards, if any. */
+  results?: ResultsOverride;
+  version: number;
+};
 
 const FILE = process.env.DB_FILE ?? path.join(process.cwd(), ".data", "twenty-eight.json");
 
@@ -63,6 +71,7 @@ async function readDb(): Promise<Db> {
       users: parsed.users ?? [],
       leagues: parsed.leagues ?? [],
       loginTokens: parsed.loginTokens ?? [],
+      results: parsed.results,
     };
   } catch {
     return { version: 3, users: [], leagues: [], loginTokens: [] };
@@ -173,6 +182,30 @@ export async function updateTeam(
     user.entry = { ...user.entry, ...team, updatedAt: new Date().toISOString() };
     return user;
   });
+}
+
+/* ——— Results overrides ——— */
+
+export async function readResultsOverride(): Promise<ResultsOverride | null> {
+  const db = await readDb();
+  return db.results ?? null;
+}
+
+export async function saveResultsOverride(patch: ResultsOverride | null): Promise<ResultsOverride | null> {
+  return mutate((db) => {
+    if (patch === null) {
+      delete db.results;
+      return null;
+    }
+    db.results = patch;
+    return patch;
+  });
+}
+
+/** Every account, for the global standings. */
+export async function listUsers(): Promise<User[]> {
+  const db = await readDb();
+  return db.users;
 }
 
 /* ——— Private leagues ——— */

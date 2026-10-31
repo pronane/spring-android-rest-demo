@@ -6,6 +6,21 @@ import { Eyebrow } from "@/components/ui";
 import { useFantasy, type TeamState } from "@/lib/store";
 import { eur } from "@/lib/helpers";
 import type { User } from "@/lib/server/db";
+import type { EntryScore, Results } from "@/lib/scoring";
+import { PLAYER_BY_ID } from "@/lib/data";
+
+type Breakdown = {
+  entry: { ref: string; team: string; manager: string; prizeEligible: boolean };
+  score: EntryScore;
+  results: {
+    source: Results["source"];
+    finals: number;
+    total: number;
+    cup: { europe: number; usa: number };
+    awards: { mvp: string | null; topScorer: string | null; rookie: string | null };
+    updatedAt: string;
+  };
+};
 
 export default function AccountPage() {
   const { state, projected, mode, hydrate, ready } = useFantasy();
@@ -15,6 +30,7 @@ export default function AccountPage() {
   const [linkMsg, setLinkMsg] = useState<string | null>(null);
   const [devLink, setDevLink] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
 
   useEffect(() => {
     // Read ?signin= without useSearchParams (which would need a Suspense boundary).
@@ -30,6 +46,25 @@ export default function AccountPage() {
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
+
+  // Server-side score for this entry. Salted by the saved card, so it refreshes
+  // when the card or the results change.
+  useEffect(() => {
+    if (!user?.entry?.squad?.length) {
+      setBreakdown(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/score", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Breakdown | null) => {
+        if (!cancelled) setBreakdown(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.entry?.squad, user?.entry?.captain, user?.entry?.predictions, user?.entry?.awards]);
 
   // Signed in on a new device: pull the saved card down from the server so the
   // browser shows the real entry instead of the demo card.
@@ -219,6 +254,58 @@ export default function AccountPage() {
           </div>
         </div>
       </div>
+
+      {breakdown ? (
+        <div className="mt-4 rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow text-gold-soft/80">Your points</p>
+              <p className="mt-1 font-display text-3xl text-cream tnum">{breakdown.score.total.toFixed(1)}</p>
+              <p className="text-[11.5px] text-cream/70">
+                Card {breakdown.score.card.total.toFixed(1)} · picks{" "}
+                {breakdown.score.predictions.total.toFixed(1)} ·{" "}
+                {breakdown.results.finals}/{breakdown.results.total} matches in
+              </p>
+            </div>
+            <Link
+              href="/leaderboard"
+              className="rounded-full border border-gold/40 px-4 py-2 text-[12px] font-semibold text-gold-soft transition hover:bg-gold/10"
+            >
+              See the table
+            </Link>
+          </div>
+
+          <ul className="mt-4 grid gap-1.5 text-[12px] sm:grid-cols-2">
+            {[...breakdown.score.card.players]
+              .sort((a, b) => b.total - a.total)
+              .slice(0, 6)
+              .map((row) => (
+                <li key={row.playerId} className="flex items-center justify-between gap-2 text-cream/80">
+                  <span>
+                    {PLAYER_BY_ID[row.playerId]?.shortName ?? row.playerId}
+                    {row.playerId === breakdown.score.card.captainId ? (
+                      <span className="ml-1.5 rounded bg-gold/20 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-gold-soft">
+                        C
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="tnum text-cream/70">
+                    {row.matches} {row.matches === 1 ? "match" : "matches"} · {row.total.toFixed(1)}
+                  </span>
+                </li>
+              ))}
+          </ul>
+
+          <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
+            Predictor: {breakdown.score.predictions.matchHits} matches called
+            {breakdown.score.predictions.awardHits.length
+              ? `, ${breakdown.score.predictions.awardHits.length} award${breakdown.score.predictions.awardHits.length === 1 ? "" : "s"}`
+              : ""}
+            {breakdown.score.predictions.exact ? ", exact scoreline" : ""}. Results are{" "}
+            {breakdown.results.source === "simulation" ? "simulated" : "operator-corrected"}.
+          </p>
+        </div>
+      ) : null}
 
       <p className="mt-4 text-[10.5px] leading-relaxed text-cream/60">
         Demo payments: no card data is stored or transmitted. Production swaps the JSON store for

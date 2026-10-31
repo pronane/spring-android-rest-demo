@@ -7,7 +7,7 @@
  * Outputs:
  *   $OUT/frames/01-desktop/*.jpg + timing.json   (input for encode.mjs)
  *   $OUT/frames/02-mobile/*.jpg  + timing.json
- *   $OUT/shots/01-home.png … 25-mobile-account.png  (+ 26 from takeover.mjs)
+ *   $OUT/shots/01-home.png … 26-mobile-account.png  (+ 27 from takeover.mjs)
  *   $OUT/shots.json, $OUT/email.txt
  *
  * Run it against a production build with a clean store: the flow creates a real
@@ -117,19 +117,23 @@ await stage("01-desktop", 1280, 800, async ({ page, snap, click, fill, text }) =
   await sleep(700);
   await snap("11-account");
 
+  await page.goto(BASE + "/leaderboard", { waitUntil: "networkidle0" });
+  await sleep(1400);
+  await snap("12-leaderboard");
+
   await page.goto(BASE + "/pinpoint", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("12-pinpoint-empty");
+  await snap("13-pinpoint-empty");
   const guesses = await page.$$("input[inputmode=decimal], input[inputmode=numeric]");
   if (guesses[0]) { await guesses[0].click({ clickCount: 3 }); await guesses[0].type("4.5", { delay: 15 }); }
   if (guesses[1]) { await guesses[1].click({ clickCount: 3 }); await guesses[1].type("352", { delay: 15 }); }
-  await snap("13-pinpoint-guess");
+  await snap("14-pinpoint-guess");
   await click(/Save my guesses/, 1300);
-  await snap("14-pinpoint-saved");
+  await snap("15-pinpoint-saved");
 
   await page.goto(BASE + "/leagues", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("15-leagues");
+  await snap("16-leagues");
   await click(/Create (a )?league|New league|Start a league/, 700);
   await sleep(400);
   const inputs = await page.$$("input");
@@ -137,19 +141,19 @@ await stage("01-desktop", 1280, 800, async ({ page, snap, click, fill, text }) =
     await inputs[0].click({ clickCount: 3 });
     await inputs[0].type("Sunday Singles", { delay: 15 });
   }
-  await snap("16-league-form");
+  await snap("17-league-form");
   await click(/Create|Start|Save/, 1400);
-  await snap("17-league-created");
+  await snap("18-league-created");
 
   await page.goto(BASE + "/live", { waitUntil: "networkidle0" });
   await sleep(1500);
-  await snap("18-live");
+  await snap("19-live");
 });
 
 await stage("02-mobile", 390, 844, async ({ page, snap, click, fill }) => {
   await page.goto(BASE + "/", { waitUntil: "networkidle0" });
   await sleep(900);
-  await snap("21-mobile-home");
+  await snap("22-mobile-home");
 
   const mobileEmail = `mobile+${Date.now()}@example.com`;
   fs.writeFileSync(path.join(OUT, "mobile-email.txt"), mobileEmail);
@@ -161,19 +165,19 @@ await stage("02-mobile", 390, 844, async ({ page, snap, click, fill }) => {
   await fill("4242 4242 4242 4242", "4242 4242 4242 4242");
   await fill("09 / 27", "09 / 27");
   await fill("123", "123");
-  await snap("22-mobile-checkout");
+  await snap("23-mobile-checkout");
   await click(/Pay €10 & enter/, 1600);
-  await snap("23-mobile-receipt");
+  await snap("24-mobile-receipt");
 
   await page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
   await sleep(500);
   await click(/Auto-pick/, 900);
-  await snap("24-mobile-draft");
+  await snap("25-mobile-draft");
   await click(/Save my card/, 1300);
 
   await page.goto(BASE + "/account", { waitUntil: "networkidle0" });
   await sleep(600);
-  await snap("25-mobile-account");
+  await snap("26-mobile-account");
 });
 
 fs.writeFileSync(path.join(OUT, "shots.json"), JSON.stringify(log, null, 2));

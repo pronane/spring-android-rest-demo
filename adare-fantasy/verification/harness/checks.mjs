@@ -131,6 +131,28 @@ const email = `checks+${Date.now()}@example.com`;
   await s.browser.close();
 }
 
+/* ——— standings and the scoring breakdown ——— */
+{
+  const s = await open();
+  const email2 = `table+${Date.now()}@example.com`;
+  await pay(s, email2);
+  await s.page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
+  await sleep(500);
+  await s.click(/Auto-pick/, 800);
+  await s.click(/Save my card/, 1500);
+
+  await s.page.goto(BASE + "/leaderboard", { waitUntil: "networkidle0" });
+  await sleep(1200);
+  const board = await s.text();
+  check("table lists the saved card with a rank", /Assertion FC/.test(board) && /\b1\b/.test(board), board.split("\n").slice(0, 3).join(" / "));
+  check("table shows a scored total", /\d+\.\d/.test(board), (board.match(/\d+\.\d/g) ?? []).slice(0, 3).join(", "));
+
+  await s.page.goto(BASE + "/account", { waitUntil: "networkidle0" });
+  await sleep(1500);
+  check("account shows the server-side points breakdown", /Your points/i.test(await s.text()));
+  await s.browser.close();
+}
+
 /* ——— takeover ——— */
 {
   const s = await open();

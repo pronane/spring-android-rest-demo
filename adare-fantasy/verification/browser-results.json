@@ -1,12 +1,12 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 15,
-  "total": 15,
+  "passed": 18,
+  "total": 18,
   "results": [
     {
       "name": "fresh visitor is offered a paid entry, not a card",
       "pass": true,
-      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Pinpoint | Live | Leagues | Rules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Pin | Live | Leagues | Rules"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | HomeHome | DraftDraft | PredictPredict | PinpointPin | LiveLive | LeaguesLeagues | TableTable | RulesRules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Pin | Live | Leagues | Table | Rules"
     },
     {
       "name": "entry page lists three paid plans and no free tier",
@@ -26,17 +26,17 @@
     {
       "name": "payment issues a receipt",
       "pass": true,
-      "detail": "TE-7FF7A2-ADRE"
+      "detail": "TE-844A5C-ADRE"
     },
     {
       "name": "header shows My card after paying",
       "pass": true,
-      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Pinpoint | Live | Leagues | Rules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Pin | Live | Leagues | Rules"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | HomeHome | DraftDraft | PredictPredict | PinpointPin | LiveLive | LeaguesLeagues | TableTable | RulesRules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Pin | Live | Leagues | Table | Rules"
     },
     {
       "name": "paid state survives a reload",
       "pass": true,
-      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Pinpoint | Live | Leagues | Rules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Pin | Live | Leagues | Rules"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | HomeHome | DraftDraft | PredictPredict | PinpointPin | LiveLive | LeaguesLeagues | TableTable | RulesRules | Adare 2027/5 editions | Assertion FC398.0 pts projected | My card | Home | Draft | Predict | Pin | Live | Leagues | Table | Rules"
     },
     {
       "name": "twelve-player card saves",
@@ -66,10 +66,25 @@
     {
       "name": "mobile home offers the paid entry CTA",
       "pass": true,
-      "detail": "28Twenty-EightCup fantasy · Adare 2027 | Home | Draft | Predict | Pinpoint | Live | Leagues | Rules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Pin | Live | Leagues | Rules"
+      "detail": "28Twenty-EightCup fantasy · Adare 2027 | HomeHome | DraftDraft | PredictPredict | PinpointPin | LiveLive | LeaguesLeagues | TableTable | RulesRules | Adare 2027/5 editions | Bogey Merchants398.0 pts projected | Enter · €10 | Home | Draft | Predict | Pin | Live | Leagues | Table | Rules"
     },
     {
       "name": "mobile checkout completes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "table lists the saved card with a rank",
+      "pass": true,
+      "detail": "Skip to content / 28 / Twenty-Eight"
+    },
+    {
+      "name": "table shows a scored total",
+      "pass": true,
+      "detail": "449.0, 16.5, 11.5"
+    },
+    {
+      "name": "account shows the server-side points breakdown",
       "pass": true,
       "detail": ""
     },

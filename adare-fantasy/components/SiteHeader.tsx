@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/pinpoint", label: "Pinpoint", short: "Pin" },
   { href: "/live", label: "Live", short: "Live", live: true },
   { href: "/leagues", label: "Leagues", short: "Leagues" },
+  { href: "/leaderboard", label: "Table", short: "Table" },
   { href: "/rules", label: "Rules", short: "Rules" },
 ];
 
@@ -40,7 +41,8 @@ export function SiteHeader() {
                     : "text-cream/60 hover:bg-white/[0.04] hover:text-cream"
                 }`}
               >
-                {link.label}
+                <span className="hidden xl:inline">{link.label}</span>
+                <span className="xl:hidden">{link.short}</span>
                 {link.live ? (
                   <span className="relative flex h-1.5 w-1.5" aria-hidden>
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-usa opacity-70 motion-reduce:animate-none" />

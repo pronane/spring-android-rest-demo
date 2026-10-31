@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 26,
-  "total": 26,
+  "passed": 38,
+  "total": 38,
   "results": [
     {
       "name": "invalid email rejected",
@@ -36,12 +36,12 @@
     {
       "name": "checkout issues a receipt ref",
       "pass": true,
-      "detail": "TE-C14EB6-ADRE"
+      "detail": "TE-2E6996-ADRE"
     },
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Sun, 28 Feb 2027 15:40:27 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 17:35:12 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -96,7 +96,7 @@
     {
       "name": "league is created with a join code",
       "pass": true,
-      "detail": "201 HARGV7"
+      "detail": "201 HAR6BK"
     },
     {
       "name": "league list includes the new league",
@@ -130,6 +130,66 @@
     },
     {
       "name": "live endpoint falls back to the simulation without a feed",
+      "pass": true,
+      "detail": "simulation"
+    },
+    {
+      "name": "score endpoint needs a session",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "score returns a breakdown for the saved card",
+      "pass": true,
+      "detail": "total 314.3"
+    },
+    {
+      "name": "global table scores every card server-side",
+      "pass": true,
+      "detail": "1 rows"
+    },
+    {
+      "name": "global table ranks in order",
+      "pass": true,
+      "detail": "[314.3]"
+    },
+    {
+      "name": "results snapshot covers the whole cup",
+      "pass": true,
+      "detail": "28/28"
+    },
+    {
+      "name": "card and predictor add up to the total",
+      "pass": true,
+      "detail": "row totals consistent"
+    },
+    {
+      "name": "league table only scores that league",
+      "pass": true,
+      "detail": "1 rows"
+    },
+    {
+      "name": "league you are not in is refused",
+      "pass": true,
+      "detail": "status 404"
+    },
+    {
+      "name": "admin corrections reject a bad token",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "operator correction applies and drops unknown matches",
+      "pass": true,
+      "detail": "applied 1, dropped [\"ghost-match\"]"
+    },
+    {
+      "name": "table re-scores from the correction",
+      "pass": true,
+      "detail": "mixed"
+    },
+    {
+      "name": "clearing corrections returns to the simulation",
       "pass": true,
       "detail": "simulation"
     }
