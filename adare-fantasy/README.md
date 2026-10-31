@@ -259,18 +259,22 @@ checkout field metadata are asserted in the same scripted pass.
 
 ## Verification (v0.2.2)
 
-`verification/` holds the review and end-to-end evidence for the current build:
+`verification/` holds the review and end-to-end evidence, re-recorded on `03fa805` from a production
+build with an empty store:
 
-- [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, two regressions
+- [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, the two regressions
   found and fixed (a paid entry being erased on reload, and the checkout pre-filling the demo
-  identity), plus the full results table
+  identity), and the full results table
 - [`verification/videos/`](verification/videos) — three recordings: the desktop purchase → draft →
-  predictor → account journey (35 s), the Sunday singles simulation at 4× (18 s), and the mobile pass
-  (13 s)
-- [`verification/screenshots/`](verification/screenshots) — 21 step-by-step captures, including the
-  fresh-visitor state and a blocked account-takeover attempt
-- `api-results.json`, `browser-results.json`, `axe-results.json` — machine-readable results
-  (17 API checks, 19 browser checks, 22 accessibility checks; all passing)
+  predictor → account → league → live journey (44 s), the mobile pass (14 s), and Sunday singles at 4×
+  to a decided cup (26 s)
+- [`verification/screenshots/`](verification/screenshots) — 23 step-by-step captures, one per action
+  in the videos, including a blocked account-takeover attempt
+- `api-results.json`, `browser-results.json`, `axe-results.json`, `capture-log.json` —
+  machine-readable results (17 API checks, 15 browser checks, 22 accessibility checks; all passing)
+- [`verification/harness/`](verification/harness) — the scripts that produced all of it
+  (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
+  `CHROME_PATH` and `FFMPEG` overridable; see its README
 
 ## Screenshot method
 

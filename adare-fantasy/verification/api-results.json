@@ -1,92 +1,92 @@
 {
-  "email": "qa+1793428322219@example.com",
+  "base": "http://127.0.0.1:3000",
   "passed": 17,
   "total": 17,
   "results": [
     {
-      "name": "session rejects an invalid email",
+      "name": "invalid email rejected",
       "pass": true,
       "detail": "status 400"
     },
     {
-      "name": "session creates an account",
+      "name": "account created with a session cookie",
       "pass": true,
       "detail": "status 200"
     },
     {
-      "name": "typing an existing email without its session is refused",
+      "name": "takeover blocked without the session",
       "pass": true,
-      "detail": "status 409 That email already has an entry. Sign in from the device you entered on, or contact support."
+      "detail": "status 409"
     },
     {
-      "name": "re-submitting your own email with your session works",
-      "pass": true,
-      "detail": "status 200"
-    },
-    {
-      "name": "entry write without a session is 401",
+      "name": "unauthenticated write rejected",
       "pass": true,
       "detail": "status 401"
     },
     {
-      "name": "entry write before paying is 402",
+      "name": "unpaid write rejected",
       "pass": true,
       "detail": "status 402"
     },
     {
-      "name": "checkout rejects an unknown plan",
+      "name": "unknown plan rejected",
       "pass": true,
       "detail": "status 400"
     },
     {
-      "name": "checkout records a paid entry",
+      "name": "checkout issues a receipt ref",
       "pass": true,
-      "detail": "TE-1390A1-ADRE status 200"
+      "detail": "TE-7C943E-ADRE"
     },
     {
-      "name": "valid Captain's Dozen saves",
+      "name": "session cookie is httpOnly + SameSite",
+      "pass": true,
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 08:25:04 GMT; Max-Age=10368000; HttpOnly; SameSite=lax"
+    },
+    {
+      "name": "valid twelve-player card saves",
       "pass": true,
       "detail": "status 200"
     },
     {
-      "name": "bogus match ids and picks are dropped",
+      "name": "unknown match ids dropped",
       "pass": true,
       "detail": "{\"fri-am-1\":\"europe\"}"
     },
     {
-      "name": "unknown player ids are nulled in awards",
+      "name": "invalid awards nulled",
       "pass": true,
-      "detail": "{\"mvp\":\"rory\",\"topScorer\":null,\"rookie\":null}"
+      "detail": ""
     },
     {
-      "name": "classic card with 7 players is rejected",
+      "name": "unknown player id rejected",
       "pass": true,
-      "detail": "status 422: Pick 6 players — you have 7."
+      "detail": "422: Your card includes a player who is no longer in the pool."
     },
     {
-      "name": "over-budget card is rejected",
+      "name": "wrong squad size rejected",
       "pass": true,
-      "detail": "status 422: You are 0.5m over the 100m budget."
+      "detail": "422: Pick 6 players — you have 7."
     },
     {
-      "name": "captain must be in the squad",
+      "name": "over-budget card rejected",
       "pass": true,
-      "detail": "status 422: Pick a captain from your card."
+      "detail": "422: You are 0.5m over the 100m budget."
     },
     {
-      "name": "a one-sided card is rejected",
+      "name": "captain must be on the card",
       "pass": true,
-      "detail": "status 422: Maximum 4 players from one side."
+      "detail": "422: Pick a captain from your card."
     },
     {
-      "name": "a tampered session cookie is refused",
+      "name": "tampered cookie rejected",
       "pass": true,
       "detail": "status 401"
     },
     {
       "name": "session returns the saved card",
       "pass": true,
-      "detail": "12 players, captain rory"
+      "detail": "12 players"
     }
   ]
 }

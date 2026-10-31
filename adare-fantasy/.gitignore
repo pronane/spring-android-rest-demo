@@ -8,3 +8,7 @@ next-env.d.ts
 .data
 .env
 !.env.example
+
+# verification harness artefacts
+verification/harness/run
+verification/harness/node_modules

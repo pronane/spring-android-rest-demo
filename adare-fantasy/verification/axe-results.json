@@ -1,114 +1,115 @@
 {
+  "base": "http://127.0.0.1:3000",
+  "clean": 22,
   "total": 22,
-  "failing": 0,
-  "summary": [
+  "results": [
     {
-      "url": "/",
+      "route": "/",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/",
+      "route": "/",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/draft",
+      "route": "/account",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/draft",
+      "route": "/account",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/predict",
+      "route": "/draft",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/predict",
+      "route": "/draft",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/live?t=3080",
+      "route": "/editions",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/live?t=3080",
+      "route": "/editions",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/leagues",
+      "route": "/enter",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/leagues",
+      "route": "/enter",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/rules",
+      "route": "/leagues",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/rules",
+      "route": "/leagues",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/enter",
+      "route": "/live",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/enter",
+      "route": "/live",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/editions",
+      "route": "/players",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/editions",
+      "route": "/players",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/account",
+      "route": "/predict",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/account",
+      "route": "/predict",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/players",
+      "route": "/rules",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/players",
+      "route": "/rules",
       "width": 1440,
       "violations": []
     },
     {
-      "url": "/team",
+      "route": "/team",
       "width": 390,
       "violations": []
     },
     {
-      "url": "/team",
+      "route": "/team",
       "width": 1440,
       "violations": []
     }
