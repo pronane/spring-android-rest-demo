@@ -7,7 +7,7 @@
  */
 import { scoreEntry, rankRows, type LeaderboardRow, type Results } from "@/lib/scoring";
 import type { ModeId } from "@/lib/tournaments";
-import { listUsers, listLeaguesFor, findUser, type User } from "./db";
+import { listUsers, listLeaguesFor, findLeague, findUser, type User } from "./db";
 import { getResults } from "./results";
 
 export type StandingRow = LeaderboardRow;
@@ -57,8 +57,11 @@ export async function getStandings(options: { leagueId?: string; me?: string | n
   if (options.leagueId) {
     const meUser = me ? await findUser(me) : null;
     if (!meUser) {
-      scope = { kind: "league", id: options.leagueId };
-      users = [];
+      // No viewer: an operator asking for a league table (prize settlement) gets
+      // the league's members rather than an empty board.
+      const found = await findLeague(options.leagueId);
+      users = found?.members ?? [];
+      scope = { kind: "league", id: options.leagueId, name: found?.league.name };
     } else {
       const leagues = await listLeaguesFor(meUser.id);
       const found = leagues.find((row) => row.league.id === options.leagueId);

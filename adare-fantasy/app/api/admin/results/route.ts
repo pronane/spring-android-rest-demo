@@ -1,5 +1,5 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { adminAuth, adminRefusal } from "@/lib/server/admin";
 import { applyOverride, clearOverride, getResults } from "@/lib/server/results";
 import type { MatchEvent } from "@/lib/scoring";
 
@@ -14,30 +14,9 @@ export const dynamic = "force-dynamic";
  * endpoint is disabled rather than open — failing closed matters more than
  * convenience here.
  */
-function authorised(request: Request): "ok" | "disabled" | "denied" {
-  const secret = process.env.ADMIN_TOKEN;
-  if (!secret || secret.length < 16) return "disabled";
-  const header = request.headers.get("authorization") ?? "";
-  const given = header.startsWith("Bearer ") ? header.slice(7) : "";
-  if (!given) return "denied";
-  const a = createHash("sha256").update(given).digest();
-  const b = createHash("sha256").update(secret).digest();
-  return timingSafeEqual(a, b) ? "ok" : "denied";
-}
-
-function refuse(state: "disabled" | "denied") {
-  if (state === "disabled") {
-    return NextResponse.json(
-      { error: "Admin corrections are disabled — set ADMIN_TOKEN (16+ chars) to enable them." },
-      { status: 503 },
-    );
-  }
-  return NextResponse.json({ error: "Not authorised." }, { status: 401 });
-}
-
 export async function GET(request: Request) {
-  const auth = authorised(request);
-  if (auth !== "ok") return refuse(auth);
+  const auth = adminAuth(request);
+  if (auth !== "ok") return adminRefusal(auth);
   const results = await getResults();
   return NextResponse.json({
     source: results.source,
@@ -51,8 +30,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = authorised(request);
-  if (auth !== "ok") return refuse(auth);
+  const auth = adminAuth(request);
+  if (auth !== "ok") return adminRefusal(auth);
 
   const body = (await request.json().catch(() => ({}))) as {
     matches?: Record<string, { result?: unknown; events?: unknown }>;
@@ -107,8 +86,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = authorised(request);
-  if (auth !== "ok") return refuse(auth);
+  const auth = adminAuth(request);
+  if (auth !== "ok") return adminRefusal(auth);
   const results = await clearOverride();
   return NextResponse.json({ ok: true, source: results.source, cup: results.cup, awards: results.awards });
 }

@@ -10,6 +10,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { ResultsOverride } from "@/lib/scoring";
+import { allocate } from "@/lib/server/money";
 
 export type User = {
   id: string;
@@ -48,6 +49,62 @@ export type ServerLeague = {
   createdAt: string;
 };
 
+/**
+ * A payment attempt. The entry is only created once an order reaches `paid`, so
+ * "paid entry" means "an order settled", not "someone filled in a form".
+ */
+export type Order = {
+  ref: string;
+  userId: string;
+  email: string;
+  planId: string;
+  planName: string;
+  amountCents: number;
+  currency: string;
+  editionId: string;
+  prizeEligible: boolean;
+  status: "pending" | "paid" | "failed" | "refunded";
+  provider: "demo" | "stripe";
+  /** Stripe checkout session id, when there is one. */
+  providerRef: string | null;
+  createdAt: string;
+  paidAt: string | null;
+  refundedAt: string | null;
+  note?: string;
+};
+
+/**
+ * Every movement of money, in cents. One payment writes three rows (the cash in,
+ * the platform's share, the pool's share), which is what makes the totals on the
+ * admin page add up to the money the demo claims to have taken.
+ */
+export type LedgerRow = {
+  id: string;
+  at: string;
+  kind: "entry_fee" | "platform_fee" | "prize_pool" | "refund" | "prize_payout";
+  amountCents: number;
+  editionId: string;
+  orderRef: string | null;
+  userId: string | null;
+  memo: string;
+};
+
+/** A settled prize position, per edition and per pot (league or global). */
+export type PrizeAward = {
+  id: string;
+  editionId: string;
+  leagueId: string | null;
+  potCents: number;
+  userId: string;
+  teamName: string;
+  place: number;
+  label: string;
+  amountCents: number;
+  status: "awarded" | "paid";
+  settledAt: string;
+  paidAt: string | null;
+};
+
 /** One-time email sign-in link. Only the SHA-256 of the token is stored. */
 type LoginToken = { hash: string; userId: string; expiresAt: string; used: boolean };
 
@@ -55,6 +112,11 @@ type Db = {
   users: User[];
   leagues: ServerLeague[];
   loginTokens: LoginToken[];
+  orders: Order[];
+  ledger: LedgerRow[];
+  prizes: PrizeAward[];
+  /** Provider event ids already applied, so a retried webhook is a no-op. */
+  webhookEvents: string[];
   /** Operator corrections to match results and awards, if any. */
   results?: ResultsOverride;
   version: number;
@@ -67,14 +129,27 @@ async function readDb(): Promise<Db> {
     const raw = await fs.readFile(FILE, "utf8");
     const parsed = JSON.parse(raw) as Partial<Db>;
     return {
-      version: 3,
+      version: 4,
       users: parsed.users ?? [],
       leagues: parsed.leagues ?? [],
       loginTokens: parsed.loginTokens ?? [],
+      orders: parsed.orders ?? [],
+      ledger: parsed.ledger ?? [],
+      prizes: parsed.prizes ?? [],
+      webhookEvents: parsed.webhookEvents ?? [],
       results: parsed.results,
     };
   } catch {
-    return { version: 3, users: [], leagues: [], loginTokens: [] };
+    return {
+      version: 4,
+      users: [],
+      leagues: [],
+      loginTokens: [],
+      orders: [],
+      ledger: [],
+      prizes: [],
+      webhookEvents: [],
+    };
   }
 }
 
@@ -225,6 +300,20 @@ function leagueCode(name: string, taken: Set<string>): string {
   }
 }
 
+/** One league with its members, without needing a viewer. */
+export async function findLeague(id: string): Promise<{ league: ServerLeague; members: User[] } | null> {
+  const db = await readDb();
+  const league = db.leagues.find((row) => row.id === id);
+  if (!league) return null;
+  return { league, members: db.users.filter((user) => league.memberIds.includes(user.id)) };
+}
+
+/** Every league, for attributing a payment to the right pot. */
+export async function listAllLeagues(): Promise<ServerLeague[]> {
+  const db = await readDb();
+  return db.leagues;
+}
+
 export async function listLeaguesFor(userId: string): Promise<{ league: ServerLeague; members: User[] }[]> {
   const db = await readDb();
   return db.leagues
@@ -319,3 +408,256 @@ export async function consumeLoginToken(token: string): Promise<string | null> {
   });
 }
 
+
+/* ——— Orders, ledger, prizes ——— */
+
+/** A reference a person can read out loud: ORD-7F3A9C. */
+export function newOrderRef(): string {
+  return `ORD-${crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+}
+
+export async function createOrder(order: Order): Promise<Order> {
+  return mutate((db) => {
+    db.orders.push(order);
+    return order;
+  });
+}
+
+export async function findOrder(ref: string): Promise<Order | null> {
+  const db = await readDb();
+  return db.orders.find((order) => order.ref === ref) ?? null;
+}
+
+export async function findOrderByProviderRef(providerRef: string): Promise<Order | null> {
+  const db = await readDb();
+  return db.orders.find((order) => order.providerRef === providerRef) ?? null;
+}
+
+export async function listOrders(): Promise<Order[]> {
+  const db = await readDb();
+  return db.orders;
+}
+
+export async function attachProviderRef(ref: string, providerRef: string): Promise<Order | null> {
+  return mutate((db) => {
+    const order = db.orders.find((o) => o.ref === ref);
+    if (!order) return null;
+    order.providerRef = providerRef;
+    return order;
+  });
+}
+
+export async function listLedger(): Promise<LedgerRow[]> {
+  const db = await readDb();
+  return db.ledger;
+}
+
+/**
+ * Mark an order paid and create the entry in the same write, so there is no
+ * window where money has been taken and no entry exists. Idempotent: a repeat
+ * call (Stripe retrying a webhook, a user double-clicking) returns the same order
+ * and writes nothing.
+ */
+export async function settleOrder(
+  ref: string,
+  opts: { providerRef?: string | null; now?: string } = {},
+): Promise<{ order: Order; user: User; alreadyPaid: boolean } | null> {
+  return mutate((db) => {
+    const order = db.orders.find((o) => o.ref === ref);
+    if (!order) return null;
+    const user = db.users.find((u) => u.id === order.userId);
+    if (!user) return null;
+
+    if (order.status === "paid" && user.entry) {
+      return { order, user, alreadyPaid: true };
+    }
+    if (order.status === "refunded" || order.status === "failed") {
+      return { order, user, alreadyPaid: false };
+    }
+
+    const at = opts.now ?? new Date().toISOString();
+    order.status = "paid";
+    order.paidAt = at;
+    if (opts.providerRef) order.providerRef = opts.providerRef;
+
+    const ref_ = user.entry?.ref ?? `TE-${crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}-ADRE`;
+    user.entry = {
+      ...user.entry,
+      ref: ref_,
+      plan: order.planId,
+      amount: order.amountCents / 100,
+      paidAt: user.entry?.paidAt ?? at,
+      editionId: order.editionId,
+      prizeEligible: order.prizeEligible,
+    };
+
+    const split = allocate(order.amountCents);
+    const memo = `${order.planName} · ${order.ref}`;
+    db.ledger.push(
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "entry_fee",
+        amountCents: split.cents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo,
+      },
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "platform_fee",
+        amountCents: split.platformCents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo: "Platform & card fees (5%)",
+      },
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "prize_pool",
+        amountCents: split.poolCents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo: "Allocated to the prize pool",
+      },
+    );
+
+    return { order, user, alreadyPaid: false };
+  });
+}
+
+/** Mark a pending order failed (abandoned checkout, declined card). */
+export async function failOrder(ref: string, note: string): Promise<Order | null> {
+  return mutate((db) => {
+    const order = db.orders.find((o) => o.ref === ref);
+    if (!order || order.status !== "pending") return order ?? null;
+    order.status = "failed";
+    order.note = note;
+    return order;
+  });
+}
+
+/**
+ * Reverse a paid order: the entry stops being prize-eligible and the ledger gets
+ * counter-rows, so the pool shrinks by exactly what it grew by.
+ */
+export async function refundOrder(
+  ref: string,
+  opts: { now?: string; note?: string } = {},
+): Promise<{ order: Order; user: User } | null> {
+  return mutate((db) => {
+    const order = db.orders.find((o) => o.ref === ref);
+    if (!order) return null;
+    if (order.status === "refunded") {
+      const user = db.users.find((u) => u.id === order.userId);
+      return user ? { order, user } : null;
+    }
+    if (order.status !== "paid") return null;
+
+    const user = db.users.find((u) => u.id === order.userId);
+    if (!user) return null;
+
+    const at = opts.now ?? new Date().toISOString();
+    order.status = "refunded";
+    order.refundedAt = at;
+    if (opts.note) order.note = opts.note;
+    if (user.entry) user.entry = { ...user.entry, prizeEligible: false };
+
+    const split = allocate(order.amountCents);
+    db.ledger.push(
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "refund",
+        amountCents: -split.cents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo: `Refunded ${order.ref}`,
+      },
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "platform_fee",
+        amountCents: -split.platformCents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo: `Reversed fees · ${order.ref}`,
+      },
+      {
+        id: crypto.randomUUID(),
+        at,
+        kind: "prize_pool",
+        amountCents: -split.poolCents,
+        editionId: order.editionId,
+        orderRef: order.ref,
+        userId: order.userId,
+        memo: `Removed from the pool · ${order.ref}`,
+      },
+    );
+    return { order, user };
+  });
+}
+
+export async function listPrizes(): Promise<PrizeAward[]> {
+  const db = await readDb();
+  return db.prizes;
+}
+
+/** Replace the awards for one pot. Idempotent because the caller recomputes them. */
+export async function savePrizeAwards(
+  pot: { editionId: string; leagueId: string | null },
+  awards: PrizeAward[],
+): Promise<PrizeAward[]> {
+  return mutate((db) => {
+    db.prizes = db.prizes.filter(
+      (row) => !(row.editionId === pot.editionId && row.leagueId === pot.leagueId),
+    );
+    db.prizes.push(...awards);
+    return awards;
+  });
+}
+
+export async function markPrizesPaid(
+  pot: { editionId: string; leagueId: string | null },
+  now = new Date().toISOString(),
+): Promise<PrizeAward[]> {
+  return mutate((db) => {
+    const rows = db.prizes.filter(
+      (row) => row.editionId === pot.editionId && row.leagueId === pot.leagueId,
+    );
+    for (const row of rows) {
+      if (row.status === "paid") continue;
+      row.status = "paid";
+      row.paidAt = now;
+      db.ledger.push({
+        id: crypto.randomUUID(),
+        at: now,
+        kind: "prize_payout",
+        amountCents: -row.amountCents,
+        editionId: row.editionId,
+        orderRef: null,
+        userId: row.userId,
+        memo: `${row.label} · ${row.teamName}`,
+      });
+    }
+    return rows;
+  });
+}
+
+export async function hasWebhookEvent(id: string): Promise<boolean> {
+  const db = await readDb();
+  return db.webhookEvents.includes(id);
+}
+
+export async function recordWebhookEvent(id: string): Promise<void> {
+  await mutate((db) => {
+    if (!db.webhookEvents.includes(id)) db.webhookEvents.push(id);
+    if (db.webhookEvents.length > 500) db.webhookEvents = db.webhookEvents.slice(-500);
+  });
+}
