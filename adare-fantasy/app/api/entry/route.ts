@@ -3,6 +3,7 @@ import { PLAYER_BY_ID } from "@/lib/data";
 import { isLocked, validateSquad } from "@/lib/helpers";
 import { currentUserId } from "@/lib/server/auth";
 import { updateTeam } from "@/lib/server/db";
+import { cleanGuess, PINPOINT_DAYS, type PinpointGuess } from "@/lib/pinpoint";
 import { pairingsFor } from "@/lib/sim";
 import { ACTIVE_EDITION } from "@/lib/tournaments";
 
@@ -17,6 +18,7 @@ type Body = {
   captain?: unknown;
   predictions?: unknown;
   awards?: unknown;
+  pinpoint?: unknown;
 };
 
 /**
@@ -71,7 +73,16 @@ export async function PUT(request: Request) {
     }),
   ) as { mvp: string | null; topScorer: string | null; rookie: string | null };
 
-  const user = await updateTeam(userId, { mode, squad, captain, predictions, awards });
+  const rawPinpoint = (body.pinpoint && typeof body.pinpoint === "object" ? body.pinpoint : {}) as Record<
+    string,
+    unknown
+  >;
+  const pinpoint: Record<string, PinpointGuess> = {};
+  for (const day of PINPOINT_DAYS) {
+    if (rawPinpoint[day.id] !== undefined) pinpoint[day.id] = cleanGuess(rawPinpoint[day.id]);
+  }
+
+  const user = await updateTeam(userId, { mode, squad, captain, predictions, awards, pinpoint });
   if (!user) {
     return NextResponse.json(
       { error: "No paid entry on this account yet." },

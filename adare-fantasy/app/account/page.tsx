@@ -3,14 +3,25 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Eyebrow } from "@/components/ui";
-import { useFantasy } from "@/lib/store";
+import { useFantasy, type TeamState } from "@/lib/store";
 import { eur } from "@/lib/helpers";
 import type { User } from "@/lib/server/db";
 
 export default function AccountPage() {
-  const { state, projected, mode } = useFantasy();
+  const { state, projected, mode, hydrate, ready } = useFantasy();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linkMsg, setLinkMsg] = useState<string | null>(null);
+  const [devLink, setDevLink] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Read ?signin= without useSearchParams (which would need a Suspense boundary).
+    const signin = new URLSearchParams(window.location.search).get("signin");
+    if (signin === "ok") setNotice("You're signed in on this device.");
+    if (signin === "expired") setNotice("That sign-in link has expired or was already used. Ask for a new one.");
+  }, []);
 
   useEffect(() => {
     fetch("/api/session")
@@ -19,6 +30,40 @@ export default function AccountPage() {
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
+
+  // Signed in on a new device: pull the saved card down from the server so the
+  // browser shows the real entry instead of the demo card.
+  useEffect(() => {
+    if (!ready || !user?.entry) return;
+    if (state.entry.ref === user.entry.ref && !state.isDemo) return;
+    const e = user.entry;
+    hydrate({
+      manager: user.manager,
+      teamName: user.teamName,
+      mode: e.mode ?? "classic",
+      squad: e.squad ?? [],
+      captain: e.captain ?? null,
+      predictions: (e.predictions ?? {}) as TeamState["predictions"],
+      awards: e.awards ?? { mvp: null, topScorer: null, rookie: null },
+      pinpoint: e.pinpoint ?? {},
+      entry: { paid: true, plan: e.plan, ref: e.ref, amount: e.amount, paidAt: e.paidAt },
+      isDemo: false,
+      updatedAt: e.updatedAt ?? e.paidAt,
+    });
+  }, [ready, user, state.entry.ref, state.isDemo, hydrate]);
+
+  const requestLink = async () => {
+    setLinkMsg(null);
+    setDevLink(null);
+    const res = await fetch("/api/session/link", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: linkEmail }),
+    }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { message?: string; error?: string; devLink?: string };
+    setLinkMsg(data?.error ?? data?.message ?? "Couldn't send the link — try again.");
+    if (data?.devLink) setDevLink(data.devLink);
+  };
 
   const signOut = async () => {
     await fetch("/api/session", { method: "DELETE" });
@@ -30,9 +75,15 @@ export default function AccountPage() {
       <Eyebrow>Account</Eyebrow>
       <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Your entry</h1>
       <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-cream/70">
-        Accounts are cookie-based and stored server-side by the demo API. In production this becomes
-        an email magic-link login backed by Postgres.
+        Your entry is stored on the server, so you can sign in on any device with a one-time email
+        link.
       </p>
+
+      {notice ? (
+        <p role="status" className="mt-6 rounded-lg border border-gold/30 bg-gold/[0.08] px-4 py-2.5 text-[12.5px] text-gold-soft">
+          {notice}
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
@@ -57,13 +108,36 @@ export default function AccountPage() {
           ) : (
             <>
               <p className="mt-2 text-[13px] text-cream/70">
-                No server session yet. Entering the game creates one.
+                Entered on another phone or laptop? We&apos;ll email you a one-time sign-in link.
               </p>
+              <div className="mt-3 flex gap-2">
+                <input
+                  type="email"
+                  value={linkEmail}
+                  onChange={(e) => setLinkEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  aria-label="Email you entered with"
+                  className="min-w-0 flex-1 rounded-full border border-white/15 bg-forest-950/60 px-3 py-1.5 text-[12.5px] text-cream placeholder:text-cream/25"
+                />
+                <button
+                  type="button"
+                  onClick={requestLink}
+                  className="rounded-full bg-gold px-3 py-1.5 text-[12px] font-semibold text-forest-950"
+                >
+                  Email me a link
+                </button>
+              </div>
+              {linkMsg ? <p className="mt-2 text-[11.5px] text-cream/55">{linkMsg}</p> : null}
+              {devLink ? (
+                <a href={devLink} className="mt-1 block break-all text-[11px] text-gold-soft underline">
+                  Dev mode (no mail provider): open sign-in link
+                </a>
+              ) : null}
               <Link
                 href="/enter"
-                className="mt-4 inline-flex rounded-full bg-gold px-4 py-2 text-[12px] font-semibold text-forest-950"
+                className="mt-4 inline-flex rounded-full border border-white/20 px-4 py-2 text-[12px] text-cream/75"
               >
-                Enter the cup
+                New here? Play free
               </Link>
             </>
           )}
@@ -81,7 +155,9 @@ export default function AccountPage() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-cream/70">Paid</dt>
-                  <dd className="text-cream/85">{eur(user.entry.amount)}</dd>
+                  <dd className="text-cream/85">
+                    {user.entry.amount > 0 ? `${eur(user.entry.amount)} · prize entry` : "Free play"}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-cream/70">Edition</dt>
@@ -143,9 +219,8 @@ export default function AccountPage() {
       </div>
 
       <p className="mt-4 text-[10.5px] leading-relaxed text-cream/60">
-        Demo only: sessions are signed cookies, entries live in a JSON file on the server, and no
-        payment data is stored or transmitted. Production swaps this for magic-link auth, Postgres
-        and a real PSP (Stripe) with server-side webhooks.
+        Demo payments: no card data is stored or transmitted. Production swaps the JSON store for
+        Postgres and the demo checkout for Stripe with server-side webhooks.
       </p>
     </div>
   );

@@ -40,6 +40,7 @@ export default function PredictPage() {
           captain: state.captain,
           predictions: state.predictions,
           awards: state.awards,
+          pinpoint: state.pinpoint,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
