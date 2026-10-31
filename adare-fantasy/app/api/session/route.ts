@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "That email already has an entry. Sign in from the device you entered on, or contact support.",
+          "That email already has an entry. Use \"Email me a sign-in link\" on the Account page to sign in here.",
       },
       { status: 409 },
     );
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
   const response = NextResponse.json({ signedIn: true, user });
   response.cookies.set(COOKIE, makeToken(user.id), {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 120,

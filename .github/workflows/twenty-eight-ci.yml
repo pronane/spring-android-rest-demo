@@ -1,0 +1,25 @@
+name: Twenty-Eight CI
+on:
+  push:
+    branches: [master, "claude/**"]
+    paths: ["adare-fantasy/**", ".github/workflows/twenty-eight-ci.yml"]
+  pull_request:
+    paths: ["adare-fantasy/**", ".github/workflows/twenty-eight-ci.yml"]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: adare-fantasy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: adare-fantasy/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build

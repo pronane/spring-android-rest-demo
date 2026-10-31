@@ -39,13 +39,36 @@ export default function EnterPage() {
   const plan = PLANS.find((p) => p.id === planId) ?? PLANS[0];
   const pool = EXAMPLE_ENTRIES * 10;
 
+  // Free players can upgrade to a prize entry without re-entering details.
+  const upgrade = async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ planId: "single" }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        entry?: { ref: string; amount: number; plan: string; paidAt: string };
+      };
+      if (!res.ok || !data.entry) throw new Error(data.error ?? "Upgrade failed.");
+      setEntry({ paid: true, plan: data.entry.plan, ref: data.entry.ref, amount: data.entry.amount, paidAt: data.entry.paidAt });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const pay = async () => {
     setError(null);
     if (!email.includes("@")) {
       setError("We need an email for the entry receipt.");
       return;
     }
-    if (card.number.replace(/\s/g, "").length < 12) {
+    if (plan.price > 0 && card.number.replace(/\s/g, "").length < 12) {
       setError("Enter any 12+ digits in the demo card field — nothing is charged.");
       return;
     }
@@ -104,7 +127,7 @@ export default function EnterPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div>
           {/* plans */}
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((option) => {
               const active = option.id === planId;
               return (
@@ -126,7 +149,7 @@ export default function EnterPage() {
                   ) : null}
                   <p className="text-[13px] font-medium text-cream">{option.name}</p>
                   <p className="mt-1 font-display text-2xl text-cream tnum">
-                    {eur(option.price)}
+                    {option.price === 0 ? "Free" : eur(option.price)}
                   </p>
                   <p className="text-[10.5px] text-cream/60">
                     {option.entries} {option.entries === 1 ? "entry" : "entries"}
@@ -155,7 +178,8 @@ export default function EnterPage() {
                   <div>
                     <p className="text-[14px] font-medium text-cream">You are in.</p>
                     <p className="text-[11.5px] text-cream/70">
-                      Entry {receipt.ref} · {eur(receipt.amount)} paid
+                      Entry {receipt.ref} ·{" "}
+                      {receipt.amount > 0 ? `${eur(receipt.amount)} paid` : "free play — upgrade any time to win prizes"}
                     </p>
                   </div>
                 </div>
@@ -179,6 +203,21 @@ export default function EnterPage() {
                     View receipt
                   </Link>
                 </div>
+                {receipt.amount === 0 ? (
+                  <button
+                    type="button"
+                    onClick={upgrade}
+                    disabled={busy}
+                    className="mt-3 w-full rounded-full border border-gold/50 py-2.5 text-[12.5px] font-semibold text-gold-soft transition hover:bg-gold/10"
+                  >
+                    {busy ? "Processing…" : `Upgrade to a prize entry · ${eur(10)}`}
+                  </button>
+                ) : null}
+                {error ? (
+                  <p className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                    {error}
+                  </p>
+                ) : null}
                 <p className="mt-3 text-[10.5px] text-cream/60">
                   Demo checkout — no card was charged and no card data is stored.
                 </p>
@@ -188,7 +227,7 @@ export default function EnterPage() {
                 <div className="flex items-center justify-between">
                   <p className="eyebrow text-cream/60">Checkout</p>
                   <span className="text-[11px] text-cream/60 tnum">
-                    {plan.name} · {eur(plan.price)}
+                    {plan.name} · {plan.price === 0 ? "Free" : eur(plan.price)}
                   </span>
                 </div>
 
@@ -218,6 +257,8 @@ export default function EnterPage() {
                     autoComplete="organization"
                     className="sm:col-span-2"
                   />
+                  {plan.price > 0 ? (
+                  <>
                   <Field
                     label="Card number"
                     value={card.number}
@@ -246,6 +287,8 @@ export default function EnterPage() {
                     inputMode="numeric"
                     maxLength={4}
                   />
+                  </>
+                  ) : null}
                 </div>
 
                 {error ? (
@@ -268,7 +311,7 @@ export default function EnterPage() {
                       : "bg-gold text-forest-950 hover:bg-gold-soft"
                   }`}
                 >
-                  {busy ? "Processing…" : `Pay ${eur(plan.price)} & enter`}
+                  {busy ? "Processing…" : plan.price === 0 ? "Join free" : `Pay ${eur(plan.price)} & enter`}
                 </button>
                 <p className="mt-2 text-center text-[10.5px] text-cream/60">
                   Demo checkout · no card is charged · entries are refundable until the field is

@@ -1,10 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LeagueTable } from "@/components/LeagueTable";
 import { Eyebrow } from "@/components/ui";
 import { LEAGUES, type League, type LeagueMember } from "@/lib/data";
 import { useFantasy } from "@/lib/store";
+import type { LeagueView } from "@/lib/server/leagues";
+
+type ServerLeague = League & { server: true; isOwner: boolean };
+
+/** Server leagues are shared between real accounts; map them onto the UI's League shape. */
+function fromServer(view: LeagueView): ServerLeague {
+  return {
+    id: view.id,
+    name: view.name,
+    code: view.code,
+    visibility: "private",
+    blurb: view.isOwner
+      ? "You're the commissioner. Share the code — friends join from their own phones."
+      : "A private league. Everyone here sees the same table.",
+    buyIn: view.buyIn,
+    prizePool: view.buyIn ? view.buyIn * view.rows.length : undefined,
+    members: view.rows.map((r) => ({ manager: r.manager, team: r.team, points: r.points, isYou: r.isYou })),
+    server: true,
+    isOwner: view.isOwner,
+  };
+}
+
+const isServer = (l: League): l is ServerLeague => (l as ServerLeague).server === true;
 
 export default function LeaguesPage() {
   const {
@@ -12,11 +36,32 @@ export default function LeaguesPage() {
     leagues,
     projected,
     joinLeague,
-    createLeague,
     leaveLeague,
   } = useFantasy();
 
-  const myLeagues = leagues.filter((l) => state.joinedLeagues.includes(l.id));
+  const [signedIn, setSignedIn] = useState(false);
+  const [serverLeagues, setServerLeagues] = useState<ServerLeague[]>([]);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/leagues", { cache: "no-store" });
+      const data = (await res.json()) as { signedIn: boolean; leagues: LeagueView[] };
+      setSignedIn(data.signedIn);
+      setServerLeagues(data.leagues.map(fromServer));
+    } catch {
+      /* offline: show the leagues kept on this device */
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  // Open (demo) leagues are still joined on this device; private leagues live on the server.
+  const myLeagues: League[] = [
+    ...serverLeagues,
+    ...leagues.filter((l) => state.joinedLeagues.includes(l.id) && l.visibility === "public"),
+  ];
   const [selectedId, setSelectedId] = useState<string | null>(myLeagues[0]?.id ?? null);
   const [createName, setCreateName] = useState("");
   const [buyIn, setBuyIn] = useState(0);
@@ -26,6 +71,7 @@ export default function LeaguesPage() {
   const selected = myLeagues.find((l) => l.id === selectedId) ?? myLeagues[0] ?? null;
 
   const membersFor = (league: League): LeagueMember[] => {
+    if (isServer(league)) return league.members;
     const you: LeagueMember | null =
       state.joinedLeagues.includes(league.id) && state.squad.length > 0
         ? {
@@ -50,25 +96,73 @@ export default function LeaguesPage() {
     [leagues, state.joinedLeagues],
   );
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!createName.trim()) {
       setMessage({ ok: false, text: "Give your league a name first." });
       return;
     }
-    const league = createLeague(createName, buyIn);
-    setSelectedId(league.id);
+    if (!signedIn) {
+      setMessage({ ok: false, text: "Join the game first (it's free) so friends can find your league." });
+      return;
+    }
+    const res = await fetch("/api/leagues", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: createName, buyIn }),
+    }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { league?: LeagueView; error?: string };
+    if (!res?.ok || !data?.league) {
+      setMessage({ ok: false, text: data?.error ?? "Couldn't create the league — try again." });
+      return;
+    }
+    await refresh();
+    setSelectedId(data.league.id);
     setCreateName("");
-    setMessage({ ok: true, text: `${league.name} created. Share the code ${league.code}.` });
+    setMessage({ ok: true, text: `${data.league.name} created. Share the code ${data.league.code}.` });
   };
 
-  const handleJoin = (code: string) => {
-    const result = joinLeague(code);
-    setMessage({ ok: result.ok, text: result.message });
-    if (result.ok) {
-      const found = leagues.find((l) => l.code === code.trim().toUpperCase());
-      if (found) setSelectedId(found.id);
-      setJoinCode("");
+  const handleJoin = async (code: string) => {
+    const cleaned = code.trim().toUpperCase();
+    // Open demo leagues (e.g. ADARE7) are joined on this device.
+    if (leagues.some((l) => l.visibility === "public" && l.code === cleaned)) {
+      const result = joinLeague(cleaned);
+      setMessage({ ok: result.ok, text: result.message });
+      if (result.ok) {
+        const found = leagues.find((l) => l.code === cleaned);
+        if (found) setSelectedId(found.id);
+        setJoinCode("");
+      }
+      return;
     }
+    if (!signedIn) {
+      setMessage({ ok: false, text: "Join the game first (it's free), then enter the code." });
+      return;
+    }
+    const res = await fetch("/api/leagues/join", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: cleaned }),
+    }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { league?: LeagueView; error?: string };
+    if (!res?.ok || !data?.league) {
+      setMessage({ ok: false, text: data?.error ?? "Couldn't join — check the code." });
+      return;
+    }
+    await refresh();
+    setSelectedId(data.league.id);
+    setJoinCode("");
+    setMessage({ ok: true, text: `Joined ${data.league.name}. Good luck.` });
+  };
+
+  const handleLeave = async (league: League) => {
+    if (isServer(league)) {
+      await fetch(`/api/leagues/${encodeURIComponent(league.id)}`, { method: "DELETE" }).catch(() => null);
+      await refresh();
+    } else {
+      leaveLeague(league.id);
+    }
+    setSelectedId(null);
+    setMessage({ ok: true, text: `Left ${league.name}.` });
   };
 
   return (
@@ -112,7 +206,7 @@ export default function LeaguesPage() {
             </select>
             <button
               type="button"
-              onClick={handleCreate}
+              onClick={() => void handleCreate()}
               className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
             >
               Create league
@@ -148,6 +242,20 @@ export default function LeaguesPage() {
         </div>
       </div>
 
+      {!signedIn ? (
+        <p className="mt-4 rounded-xl border border-gold/30 bg-gold/[0.07] px-4 py-3 text-[12.5px] text-cream/70">
+          Private leagues are shared between accounts.{" "}
+          <Link href="/enter" className="text-gold-soft underline">
+            Play free
+          </Link>{" "}
+          to create or join one, or{" "}
+          <Link href="/account" className="text-gold-soft underline">
+            sign in
+          </Link>{" "}
+          if you entered on another device.
+        </p>
+      ) : null}
+
       {message ? (
         <p
           className={`mt-4 rounded-xl border px-4 py-3 text-[12.5px] ${
@@ -172,7 +280,8 @@ export default function LeaguesPage() {
           <ul className="space-y-2">
             {myLeagues.map((league) => {
               const members = membersFor(league);
-              const rank = 1 + members.filter((m) => !m.isYou && m.points > projected).length;
+              const youAt = members.findIndex((m) => m.isYou);
+              const rank = youAt >= 0 ? youAt + 1 : 1 + members.filter((m) => m.points > projected).length;
               const active = selected?.id === league.id;
               return (
                 <li key={league.id}>
@@ -256,11 +365,7 @@ export default function LeaguesPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    leaveLeague(selected.id);
-                    setSelectedId(null);
-                    setMessage({ ok: true, text: `Left ${selected.name}.` });
-                  }}
+                  onClick={() => void handleLeave(selected)}
                   className="text-[11.5px] text-cream/60 transition hover:text-usa"
                 >
                   Leave league

@@ -38,6 +38,19 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 ---
 
+## What's new in v0.3
+
+- **Free play.** Draft, predict, play Pinpoint and run private leagues for free; the €10 entry adds prize-pool eligibility and can be bought later as an upgrade.
+- **Shared private leagues.** Leagues now live on the server: create one, share the code, and friends join from their own phones and see the same table (`/api/leagues`).
+- **Email sign-in links.** Sign in on a new device from `/account` with a one-time, 15-minute link. Your saved card syncs down. Set `RESEND_API_KEY` (and `MAIL_FROM`, `APP_URL`) to send real email; in development the link is shown on screen.
+- **Pinpoint** (`/pinpoint`). Guess nearest-the-pin (feet) and longest drive (yards) for each day; 10 points for a perfect call. Results are simulated until a live feed is connected.
+
+- **Live scores adapter.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 30 s, and fantasy points follow them. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation.
+
+Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`, `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`.
+
+---
+
 ## The two games
 
 | | Classic Six | Captain's Dozen |
