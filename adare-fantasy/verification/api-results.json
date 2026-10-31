@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 38,
-  "total": 38,
+  "passed": 60,
+  "total": 60,
   "results": [
     {
       "name": "invalid email rejected",
@@ -34,14 +34,54 @@
       "detail": "status 400"
     },
     {
-      "name": "checkout issues a receipt ref",
+      "name": "checkout opens a pending order",
       "pass": true,
-      "detail": "TE-2E6996-ADRE"
+      "detail": "200 ORD-45A5C2"
+    },
+    {
+      "name": "checkout returns a payment url",
+      "pass": true,
+      "detail": "/pay/ORD-45A5C2"
+    },
+    {
+      "name": "checkout takes no entry of its own",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "a pending order does not unlock the game",
+      "pass": true,
+      "detail": "status 402"
+    },
+    {
+      "name": "demo payment settles the order",
+      "pass": true,
+      "detail": "200 TE-4397EE-ADRE"
+    },
+    {
+      "name": "re-confirming a paid order is idempotent",
+      "pass": true,
+      "detail": "alreadyPaid true"
+    },
+    {
+      "name": "the owner can read the order",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "order status needs a session",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "an unknown order is a 404",
+      "pass": true,
+      "detail": "status 404"
     },
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Sun, 28 Feb 2027 17:35:12 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 18:31:11 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -96,7 +136,7 @@
     {
       "name": "league is created with a join code",
       "pass": true,
-      "detail": "201 HAR6BK"
+      "detail": "201 HARU6G"
     },
     {
       "name": "league list includes the new league",
@@ -192,6 +232,76 @@
       "name": "clearing corrections returns to the simulation",
       "pass": true,
       "detail": "simulation"
+    },
+    {
+      "name": "a webhook with no signature is refused",
+      "pass": true,
+      "detail": "status 400"
+    },
+    {
+      "name": "a replayed webhook is refused",
+      "pass": true,
+      "detail": "status 400"
+    },
+    {
+      "name": "a valid webhook cannot settle a demo order",
+      "pass": true,
+      "detail": "200 ignored order belongs to the demo provider"
+    },
+    {
+      "name": "a forged signature is refused",
+      "pass": true,
+      "detail": "status 400"
+    },
+    {
+      "name": "the ledger knows what was taken and what was pooled",
+      "pass": true,
+      "detail": "gross 1000, fee 50, pool 950"
+    },
+    {
+      "name": "the order list shows the settled order",
+      "pass": true,
+      "detail": "1 orders"
+    },
+    {
+      "name": "the prize board starts from the paid pot",
+      "pass": true,
+      "detail": "pot 950"
+    },
+    {
+      "name": "settling awards the podium from the table",
+      "pass": true,
+      "detail": "200 1 awards 950"
+    },
+    {
+      "name": "no award is larger than the pot",
+      "pass": true,
+      "detail": "awards inside the pot"
+    },
+    {
+      "name": "prizes can be marked paid",
+      "pass": true,
+      "detail": "1 paid"
+    },
+    {
+      "name": "a paid pot cannot be settled twice",
+      "pass": true,
+      "detail": "status 409"
+    },
+    {
+      "name": "a season pass costs €24 and pools 95%",
+      "pass": true,
+      "detail": "2400 cents"
+    },
+    {
+      "name": "an operator can refund an order",
+      "pass": true,
+      "detail": "200 refunded"
+    },
+    {
+      "name": "a refund comes back out of the pool",
+      "pass": true,
+      "detail": "gross 1000"
     }
   ]
 }

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { currentUserId } from "@/lib/server/auth";
-import { findUser, saveEntry } from "@/lib/server/db";
-import { PLANS } from "@/lib/tournaments";
+import { findUser } from "@/lib/server/db";
+import { CheckoutError, startCheckout } from "@/lib/server/orders";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Demo checkout. No card data is stored or forwarded, no money moves — the
- * endpoint simply marks the entry as paid and returns a receipt reference.
+ * Open a checkout. This used to mark an entry paid on the spot; it now creates a
+ * **pending** order and returns where to pay. An entry only appears when the
+ * order settles — via the Stripe webhook, or the demo payment page.
  */
 export async function POST(request: Request) {
   const userId = await currentUserId();
@@ -18,28 +19,29 @@ export async function POST(request: Request) {
     );
   }
 
+  const user = await findUser(userId);
+  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
   const body = (await request.json().catch(() => ({}))) as { planId?: string };
-  const plan = PLANS.find((p) => p.id === body.planId);
-  if (!plan) {
-    return NextResponse.json({ error: "Unknown plan." }, { status: 400 });
+  try {
+    const start = await startCheckout(user, body.planId ?? "single", request);
+    return NextResponse.json({
+      order: {
+        ref: start.order.ref,
+        status: start.order.status,
+        planId: start.order.planId,
+        planName: start.order.planName,
+        amountCents: start.order.amountCents,
+        currency: start.order.currency,
+      },
+      url: start.url,
+      provider: start.provider,
+    });
+  } catch (error) {
+    const status = error instanceof CheckoutError ? error.status : 500;
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Checkout failed." },
+      { status },
+    );
   }
-
-  const user = await saveEntry(userId, {
-    plan: plan.id,
-    amount: plan.price,
-    editionId: "adare-2027",
-    prizeEligible: plan.prizeEligible,
-  });
-
-  return NextResponse.json({
-    paid: true,
-    entry: user?.entry,
-    user: await findUser(userId),
-    receipt: {
-      ref: user?.entry?.ref,
-      plan: plan.name,
-      amount: plan.price,
-      note: "Demo payment — no card was charged.",
-    },
-  });
 }

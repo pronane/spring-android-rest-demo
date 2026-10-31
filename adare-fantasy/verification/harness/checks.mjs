@@ -51,10 +51,10 @@ const pay = async (session, email) => {
   await session.fill("you@example.com", email);
   await session.fill("Séamus Ryan", "Checks Runner");
   await session.fill("Bogey Merchants", "Assertion FC");
-  await session.fill("4242 4242 4242 4242", "4242 4242 4242 4242");
-  await session.fill("09 / 27", "09 / 27");
-  await session.fill("123", "123");
-  await session.click(/Pay €10 & enter/, 1600);
+  // Checkout now opens a pending order; the payment page settles it.
+  await session.click(/Continue to payment/, 1600);
+  await session.page.waitForFunction(() => /\/pay\/ORD-/.test(location.pathname), { timeout: 10_000 });
+  await session.click(/Pay €[0-9.]+ · demo card/, 1600);
 };
 
 /* ——— unpaid visitor ——— */
@@ -83,7 +83,8 @@ const email = `checks+${Date.now()}@example.com`;
   const s = await open();
   await pay(s, email);
   const receipt = await s.text();
-  check("payment issues a receipt", /TE-[A-Z0-9]{6}-ADRE/.test(receipt), (receipt.match(/TE-[A-Z0-9]{6}-ADRE/) ?? ["none"])[0]);
+  check("the payment page issues an entry ref", /TE-[A-Z0-9]{6}-ADRE/.test(receipt), (receipt.match(/TE-[A-Z0-9]{6}-ADRE/) ?? ["none"])[0]);
+  check("paying lands on a settled order", /You are in/i.test(receipt) && /paid/i.test(receipt));
   check("header shows My card after paying", /My card/.test(await s.header()), await s.header());
 
   await s.page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
@@ -156,8 +157,37 @@ const email = `checks+${Date.now()}@example.com`;
 /* ——— takeover ——— */
 {
   const s = await open();
-  await pay(s, email);
+  await s.page.goto(BASE + "/enter", { waitUntil: "networkidle0" });
+  await s.fill("you@example.com", email);
+  await s.fill("Séamus Ryan", "Checks Runner");
+  await s.fill("Bogey Merchants", "Assertion FC");
+  await s.click(/Continue to payment/, 1400);
   check("second browser cannot take over the account", /already has an entry/i.test(await s.text()));
+  check("a blocked takeover never reaches the payment page", !/\/pay\/ORD-/.test(s.page.url()), s.page.url());
+  await s.browser.close();
+}
+
+/* ——— operator console ——— */
+{
+  const s = await open();
+  await s.page.goto(BASE + "/admin", { waitUntil: "networkidle0" });
+  const locked = await s.text();
+  check("the console asks for the admin token", /ADMIN_TOKEN/.test(locked) && /Connect/.test(locked));
+
+  const token = process.env.ADMIN_TOKEN;
+  if (token) {
+    await s.page.evaluate((value) => {
+      const input = document.querySelector('input[type="password"]');
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, value);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }, token);
+    await s.click(/^Connect$/, 2200);
+    const dashboard = await s.text();
+    check("the console shows the money taken", /taken/i.test(dashboard) && /prize pool/i.test(dashboard));
+    check("the console lists the settled orders", /ORD-[A-Z0-9]{6}/.test(dashboard));
+    check("the console can open the results tab", /Results/.test(await s.text()));
+  }
   await s.browser.close();
 }
 

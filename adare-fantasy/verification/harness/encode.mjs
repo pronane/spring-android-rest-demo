@@ -20,6 +20,7 @@ const JOBS = [
   ["01-desktop", "01-end-to-end-desktop.mp4"],
   ["02-mobile", "02-mobile-flow.mp4"],
   ["03-live", "03-live-simulation.mp4"],
+  ["03-admin", "04-operator-console.mp4"],
 ];
 
 for (const [dir, name] of JOBS) {

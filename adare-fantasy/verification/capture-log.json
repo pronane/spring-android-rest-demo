@@ -16,98 +16,108 @@
   },
   {
     "stage": "01-desktop",
-    "shot": "04-receipt.png",
-    "url": "http://127.0.0.1:3000/enter"
+    "shot": "04-payment.png",
+    "url": "http://127.0.0.1:3000/pay/ORD-74CD07"
   },
   {
     "stage": "01-desktop",
-    "shot": "05-draft-empty.png",
+    "shot": "05-receipt.png",
+    "url": "http://127.0.0.1:3000/pay/ORD-74CD07"
+  },
+  {
+    "stage": "01-desktop",
+    "shot": "06-draft-empty.png",
     "url": "http://127.0.0.1:3000/draft"
   },
   {
     "stage": "01-desktop",
-    "shot": "06-draft-filled.png",
+    "shot": "07-draft-filled.png",
     "url": "http://127.0.0.1:3000/draft"
   },
   {
     "stage": "01-desktop",
-    "shot": "07-card-saved.png",
+    "shot": "08-card-saved.png",
     "url": "http://127.0.0.1:3000/draft"
   },
   {
     "stage": "01-desktop",
-    "shot": "08-predictor-empty.png",
+    "shot": "09-predictor-empty.png",
     "url": "http://127.0.0.1:3000/predict"
   },
   {
     "stage": "01-desktop",
-    "shot": "09-predictor-filled.png",
+    "shot": "10-predictor-filled.png",
     "url": "http://127.0.0.1:3000/predict"
   },
   {
     "stage": "01-desktop",
-    "shot": "10-picks-saved.png",
+    "shot": "11-picks-saved.png",
     "url": "http://127.0.0.1:3000/predict"
   },
   {
     "stage": "01-desktop",
-    "shot": "11-account.png",
+    "shot": "12-account.png",
     "url": "http://127.0.0.1:3000/account"
   },
   {
     "stage": "01-desktop",
-    "shot": "12-leaderboard.png",
+    "shot": "13-leaderboard.png",
     "url": "http://127.0.0.1:3000/leaderboard"
   },
   {
     "stage": "01-desktop",
-    "shot": "13-pinpoint-empty.png",
+    "shot": "14-pinpoint-empty.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "14-pinpoint-guess.png",
+    "shot": "15-pinpoint-guess.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "15-pinpoint-saved.png",
+    "shot": "16-pinpoint-saved.png",
     "url": "http://127.0.0.1:3000/pinpoint"
   },
   {
     "stage": "01-desktop",
-    "shot": "16-leagues.png",
+    "shot": "17-leagues.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "17-league-form.png",
+    "shot": "18-league-form.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "18-league-created.png",
+    "shot": "19-league-created.png",
     "url": "http://127.0.0.1:3000/leagues"
   },
   {
     "stage": "01-desktop",
-    "shot": "19-live.png",
+    "shot": "20-live.png",
     "url": "http://127.0.0.1:3000/live"
   },
   {
     "stage": "02-mobile",
-    "shot": "22-mobile-home.png",
+    "shot": "21-mobile-home.png",
     "url": "http://127.0.0.1:3000/"
   },
   {
     "stage": "02-mobile",
-    "shot": "23-mobile-checkout.png",
+    "shot": "22-mobile-checkout.png",
     "url": "http://127.0.0.1:3000/enter"
   },
   {
     "stage": "02-mobile",
+    "shot": "23-mobile-payment.png",
+    "url": "http://127.0.0.1:3000/pay/ORD-5208B5"
+  },
+  {
+    "stage": "02-mobile",
     "shot": "24-mobile-receipt.png",
-    "url": "http://127.0.0.1:3000/enter"
+    "url": "http://127.0.0.1:3000/pay/ORD-5208B5"
   },
   {
     "stage": "02-mobile",
@@ -118,5 +128,25 @@
     "stage": "02-mobile",
     "shot": "26-mobile-account.png",
     "url": "http://127.0.0.1:3000/account"
+  },
+  {
+    "stage": "03-admin",
+    "shot": "27-admin-payments.png",
+    "url": "http://127.0.0.1:3000/admin"
+  },
+  {
+    "stage": "03-admin",
+    "shot": "28-admin-prizes-empty.png",
+    "url": "http://127.0.0.1:3000/admin"
+  },
+  {
+    "stage": "03-admin",
+    "shot": "29-admin-prizes.png",
+    "url": "http://127.0.0.1:3000/admin"
+  },
+  {
+    "stage": "03-admin",
+    "shot": "30-admin-results.png",
+    "url": "http://127.0.0.1:3000/admin"
   }
 ]

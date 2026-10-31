@@ -23,5 +23,7 @@ jobs:
         run: npm run typecheck
       - name: Scoring rules
         run: npm run scoring:check
+      - name: Payments and the prize ledger
+        run: npm run payments:check
       - name: Build
         run: npm run build

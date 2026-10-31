@@ -12,7 +12,16 @@ import { launch, startScreencast } from "./chrome.mjs";
 const BASE = process.env.BASE ?? "http://127.0.0.1:3000";
 const OUT = process.env.OUT ?? path.join(process.cwd(), "run");
 const SHOTS = path.join(OUT, "shots");
+/** Screenshots are numbered continuously across the recording scripts. */
+function nextShot(refresh = true) {
+  const used = (fs.existsSync(SHOTS) ? fs.readdirSync(SHOTS) : [])
+    .map((name) => Number((name.match(/^(\d+)-/) ?? [])[1]))
+    .filter((n) => Number.isFinite(n));
+  return String((used.length ? Math.max(...used) : 0) + (refresh ? 1 : 0)).padStart(2, "0");
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let shot = nextShot(false);
 
 const browser = await launch({ width: 1280, height: 800 });
 const page = await browser.newPage();
@@ -35,11 +44,11 @@ const click = async (re, wait = 400) => {
 
 await page.goto(BASE + "/live?t=2700", { waitUntil: "networkidle0" });
 await sleep(1200);
-await page.screenshot({ path: path.join(SHOTS, "20-live-sunday.png") });
+await page.screenshot({ path: path.join(SHOTS, `${++shot}-live-sunday.png`) });
 await click(/^4×$/, 300);
 await click(/Play/, 900);
 await sleep(16_000);
-await page.screenshot({ path: path.join(SHOTS, "21-live-final.png") });
+await page.screenshot({ path: path.join(SHOTS, `${++shot}-live-final.png`) });
 
 const { frames, seconds } = await stream.stop();
 await browser.close();

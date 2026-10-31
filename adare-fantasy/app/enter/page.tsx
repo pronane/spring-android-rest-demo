@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Eyebrow } from "@/components/ui";
 import { useFantasy } from "@/lib/store";
@@ -10,13 +11,13 @@ import { ACTIVE_EDITION, PLANS, PRIZE_SPLIT, SPONSORS } from "@/lib/tournaments"
 const EXAMPLE_ENTRIES = 5000;
 
 export default function EnterPage() {
-  const { state, ready, setEntry, paid, setIdentity } = useFantasy();
+  const { state, ready, paid, setIdentity } = useFantasy();
+  const router = useRouter();
   const [planId, setPlanId] = useState<string>("single");
   const [email, setEmail] = useState("");
   const [manager, setManager] = useState("");
   const [teamName, setTeamName] = useState("");
   const seeded = useRef(false);
-  const [card, setCard] = useState({ number: "", expiry: "", cvc: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,10 +46,6 @@ export default function EnterPage() {
       setError("We need an email for the entry receipt.");
       return;
     }
-    if (card.number.replace(/\s/g, "").length < 12) {
-      setError("Enter any 12+ digits in the demo card field — nothing is charged.");
-      return;
-    }
     setBusy(true);
     try {
       const sessionRes = await fetch("/api/session", {
@@ -62,28 +59,20 @@ export default function EnterPage() {
       }
       setIdentity(manager, teamName);
 
+      // Opening a checkout does not pay for anything: it creates a pending order
+      // and returns where to settle it (Stripe, or the demo payment page).
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ planId: plan.id }),
       });
-      const data = (await res.json()) as {
-        error?: string;
-        entry?: { ref: string; amount: number; plan: string; paidAt: string };
-      };
-      if (!res.ok || !data.entry) throw new Error(data.error ?? "Payment failed.");
+      const data = (await res.json()) as { error?: string; url?: string; provider?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout could not be opened.");
 
-      setEntry({
-        paid: true,
-        plan: data.entry.plan,
-        ref: data.entry.ref,
-        amount: data.entry.amount,
-        paidAt: data.entry.paidAt,
-      });
-
+      if (data.url.startsWith("/")) router.push(data.url);
+      else window.location.assign(data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
       setBusy(false);
     }
   };
@@ -223,34 +212,6 @@ export default function EnterPage() {
                     autoComplete="organization"
                     className="sm:col-span-2"
                   />
-                  <Field
-                    label="Card number"
-                    value={card.number}
-                    onChange={(v) => setCard({ ...card, number: v })}
-                    placeholder="4242 4242 4242 4242"
-                    autoComplete="cc-number"
-                    inputMode="numeric"
-                    maxLength={19}
-                    className="sm:col-span-2"
-                  />
-                  <Field
-                    label="Expiry"
-                    value={card.expiry}
-                    onChange={(v) => setCard({ ...card, expiry: v })}
-                    placeholder="09 / 27"
-                    autoComplete="cc-exp"
-                    inputMode="numeric"
-                    maxLength={7}
-                  />
-                  <Field
-                    label="CVC"
-                    value={card.cvc}
-                    onChange={(v) => setCard({ ...card, cvc: v })}
-                    placeholder="123"
-                    autoComplete="cc-csc"
-                    inputMode="numeric"
-                    maxLength={4}
-                  />
                 </div>
 
                 {error ? (
@@ -273,11 +234,11 @@ export default function EnterPage() {
                       : "bg-gold text-forest-950 hover:bg-gold-soft"
                   }`}
                 >
-                  {busy ? "Processing…" : `Pay ${eur(plan.price)} & enter`}
+                  {busy ? "Opening checkout…" : `Continue to payment · ${eur(plan.price)}`}
                 </button>
                 <p className="mt-2 text-center text-[10.5px] text-cream/60">
-                  Demo checkout · no card is charged · entries are refundable until the field is
-                  confirmed
+                  Payment is taken on the next step · your entry is created when it settles · nothing
+                  is charged twice
                 </p>
               </>
             )}
