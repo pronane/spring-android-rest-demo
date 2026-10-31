@@ -17,7 +17,7 @@ export function LeagueTable({
     <div className="overflow-hidden rounded-2xl border border-white/10">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="bg-white/[0.04] text-[9.5px] uppercase tracking-[0.16em] text-cream/40">
+          <tr className="bg-white/[0.04] text-[9.5px] uppercase tracking-[0.16em] text-cream/60">
             <th className="w-10 py-2.5 pl-4 font-semibold">#</th>
             <th className="py-2.5 font-semibold">Team</th>
             {!dense && <th className="hidden py-2.5 font-semibold sm:table-cell">Manager</th>}
@@ -41,7 +41,7 @@ export function LeagueTable({
                         ? "border-gold/60 bg-gold/15 text-gold-soft"
                         : index === 1 || index === 2
                           ? "border-white/15 text-cream/70"
-                          : "border-transparent text-cream/35"
+                          : "border-transparent text-cream/60"
                     }`}
                   >
                     {index + 1}
@@ -59,11 +59,11 @@ export function LeagueTable({
                     ) : null}
                   </span>
                   {dense ? (
-                    <span className="text-[11px] text-cream/35">{row.manager}</span>
+                    <span className="text-[11px] text-cream/60">{row.manager}</span>
                   ) : null}
                 </td>
                 {!dense && (
-                  <td className="hidden py-3 pr-3 text-[12px] text-cream/45 sm:table-cell">
+                  <td className="hidden py-3 pr-3 text-[12px] text-cream/70 sm:table-cell">
                     {row.manager}
                   </td>
                 )}

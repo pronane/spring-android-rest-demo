@@ -27,8 +27,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen bg-forest-950 font-sans text-cream antialiased">
         <FantasyProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-forest-950"
+          >
+            Skip to content
+          </a>
           <SiteHeader />
-          <main>{children}</main>
+          <main id="main" tabIndex={-1} className="focus:outline-none">
+            {children}
+          </main>
           <SiteFooter />
         </FantasyProvider>
       </body>

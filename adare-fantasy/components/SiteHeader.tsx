@@ -26,13 +26,14 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
         <Brand />
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
           {LINKS.map((link) => {
             const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={active ? "page" : undefined}
                 className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition ${
                   active
                     ? "bg-white/[0.08] text-cream"
@@ -41,8 +42,8 @@ export function SiteHeader() {
               >
                 {link.label}
                 {link.live ? (
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-usa opacity-70" />
+                  <span className="relative flex h-1.5 w-1.5" aria-hidden>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-usa opacity-70 motion-reduce:animate-none" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-usa" />
                   </span>
                 ) : null}
@@ -58,8 +59,8 @@ export function SiteHeader() {
           >
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
             Adare 2027
-            <span className="text-cream/25">/</span>
-            <span className="text-cream/40">5 editions</span>
+            <span className="text-cream/60">/</span>
+            <span className="text-cream/60">5 editions</span>
           </Link>
 
           {hasTeam ? (
@@ -68,7 +69,7 @@ export function SiteHeader() {
               className="hidden items-center gap-3 rounded-full border border-white/12 bg-white/[0.04] py-1.5 pl-3 pr-1.5 transition hover:border-gold/40 sm:flex"
             >
               <span className="text-left leading-tight">
-                <span className="block max-w-[130px] truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/40">
+                <span className="block max-w-[130px] truncate text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/60">
                   {state.teamName}
                 </span>
                 <span className="block text-[12px] font-medium text-cream/85">
@@ -96,19 +97,20 @@ export function SiteHeader() {
       </div>
 
       <div className="border-t border-white/[0.06] lg:hidden">
-        <nav className="no-scrollbar mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-3 py-1.5">
+        <nav aria-label="Primary (compact)" className="no-scrollbar mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-3 py-1.5">
           {LINKS.map((link) => {
             const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={active ? "page" : undefined}
                 className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11.5px] font-medium transition ${
-                  active ? "bg-white/10 text-cream" : "text-cream/55"
+                  active ? "bg-white/10 text-cream" : "text-cream/70"
                 }`}
               >
                 {link.short}
-                {link.live ? <span className="h-1 w-1 rounded-full bg-usa" /> : null}
+                {link.live ? <span aria-hidden className="h-1 w-1 rounded-full bg-usa" /> : null}
               </Link>
             );
           })}

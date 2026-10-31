@@ -76,7 +76,7 @@ export default function LeaguesPage() {
       <div className="max-w-2xl">
         <Eyebrow>Mini-leagues</Eyebrow>
         <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Beat your own friends</h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-cream/55">
+        <p className="mt-3 text-[14px] leading-relaxed text-cream/70">
           The global table is fun. The private league is personal. Create one for the group chat,
           set a buy-in or attach a sponsor, share the six-character code, and settle it on Sunday
           evening at Adare.
@@ -88,7 +88,7 @@ export default function LeaguesPage() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <p className="eyebrow text-gold/85">Create</p>
           <h2 className="mt-1.5 text-xl text-cream">Start a private league</h2>
-          <p className="mt-1.5 text-[12.5px] leading-relaxed text-cream/45">
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-cream/70">
             You become the commissioner. Seven mates is the sweet spot — anything over twenty and
             somebody will forget to enter.
           </p>
@@ -96,12 +96,14 @@ export default function LeaguesPage() {
             <input
               value={createName}
               onChange={(e) => setCreateName(e.target.value)}
+              aria-label="League name"
               placeholder="e.g. The 19th Hole Invitational"
-              className="flex-1 rounded-full border border-white/12 bg-forest-950/60 px-4 py-2.5 text-[13px] text-cream placeholder:text-cream/30 focus:border-gold/50 focus:outline-none"
+              className="flex-1 rounded-full border border-white/12 bg-forest-950/60 px-4 py-2.5 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
             />
             <select
               value={buyIn}
               onChange={(e) => setBuyIn(Number(e.target.value))}
+              aria-label="League buy-in"
               className="rounded-full border border-white/12 bg-forest-950/60 px-3 py-2.5 text-[12px] text-cream/80 focus:border-gold/50 focus:outline-none"
             >
               <option value={0} className="bg-forest-900">No buy-in</option>
@@ -121,7 +123,7 @@ export default function LeaguesPage() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <p className="eyebrow text-gold/85">Join</p>
           <h2 className="mt-1.5 text-xl text-cream">Got a code?</h2>
-          <p className="mt-1.5 text-[12.5px] leading-relaxed text-cream/45">
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-cream/70">
             Six characters, no spaces. Try <span className="text-cream/80">ADARE7</span> to see a
             league in action.
           </p>
@@ -129,9 +131,11 @@ export default function LeaguesPage() {
             <input
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              aria-label="League code"
+              autoComplete="off"
               placeholder="ADARE7"
               maxLength={8}
-              className="flex-1 rounded-full border border-white/12 bg-forest-950/60 px-4 py-2.5 text-[13px] uppercase tracking-[0.18em] text-cream placeholder:tracking-[0.18em] placeholder:text-cream/30 focus:border-gold/50 focus:outline-none"
+              className="flex-1 rounded-full border border-white/12 bg-forest-950/60 px-4 py-2.5 text-[13px] uppercase tracking-[0.18em] text-cream placeholder:tracking-[0.18em] placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
             />
             <button
               type="button"
@@ -161,7 +165,7 @@ export default function LeaguesPage() {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-xl text-cream">Your leagues</h2>
-            <span className="rounded-full border border-white/12 px-2.5 py-0.5 text-[11px] text-cream/45 tnum">
+            <span className="rounded-full border border-white/12 px-2.5 py-0.5 text-[11px] text-cream/70 tnum">
               {myLeagues.length}
             </span>
           </div>
@@ -185,9 +189,9 @@ export default function LeaguesPage() {
                       <span className="truncate text-[13.5px] font-medium text-cream">
                         {league.name}
                       </span>
-                      <span className="tnum shrink-0 text-[11px] text-cream/45">#{rank}</span>
+                      <span className="tnum shrink-0 text-[11px] text-cream/70">#{rank}</span>
                     </div>
-                    <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-cream/40">
+                    <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-cream/60">
                       <span>
                         {members.length} teams · {league.visibility}
                         {league.buyIn ? ` · €${league.buyIn} buy-in` : ""}
@@ -199,7 +203,7 @@ export default function LeaguesPage() {
               );
             })}
             {myLeagues.length === 0 ? (
-              <li className="rounded-xl border border-dashed border-white/12 p-5 text-center text-[12.5px] text-cream/40">
+              <li className="rounded-xl border border-dashed border-white/12 p-5 text-center text-[12.5px] text-cream/60">
                 You are not in a league yet. Join ADARE7 to the right.
               </li>
             ) : null}
@@ -211,12 +215,12 @@ export default function LeaguesPage() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="eyebrow text-cream/40">
+                  <p className="eyebrow text-cream/60">
                     {selected.visibility === "public" ? "Open league" : "Private league"}
                   </p>
                   <h2 className="mt-1 font-display text-2xl text-cream">{selected.name}</h2>
-                  <p className="mt-1 max-w-md text-[12.5px] text-cream/45">{selected.blurb}</p>
-                  <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-cream/40">
+                  <p className="mt-1 max-w-md text-[12.5px] text-cream/70">{selected.blurb}</p>
+                  <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-cream/60">
                     {selected.buyIn ? <span>€{selected.buyIn} buy-in</span> : <span>Free to enter</span>}
                     {selected.prizePool ? <span>· €{selected.prizePool} league pot</span> : null}
                     {selected.sponsor ? <span>· Sponsored by {selected.sponsor}</span> : null}
@@ -246,7 +250,7 @@ export default function LeaguesPage() {
               </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[11px] text-cream/35">
+                <p className="text-[11px] text-cream/60">
                   Table sorted by projected points. Scoring goes live at the first tee on Friday 17
                   September 2027.
                 </p>
@@ -257,7 +261,7 @@ export default function LeaguesPage() {
                     setSelectedId(null);
                     setMessage({ ok: true, text: `Left ${selected.name}.` });
                   }}
-                  className="text-[11.5px] text-cream/40 transition hover:text-usa"
+                  className="text-[11.5px] text-cream/60 transition hover:text-usa"
                 >
                   Leave league
                 </button>
@@ -274,7 +278,7 @@ export default function LeaguesPage() {
             <Eyebrow>Discover</Eyebrow>
             <h2 className="mt-1.5 text-2xl text-cream">Open leagues you can join</h2>
           </div>
-          <span className="text-[11px] text-cream/35">No invitation needed</span>
+          <span className="text-[11px] text-cream/60">No invitation needed</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(discover.length ? discover : LEAGUES.filter((l) => l.visibility === "public")).map((league) => (
@@ -284,13 +288,13 @@ export default function LeaguesPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <h3 className="text-[15px] font-medium text-cream">{league.name}</h3>
-                <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-cream/45">
+                <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-cream/70">
                   {league.visibility}
                 </span>
               </div>
-              <p className="mt-2 flex-1 text-[12px] leading-relaxed text-cream/45">{league.blurb}</p>
+              <p className="mt-2 flex-1 text-[12px] leading-relaxed text-cream/70">{league.blurb}</p>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-[11px] text-cream/40 tnum">
+                <span className="text-[11px] text-cream/60 tnum">
                   {league.members.length} teams · {league.code}
                   {league.buyIn ? ` · €${league.buyIn}` : ""}
                 </span>

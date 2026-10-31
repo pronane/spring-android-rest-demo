@@ -35,7 +35,7 @@ export function PlayerTile({
         selected
           ? "border-gold/50 bg-gold/[0.06]"
           : blockedReason
-            ? "border-white/[0.07] bg-white/[0.015] opacity-55"
+            ? "border-white/[0.07] bg-white/[0.015] opacity-85"
             : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"
       }`}
     >
@@ -48,11 +48,11 @@ export function PlayerTile({
       <div className="flex items-center justify-between gap-2 pl-2">
         <span className="flex items-center gap-2">
           <TeamDot side={player.side} size={7} />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-cream/45">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-cream/70">
             {player.side === "europe" ? "Europe" : "USA"}
           </span>
         </span>
-        <span className="tnum text-[10px] uppercase tracking-[0.1em] text-cream/35">
+        <span className="tnum text-[10px] uppercase tracking-[0.1em] text-cream/60">
           WR #{player.worldRank}
         </span>
       </div>
@@ -70,9 +70,9 @@ export function PlayerTile({
           <h3 className="truncate text-[15px] font-medium text-cream">{player.name}</h3>
           <div className="mt-1 flex items-center gap-2">
             <CountryChip code={player.countryCode} />
-            <span className="truncate text-[10.5px] text-cream/40">{player.role}</span>
+            <span className="truncate text-[10.5px] text-cream/60">{player.role}</span>
           </div>
-          <p className="mt-1 text-[10.5px] text-cream/45 sm:hidden">
+          <p className="mt-1 text-[10.5px] text-cream/70 sm:hidden">
             <span className="tnum text-cream/75">{credits(player.price)}m</span> · {player.projected} proj ·{" "}
             {player.ownership}% owned
           </p>
@@ -82,20 +82,20 @@ export function PlayerTile({
       <div className="mt-3 hidden grid-cols-3 divide-x divide-white/10 sm:grid rounded-lg border border-white/[0.08] bg-forest-950/40 py-2 pl-2 text-center">
         <div>
           <p className="tnum font-display text-[15px] text-cream">{credits(player.price)}m</p>
-          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/35">Price</p>
+          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/60">Price</p>
         </div>
         <div>
           <p className="tnum font-display text-[15px] text-gold-soft">{player.projected}</p>
-          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/35">Proj</p>
+          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/60">Proj</p>
         </div>
         <div>
           <p className="tnum font-display text-[15px] text-cream">{player.ownership}%</p>
-          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/35">Owned</p>
+          <p className="text-[9px] uppercase tracking-[0.12em] text-cream/60">Owned</p>
         </div>
       </div>
 
       <div className="mt-2.5 flex items-center gap-1.5 pl-2">
-        <span className="text-[9px] uppercase tracking-[0.14em] text-cream/30">Form</span>
+        <span className="text-[9px] uppercase tracking-[0.14em] text-cream/60">Form</span>
         {player.form.map((result, i) => (
           <span
             key={i}
@@ -114,7 +114,7 @@ export function PlayerTile({
           selected
             ? "bg-gold text-forest-950 hover:bg-gold-soft"
             : blockedReason
-              ? "cursor-not-allowed border border-white/10 text-cream/30"
+              ? "cursor-not-allowed border border-white/10 text-cream/60"
               : "border border-cream/20 text-cream hover:border-gold/60 hover:text-gold-soft"
         }`}
       >

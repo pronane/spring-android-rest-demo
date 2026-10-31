@@ -24,9 +24,9 @@ export function HomeTeamCard() {
     <div className="panel grain relative overflow-hidden rounded-2xl p-5 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="eyebrow text-cream/40">Your card</p>
+          <p className="eyebrow text-cream/60">Your card</p>
           <h3 className="mt-1.5 font-display text-2xl text-cream">{state.teamName || "Untitled"}</h3>
-          <p className="text-[12px] text-cream/45">
+          <p className="text-[12px] text-cream/70">
             {state.manager || "You"} · {mode.name} · {state.joinedLeagues.length} league
             {state.joinedLeagues.length === 1 ? "" : "s"}
           </p>
@@ -38,20 +38,20 @@ export function HomeTeamCard() {
 
       <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl border border-white/10 bg-forest-950/50 p-3">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/35">Projected</p>
+          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/60">Projected</p>
           <p className="tnum font-display text-xl text-gold-soft">
             {ready ? projected.toFixed(1) : "—"}
           </p>
         </div>
         <div>
-          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/35">League rank</p>
+          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/60">League rank</p>
           <p className="tnum font-display text-xl text-cream">
             {rank}
-            <span className="text-[11px] text-cream/35">/{league.members.length + 1}</span>
+            <span className="text-[11px] text-cream/60">/{league.members.length + 1}</span>
           </p>
         </div>
         <div>
-          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/35">Spent</p>
+          <p className="text-[9px] uppercase tracking-[0.14em] text-cream/60">Spent</p>
           <p className="tnum font-display text-xl text-cream">{credits(spend)}m</p>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function HomeTeamCard() {
                   C
                 </span>
               ) : (
-                <span className="tnum text-[11px] text-cream/35">{credits(player.price)}m</span>
+                <span className="tnum text-[11px] text-cream/60">{credits(player.price)}m</span>
               )}
             </li>
           );

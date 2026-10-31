@@ -61,7 +61,7 @@ export function Brand({
         <span className="block font-display text-[17px] tracking-[0.005em] text-cream">
           {PLATFORM.name}
         </span>
-        <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.24em] text-cream/45">
+        <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.24em] text-cream/70">
           {edition ? `Cup fantasy · ${ACTIVE_EDITION.name}` : PLATFORM.tagline}
         </span>
       </span>

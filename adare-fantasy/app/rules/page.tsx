@@ -71,7 +71,7 @@ export default function RulesPage() {
       <h1 className="mt-2 max-w-3xl text-balance text-4xl text-cream sm:text-5xl">
         Simple enough to explain in the pub. Deep enough to argue about until Sunday.
       </h1>
-      <p className="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-cream/55">
+      <p className="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-cream/70">
         Your six players earn points from every match they play at Adare Manor — wins, halves,
         birdies, eagles and a handful of bonuses. One of them wears the armband and doubles his
         match points.
@@ -83,7 +83,7 @@ export default function RulesPage() {
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full border-collapse text-left text-[13px]">
             <thead>
-              <tr className="bg-white/[0.04] text-[9.5px] uppercase tracking-[0.16em] text-cream/40">
+              <tr className="bg-white/[0.04] text-[9.5px] uppercase tracking-[0.16em] text-cream/60">
                 <th className="py-3 pl-5 font-semibold">Session</th>
                 <th className="hidden py-3 font-semibold sm:table-cell">Format</th>
                 <th className="py-3 text-right font-semibold">Win</th>
@@ -95,12 +95,12 @@ export default function RulesPage() {
               {MATCH_ROWS.map((row) => (
                 <tr key={row.type} className="border-t border-white/[0.07]">
                   <td className="py-3.5 pl-5 font-medium text-cream">{row.type}</td>
-                  <td className="hidden py-3.5 text-[12px] text-cream/40 sm:table-cell">
+                  <td className="hidden py-3.5 text-[12px] text-cream/60 sm:table-cell">
                     {row.detail}
                   </td>
                   <td className="py-3.5 text-right tnum text-shamrock">{row.win}</td>
                   <td className="py-3.5 text-right tnum text-cream/70">{row.half}</td>
-                  <td className="py-3.5 pr-5 text-right tnum text-cream/35">{row.loss}</td>
+                  <td className="py-3.5 pr-5 text-right tnum text-cream/60">{row.loss}</td>
                 </tr>
               ))}
             </tbody>
@@ -114,7 +114,7 @@ export default function RulesPage() {
                 <p className="text-[12.5px] text-cream/80">{row.label}</p>
                 <p className="font-display text-lg text-gold-soft tnum">{row.value}</p>
               </div>
-              <p className="mt-1 text-[10.5px] text-cream/35">{row.note}</p>
+              <p className="mt-1 text-[10.5px] text-cream/60">{row.note}</p>
             </div>
           ))}
         </div>
@@ -125,7 +125,7 @@ export default function RulesPage() {
                 <p className="text-[12.5px] text-cream/80">{row.label}</p>
                 <p className="font-display text-lg text-gold-soft tnum">{row.value}</p>
               </div>
-              <p className="mt-1 text-[10.5px] text-cream/35">{row.note}</p>
+              <p className="mt-1 text-[10.5px] text-cream/60">{row.note}</p>
             </div>
           ))}
         </div>
@@ -142,31 +142,31 @@ export default function RulesPage() {
             </p>
             <ul className="mt-4 space-y-1.5 text-[12.5px]">
               <li className="flex justify-between border-b border-white/10 pb-1.5">
-                <span className="text-cream/55">Match points · 4 wins, 1 half</span>
+                <span className="text-cream/70">Match points · 4 wins, 1 half</span>
                 <span className="tnum text-cream/85">22.5</span>
               </li>
               <li className="flex justify-between border-b border-white/10 pb-1.5">
-                <span className="text-cream/55">Captain ×2 (match points only)</span>
+                <span className="text-cream/70">Captain ×2 (match points only)</span>
                 <span className="tnum text-cream/85">45.0</span>
               </li>
               <li className="flex justify-between border-b border-white/10 pb-1.5">
-                <span className="text-cream/55">5 appearances</span>
+                <span className="text-cream/70">5 appearances</span>
                 <span className="tnum text-cream/85">+5.0</span>
               </li>
               <li className="flex justify-between border-b border-white/10 pb-1.5">
-                <span className="text-cream/55">6 birdies · 1 eagle</span>
+                <span className="text-cream/70">6 birdies · 1 eagle</span>
                 <span className="tnum text-cream/85">+10.0</span>
               </li>
               <li className="flex justify-between border-b border-white/10 pb-1.5">
-                <span className="text-cream/55">Unbeaten week</span>
+                <span className="text-cream/70">Unbeaten week</span>
                 <span className="tnum text-cream/85">+5.0</span>
               </li>
             </ul>
           </div>
           <div className="flex flex-col justify-center rounded-xl border border-gold/25 bg-forest-950/50 p-5 text-center">
-            <p className="eyebrow text-cream/40">Total</p>
+            <p className="eyebrow text-cream/60">Total</p>
             <p className="mt-1 font-display text-5xl text-gold-soft tnum">65.0</p>
-            <p className="mt-2 text-[11.5px] leading-relaxed text-cream/40">
+            <p className="mt-2 text-[11.5px] leading-relaxed text-cream/60">
               A very good week — roughly a quarter of a winning total in a small league.
             </p>
           </div>
@@ -183,13 +183,13 @@ export default function RulesPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {SCHEDULE.map((day) => (
             <div key={day.day} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-              <p className="eyebrow text-cream/40">{day.label}</p>
+              <p className="eyebrow text-cream/60">{day.label}</p>
               <h3 className="mt-1 text-lg text-cream">{day.day}</h3>
               <ul className="mt-3 space-y-2 text-[12.5px]">
                 {day.sessions.map((session) => (
                   <li key={session.name} className="flex items-center justify-between">
                     <span className="text-cream/65">{session.name}</span>
-                    <span className="tnum text-cream/40">{session.points} pts</span>
+                    <span className="tnum text-cream/60">{session.points} pts</span>
                   </li>
                 ))}
               </ul>
@@ -214,7 +214,7 @@ export default function RulesPage() {
               key={item.k}
               className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3"
             >
-              <span className="text-[12.5px] text-cream/55">{item.k}</span>
+              <span className="text-[12.5px] text-cream/70">{item.k}</span>
               <span className="text-[13px] font-medium text-cream">{item.v}</span>
             </div>
           ))}
@@ -234,12 +234,12 @@ export default function RulesPage() {
             <div key={mode.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
               <div className="flex items-baseline justify-between">
                 <h3 className="text-lg text-cream">{mode.name}</h3>
-                <span className="rounded-full border border-white/12 px-2.5 py-0.5 text-[10px] text-cream/50">
+                <span className="rounded-full border border-white/12 px-2.5 py-0.5 text-[10px] text-cream/70">
                   {mode.squadSize} players
                 </span>
               </div>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-cream/50">{mode.blurb}</p>
-              <p className="mt-3 text-[11px] text-cream/35">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-cream/70">{mode.blurb}</p>
+              <p className="mt-3 text-[11px] text-cream/60">
                 {mode.budget}m budget · max {mode.maxPerSide} per side · same entry fee
               </p>
             </div>
@@ -265,7 +265,7 @@ export default function RulesPage() {
                 <p className="text-[12.5px] text-cream/80">{row.label}</p>
                 <p className="font-display text-lg text-gold-soft tnum">{row.value}</p>
               </div>
-              <p className="mt-1 text-[10.5px] text-cream/35">{row.note}</p>
+              <p className="mt-1 text-[10.5px] text-cream/60">{row.note}</p>
             </div>
           ))}
         </div>
@@ -280,7 +280,7 @@ export default function RulesPage() {
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
-            <p className="eyebrow text-cream/40">Global prize pool split</p>
+            <p className="eyebrow text-cream/60">Global prize pool split</p>
             <ul className="mt-3 space-y-2">
               {PRIZE_SPLIT.map((row) => (
                 <li key={row.label} className="flex items-center justify-between text-[12px]">
@@ -291,8 +291,8 @@ export default function RulesPage() {
             </ul>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/40">Sponsors and leagues</p>
-            <ul className="mt-3 space-y-2 text-[12px] text-cream/55">
+            <p className="eyebrow text-cream/60">Sponsors and leagues</p>
+            <ul className="mt-3 space-y-2 text-[12px] text-cream/70">
               <li>Commissioners can attach a sponsor to a private league.</li>
               <li>Buy-ins are held separately from the global pool.</li>
               <li>Sponsored prizes sit on top — the global split is unaffected.</li>
@@ -329,14 +329,14 @@ export default function RulesPage() {
           ].map((source) => (
             <div key={source.name} className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
               <p className="text-[12.5px] font-medium text-cream/85">{source.name}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-cream/45">{source.use}</p>
-              <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-cream/25">
+              <p className="mt-1 text-[11px] leading-relaxed text-cream/70">{source.use}</p>
+              <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-cream/60">
                 {source.licence}
               </p>
             </div>
           ))}
         </div>
-        <p className="mt-3 text-[11px] text-cream/30">
+        <p className="mt-3 text-[11px] text-cream/60">
           Refresh with <code className="rounded bg-white/[0.06] px-1.5 py-0.5">npm run data:refresh</code>{" "}
           (writes <code className="rounded bg-white/[0.06] px-1.5 py-0.5">data/snapshots/</code>).
           Official Ryder Cup scoring feeds are licensed and are a v1 cost.
@@ -355,7 +355,7 @@ export default function RulesPage() {
                   +
                 </span>
               </summary>
-              <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-cream/50">{item.a}</p>
+              <p className="mt-2.5 max-w-2xl text-[13px] leading-relaxed text-cream/70">{item.a}</p>
             </details>
           ))}
         </div>
@@ -364,7 +364,7 @@ export default function RulesPage() {
       <div className="mt-14 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
         <div>
           <p className="font-display text-xl text-cream">That is the whole rulebook.</p>
-          <p className="mt-1 text-[12.5px] text-cream/45">
+          <p className="mt-1 text-[12.5px] text-cream/70">
             One card, one captain, three days. Everything else is vibes.
           </p>
         </div>
