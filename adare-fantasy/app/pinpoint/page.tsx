@@ -59,7 +59,7 @@ export default function PinpointPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
       <Eyebrow>Pinpoint · side game</Eyebrow>
       <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Closest to the pin, longest off the tee</h1>
-      <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
+      <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
         Each day, guess how close the best tee shot finishes on the featured par 3, and how far the
         longest drive goes on the featured par 5. A perfect call is worth {MAX_POINTS_PER_GUESS}; you
         lose a point for every foot (or every three yards) you&apos;re out. Guesses lock with your card
@@ -76,7 +76,7 @@ export default function PinpointPage() {
               <h2 className="font-display text-2xl text-cream">{day.label}</h2>
 
               <label className="mt-4 block">
-                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/40">
+                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/60">
                   Nearest the pin (feet)
                 </span>
                 <input
@@ -88,12 +88,12 @@ export default function PinpointPage() {
                   value={g.pin ?? ""}
                   onChange={(e) => update(day.id, "pin", e.target.value)}
                   placeholder="e.g. 4.5"
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/25"
+                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/60"
                 />
               </label>
 
               <label className="mt-3 block">
-                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/40">
+                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/60">
                   Longest drive (yards)
                 </span>
                 <input
@@ -104,18 +104,18 @@ export default function PinpointPage() {
                   value={g.drive ?? ""}
                   onChange={(e) => update(day.id, "drive", e.target.value)}
                   placeholder="e.g. 352"
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/25"
+                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/60"
                 />
               </label>
 
               {showSim ? (
                 <dl className="mt-4 space-y-1 border-t border-white/10 pt-3 text-[12px]">
                   <div className="flex justify-between">
-                    <dt className="text-cream/45">Pin: {r.pin} ft</dt>
+                    <dt className="text-cream/70">Pin: {r.pin} ft</dt>
                     <dd className="tnum text-gold-soft">+{s.pin}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-cream/45">Drive: {r.drive} yd</dt>
+                    <dt className="text-cream/70">Drive: {r.drive} yd</dt>
                     <dd className="tnum text-gold-soft">+{s.drive}</dd>
                   </div>
                 </dl>
@@ -149,7 +149,7 @@ export default function PinpointPage() {
         >
           {showSim ? "Hide simulated results" : "Try it: simulate the results"}
         </button>
-        <span className="text-[12px] text-cream/45 tnum">
+        <span className="text-[12px] text-cream/70 tnum">
           {filled}/6 guesses{showSim ? ` · ${score.total} pts in the simulation` : ""}
         </span>
       </div>
@@ -158,7 +158,7 @@ export default function PinpointPage() {
           {saveMsg}
         </p>
       ) : null}
-      <p className="mt-6 text-[10.5px] leading-relaxed text-cream/30">
+      <p className="mt-6 text-[10.5px] leading-relaxed text-cream/60">
         Simulated results are for trying the scoring before the week; real results come from the
         official shot data once the live feed is connected.
       </p>

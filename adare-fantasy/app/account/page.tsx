@@ -117,7 +117,7 @@ export default function AccountPage() {
                   onChange={(e) => setLinkEmail(e.target.value)}
                   placeholder="you@example.com"
                   aria-label="Email you entered with"
-                  className="min-w-0 flex-1 rounded-full border border-white/15 bg-forest-950/60 px-3 py-1.5 text-[12.5px] text-cream placeholder:text-cream/25"
+                  className="min-w-0 flex-1 rounded-full border border-white/15 bg-forest-950/60 px-3 py-1.5 text-[12.5px] text-cream placeholder:text-cream/60"
                 />
                 <button
                   type="button"
@@ -127,7 +127,7 @@ export default function AccountPage() {
                   Email me a link
                 </button>
               </div>
-              {linkMsg ? <p className="mt-2 text-[11.5px] text-cream/55">{linkMsg}</p> : null}
+              {linkMsg ? <p className="mt-2 text-[11.5px] text-cream/70">{linkMsg}</p> : null}
               {devLink ? (
                 <a href={devLink} className="mt-1 block break-all text-[11px] text-gold-soft underline">
                   Dev mode (no mail provider): open sign-in link

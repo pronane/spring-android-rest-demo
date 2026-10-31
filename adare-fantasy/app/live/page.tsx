@@ -15,6 +15,7 @@ import {
   type LiveMatch,
 } from "@/lib/sim";
 import { ACTIVE_EDITION } from "@/lib/tournaments";
+import { applyFeed, type LiveFeed } from "@/lib/live";
 
 const DEFAULT_MINUTE = 3080; // Sunday singles, mid-afternoon
 const JUMPS = [
@@ -31,6 +32,28 @@ export default function LivePage() {
   const [minute, setMinute] = useState(DEFAULT_MINUTE);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
+  const [liveFeed, setLiveFeed] = useState<LiveFeed | null>(null);
+
+  // When the server has a real scoring feed, it replaces the simulation and is
+  // polled every 30 seconds. Without one, /api/live says "simulation".
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/live", { cache: "no-store" });
+        const data = (await res.json()) as { source: string; feed?: LiveFeed };
+        if (!cancelled) setLiveFeed(data.source === "feed" && data.feed ? data.feed : null);
+      } catch {
+        /* keep whatever we last had */
+      }
+    };
+    void load();
+    const id = window.setInterval(load, 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, []);
 
   useEffect(() => {
     const t = Number(new URLSearchParams(window.location.search).get("t"));
@@ -51,7 +74,10 @@ export default function LivePage() {
     return () => window.clearInterval(id);
   }, [playing, speed]);
 
-  const sim = useMemo(() => simState(minute), [minute]);
+  const sim = useMemo(
+    () => (liveFeed ? applyFeed(simState(0), liveFeed) : simState(minute)),
+    [liveFeed, minute],
+  );
   const score = useMemo(
     () => scoreSquad(state.squad, state.captain, state.mode, sim),
     [state.squad, state.captain, state.mode, sim],
@@ -102,61 +128,67 @@ export default function LivePage() {
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
-            <button
-              type="button"
-              onClick={() => setPlaying((p) => !p)}
-              aria-label={playing ? "Pause the simulation" : "Play the simulation"}
-              className="flex items-center gap-1.5 rounded-full bg-gold px-3.5 py-1.5 text-[12px] font-semibold text-forest-950 transition hover:bg-gold-soft"
-            >
-              {playing ? "❙❙ Pause" : "▶ Play"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMinute(0);
-                setPlaying(false);
-              }}
-              className="rounded-full px-3 py-1.5 text-[12px] text-cream/60 transition hover:text-cream"
-            >
-              Restart
-            </button>
-            {[1, 2, 4].map((s) => (
+        {liveFeed ? (
+          <p className="rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-[12px] text-cream/70">
+            Real scores · refreshes every 30s
+          </p>
+        ) : (
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] p-1">
               <button
-                key={s}
                 type="button"
-                onClick={() => setSpeed(s)}
-                aria-pressed={speed === s}
-                aria-label={`Playback speed ${s} times`}
-                className={`rounded-full px-2.5 py-1.5 text-[11px] tnum transition ${
-                  speed === s ? "bg-white/10 text-cream" : "text-cream/60 hover:text-cream"
-                }`}
+                onClick={() => setPlaying((p) => !p)}
+                aria-label={playing ? "Pause the simulation" : "Play the simulation"}
+                className="flex items-center gap-1.5 rounded-full bg-gold px-3.5 py-1.5 text-[12px] font-semibold text-forest-950 transition hover:bg-gold-soft"
               >
-                {s}×
+                {playing ? "❙❙ Pause" : "▶ Play"}
               </button>
-            ))}
-          </div>
-          <div className="hidden items-center gap-1 text-[10.5px] text-cream/60 sm:flex">
-            {JUMPS.map((jump) => (
               <button
-                key={jump.label}
                 type="button"
                 onClick={() => {
-                  setMinute(jump.minute);
+                  setMinute(0);
                   setPlaying(false);
                 }}
-                aria-current={Math.abs(minute - jump.minute) < 60 ? "true" : undefined}
-                aria-label={`Jump to ${jump.label}`}
-                className={`rounded-full px-2 py-1 transition hover:text-gold-soft ${
-                  Math.abs(minute - jump.minute) < 60 ? "text-gold-soft" : ""
-                }`}
+                className="rounded-full px-3 py-1.5 text-[12px] text-cream/60 transition hover:text-cream"
               >
-                {jump.label}
+                Restart
               </button>
-            ))}
+              {[1, 2, 4].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSpeed(s)}
+                  aria-pressed={speed === s}
+                  aria-label={`Playback speed ${s} times`}
+                  className={`rounded-full px-2.5 py-1.5 text-[11px] tnum transition ${
+                    speed === s ? "bg-white/10 text-cream" : "text-cream/60 hover:text-cream"
+                  }`}
+                >
+                  {s}×
+                </button>
+              ))}
+            </div>
+            <div className="hidden items-center gap-1 text-[10.5px] text-cream/60 sm:flex">
+              {JUMPS.map((jump) => (
+                <button
+                  key={jump.label}
+                  type="button"
+                  onClick={() => {
+                    setMinute(jump.minute);
+                    setPlaying(false);
+                  }}
+                  aria-current={Math.abs(minute - jump.minute) < 60 ? "true" : undefined}
+                  aria-label={`Jump to ${jump.label}`}
+                  className={`rounded-full px-2 py-1 transition hover:text-gold-soft ${
+                    Math.abs(minute - jump.minute) < 60 ? "text-gold-soft" : ""
+                  }`}
+                >
+                  {jump.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* scoreboard */}
