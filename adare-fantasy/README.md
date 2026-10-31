@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.2.1
+# Twenty-Eight — fantasy for the Ryder Cup · v0.4
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -29,7 +29,7 @@ Two ways to play, one paid entry, a 28-match predictor, and a live Sunday you ca
 | Static demo data | **Free data layer** — Wikipedia, Wikidata and Open-Meteo snapshots refreshed by script |
 | Client-only state | **Session auth + server store** for entries, with cookies and HMAC signing |
 
-- Landing: `/` · Draft: `/draft` · Predictor: `/predict` · Pinpoint: `/pinpoint` · Live: `/live` · Entry: `/enter`
+- Landing: `/` · Draft: `/draft` · Predictor: `/predict` · Pinpoint: `/pinpoint` · Live: `/live` · Table: `/leaderboard` · Entry: `/enter`
 - Editions: `/editions` · Leagues: `/leagues` · My card: `/team` · Account: `/account`
 - Rules & scoring: `/rules` · Player pool: `/players`
 
@@ -37,6 +37,22 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 [`screenshots/`](screenshots).
 
 ---
+
+## What's new in v0.4
+
+- **Points are computed on the server.** `lib/scoring.ts` scores cards and predictions from one results
+  snapshot; the browser's old `scoreSquad` path is no longer what the tables use.
+- **A real table.** `/leaderboard` ranks every entry — global or inside one of your private leagues —
+  with card points, predictor points, total, rank and prize eligibility, re-scoring every 30 seconds.
+- **Your working shown.** `/account` now breaks the total down player by player, with the captain
+  marked and the predictor line separate, so a disputed score can be explained rather than asserted.
+- **Operators can correct results.** `POST /api/admin/results` (bearer `ADMIN_TOKEN`) fixes a match,
+  its events or an award, and the table re-scores immediately; `DELETE` returns to the simulation.
+  Unset token means the endpoint refuses to serve rather than opening up.
+- **Rules under test.** `npm run scoring:check` asserts 22 cases in CI, including the unbeaten bonus
+  (3+ matches, only once the cup is decided) and the ×0.9 scale on twelve-man cards.
+- **Sign-in links no longer leak.** Without `RESEND_API_KEY`, production logs a redacted warning
+  instead of the message body, which used to include a live sign-in token.
 
 ## What's new in v0.3
 
@@ -49,7 +65,7 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 - **Live scores adapter.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 30 s, and fantasy points follow them. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation.
 
-Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`, `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`.
+Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`, `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`, `ADMIN_TOKEN` (enables operator result corrections; the endpoint fails closed when unset).
 
 ---
 
@@ -95,6 +111,42 @@ singles — plus **MVP, top scorer and rookie of the week**.
 
 Picks lock with your card at the first tee. Pairings before the announcement are the projected
 ones, labelled as such.
+
+---
+
+## The scoring engine
+
+`lib/scoring.ts` is the single source of truth for points. It is pure — results in, points out — so
+the same rules feed the live page, the global table, a private league's table and the breakdown on
+`/account`.
+
+```ts
+scoreCard({ squad, captain, mode }, results)      // player points, with the captain doubled
+scorePredictions({ predictions, awards }, results) // 2/match, 5/award, 10/exact scoreline
+scoreEntry(card, entry, results)                  // both, added
+```
+
+**Where results come from.** `lib/server/results.ts` builds a `Results` snapshot from the seeded
+simulation (28 finals, fixed seed, so every request sees the same cup), then merges any operator
+corrections stored in the JSON store. Swapping in a live provider means replacing `simulatedMatches()`
+and nothing else — `/live` already validates that shape.
+
+**Corrections.** `POST /api/admin/results` with `Authorization: Bearer $ADMIN_TOKEN` fixes a match
+(`{"matches":{"fri-am-1":{"result":"usa"}}}`), replaces a match's events, or sets awards. Unknown
+match ids are reported back in `dropped` instead of failing the batch. `DELETE` clears every
+correction and returns to the simulation; `GET` shows the merged state. With `ADMIN_TOKEN` unset the
+endpoint returns **503** rather than opening up, and a wrong token gets 401 — both are covered by the
+API suite.
+
+**Tables.** `GET /api/leaderboard` returns the global table; `?league=<id>` returns that private
+league and 404s if you are not a member. Rows carry card points, predictor points, total, rank (ties
+share a rank), and prize eligibility. `GET /api/score` returns the signed-in entry's full breakdown.
+
+**Rules as tests.** `npm run scoring:check` asserts the engine's behaviour without a browser or a
+database — 22 cases covering captain doubling, halved matches, appearance points, birdie/eagle
+bonuses, the unbeaten bonus (3+ matches, only once the cup is complete), the 0.9 scale on twelve-man
+cards, prediction scoring, the exact-scoreline guard mid-event, and tie ranking. CI runs it on every
+push.
 
 ---
 
@@ -214,18 +266,20 @@ The entry store lives in `.data/twenty-eight.json` (created on first write; dele
 
 ```
 adare-fantasy/
-├─ app/                  # /, /draft, /predict, /live, /enter, /editions, /leagues,
-│                        # /team, /account, /players, /rules + /api/{session,checkout,entry}
+├─ app/                  # /, /draft, /predict, /live, /leaderboard, /enter, /editions,
+│                        # /leagues, /team, /account, /players, /rules
+│                        # + /api/{session,checkout,entry,leaderboard,score,admin/results}
 ├─ components/           # brand, header/footer, tiles, squad board, league table,
 │                        # conditions card, countdown
 ├─ data/snapshots/       # committed free-data snapshots (Wikipedia + Wikidata + Open-Meteo)
 ├─ lib/
 │  ├─ tournaments.ts     # platform brand, editions, modes, plans, prize split, sponsors
 │  ├─ helpers.ts         # budget, validation, projections, auto-pick
-│  ├─ sim.ts             # seeded match engine, sessions, live state, scoring
+│  ├─ sim.ts             # seeded match engine, sessions, live state
+│  ├─ scoring.ts         # pure points engine: cards, predictions, ranking
 │  ├─ providers.ts       # snapshot reader (staleness, compass, conditions summary)
 │  ├─ store.tsx          # card state + localStorage (key `twentyeight:v2`)
-│  └─ server/            # JSON store + cookie session
+│  └─ server/            # JSON store, cookie session, results snapshot, standings
 ├─ scripts/refresh-data.mjs
 ├─ public/               # hero art, self-hosted fonts
 └─ screenshots/          # the captures in this doc
@@ -240,10 +294,11 @@ screen has content on first visit. "Start fresh" clears it.
 
 1. **Real field and prices** — nightly ingest of the European points list, US qualifying standings
    and OWGR; "field confirmed" flow with automatic refunds for missing players.
-2. **Postgres + Prisma** — move entries, payments, leagues and audit trail off the JSON file; signed
-   payment webhooks; a correction console for scoring.
-3. **Real scoring** — a licensed feed, or a volunteer scorer console with two-person verification,
-   hole-by-hole idempotent updates pushed over websockets.
+2. **Postgres + Prisma** — move entries, payments, leagues, results and the audit trail off the JSON
+   file; signed payment webhooks.
+3. **Scoring beyond the simulation** — the engine, the tables and the correction API are in (v0.4);
+   what is missing is a licensed feed or a volunteer scorer console with two-person verification, and
+   hole-by-hole updates pushed over websockets instead of the 30-second poll.
 4. **Payments for real** — Stripe/Stripe Tax, T&Cs, 18+, geo-gating, responsible-play copy, and a
    published prize-pool guarantee.
 5. **Game depth** — transfer market at the lock, per-session captaincy, head-to-head private
@@ -268,7 +323,7 @@ The first pass was designed for looks; this one is designed to be usable by ever
 | **Motion** | `prefers-reduced-motion` stops the live dot's ping, the smooth scroll and every transition. |
 | **Visual** | The near-invisible 86px numerals behind the "three ways in" cards were replaced with a soft gold wash — they measured 1.06:1, so they were texture rather than information. |
 
-Verified with **axe-core 4.14** across 12 routes at 390px and 1440px: **0 violations** (down from 30
+Verified with **axe-core 4.14** across 13 routes at 390px and 1440px: **0 violations** (down from 30
 violation types, mostly contrast). Keyboard, `aria-current`, toggle state, reduced motion and the
 checkout field metadata are asserted in the same scripted pass.
 
@@ -277,16 +332,16 @@ checkout field metadata are asserted in the same scripted pass.
 `verification/` holds the review and end-to-end evidence, re-recorded on this branch from a production
 build with an empty store:
 
-- [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, the two regressions
-  found and fixed (a paid entry being erased on reload, and the checkout pre-filling the demo
-  identity), what PR #6 added here, and the full results table
+- [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, the regressions found
+  and fixed, how the scoring engine is put together, and the full results table
 - [`verification/videos/`](verification/videos) — three recordings: the desktop purchase → draft →
-  predictor → account → Pinpoint → league → live journey (46 s), the mobile pass (14 s), and Sunday
-  singles at 4× to a decided cup (27 s)
-- [`verification/screenshots/`](verification/screenshots) — 26 step-by-step captures, one per action
-  in the videos, including a blocked account-takeover attempt
+  predictor → account → table → Pinpoint → league → live journey (49 s), the mobile pass (14 s), and
+  Sunday singles at 4× to a decided cup (25 s)
+- [`verification/screenshots/`](verification/screenshots) — 27 step-by-step captures, one per action
+  in the videos, including the scored table and a blocked account-takeover attempt
 - `api-results.json`, `browser-results.json`, `axe-results.json`, `capture-log.json` —
-  machine-readable results (26 API checks, 15 browser checks, 24 accessibility checks; all passing)
+  machine-readable results (38 API checks, 18 browser checks, 26 accessibility checks; all passing,
+  plus 22 scoring-rule assertions from `npm run scoring:check` — 104 in total)
 - [`verification/harness/`](verification/harness) — the scripts that produced all of it
   (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
   `CHROME_PATH` and `FFMPEG` overridable; see its README
@@ -295,4 +350,5 @@ build with an empty store:
 
 Headless Chromium via Puppeteer at 1440×1000–1300 (desktop, 1.5× DPR) and 390×844 (mobile, 2× DPR),
 `networkidle0` plus `document.fonts.ready`, with the card pre-seeded into `localStorage` so states
-are reproducible. The GIF is 12 frames of `/live` at 4× from `?t=2740` to the final putt.
+are reproducible. The GIF is 12 frames of `/live` at 4× from `?t=2740` to the final putt. The recording scripts walk
+the paid journey once, so the table in the captures is the table a real entry sees after 28 matches.

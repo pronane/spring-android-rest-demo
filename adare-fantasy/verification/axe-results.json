@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "clean": 24,
-  "total": 24,
+  "clean": 26,
+  "total": 26,
   "results": [
     {
       "route": "/",
@@ -50,6 +50,16 @@
     },
     {
       "route": "/enter",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "/leaderboard",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/leaderboard",
       "width": 1440,
       "violations": []
     },
