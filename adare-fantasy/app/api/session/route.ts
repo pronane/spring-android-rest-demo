@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { COOKIE, currentUserId, makeToken } from "@/lib/server/auth";
-import { findUser, upsertUser } from "@/lib/server/db";
+import { findUser, findUserByEmail, upsertUser } from "@/lib/server/db";
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +16,30 @@ export async function POST(request: Request) {
     manager?: string;
     teamName?: string;
   };
-  const email = (body.email ?? "").trim();
-  if (!email || !email.includes("@")) {
+  const email = (body.email ?? "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
     return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
   }
+
+  // Typing someone else's email must not sign you in as them. Until there is a
+  // real sign-in (magic link / password), an existing account can only be
+  // updated from the browser that already holds its session.
+  const existing = await findUserByEmail(email);
+  const currentId = await currentUserId();
+  if (existing && existing.id !== currentId) {
+    return NextResponse.json(
+      {
+        error:
+          "That email already has an entry. Sign in from the device you entered on, or contact support.",
+      },
+      { status: 409 },
+    );
+  }
+
   const user = await upsertUser({
     email,
-    manager: (body.manager ?? "").trim() || email.split("@")[0],
-    teamName: (body.teamName ?? "").trim() || "My card",
+    manager: (body.manager ?? "").trim().slice(0, 60) || email.split("@")[0],
+    teamName: (body.teamName ?? "").trim().slice(0, 60) || "My card",
   });
   const response = NextResponse.json({ signedIn: true, user });
   response.cookies.set(COOKIE, makeToken(user.id), {

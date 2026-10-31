@@ -2,10 +2,23 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
 export const COOKIE = "te_session";
-const SECRET = process.env.SESSION_SECRET ?? "twenty-eight-dev-secret";
+const DEV_SECRET = "twenty-eight-dev-secret";
+
+/**
+ * The fallback secret is public (it is in this repo), so anyone could forge a
+ * session cookie for any user id with it. Refuse to run with it in production.
+ */
+function secret(): string {
+  const value = process.env.SESSION_SECRET;
+  if (value && value.length >= 16) return value;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET must be set (16+ chars) in production.");
+  }
+  return DEV_SECRET;
+}
 
 function sign(value: string): string {
-  return createHmac("sha256", SECRET).update(value).digest("hex").slice(0, 32);
+  return createHmac("sha256", secret()).update(value).digest("hex").slice(0, 32);
 }
 
 export function makeToken(userId: string): string {

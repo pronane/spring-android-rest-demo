@@ -19,7 +19,10 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as { planId?: string };
-  const plan = PLANS.find((p) => p.id === body.planId) ?? PLANS[0];
+  const plan = PLANS.find((p) => p.id === body.planId);
+  if (!plan) {
+    return NextResponse.json({ error: "Unknown plan." }, { status: 400 });
+  }
 
   const user = await saveEntry(userId, {
     plan: plan.id,

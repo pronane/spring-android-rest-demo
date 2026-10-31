@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PlayerTile } from "@/components/PlayerTile";
 import { BudgetBar, SquadBoard } from "@/components/SquadBoard";
 import { Eyebrow, TeamDot } from "@/components/ui";
@@ -41,6 +41,13 @@ export default function DraftPage() {
   const [sort, setSort] = useState<SortKey>("price");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Any change after a save makes the card unsaved again — previously the
+  // button kept saying "Card saved ✓" after you swapped a player.
+  useEffect(() => {
+    setSaved(false);
+  }, [state.squad, state.captain, state.mode]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -72,10 +79,14 @@ export default function DraftPage() {
   };
 
   const onSave = async () => {
+    setSaveError(null);
+    if (!state.captain) {
+      setSaveError("Pick a captain — tap C on one of your players.");
+      return;
+    }
     saveTeam();
-    setSaved(true);
     try {
-      await fetch("/api/entry", {
+      const res = await fetch("/api/entry", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -83,11 +94,18 @@ export default function DraftPage() {
           squad: state.squad,
           captain: state.captain,
           predictions: state.predictions,
+          awards: state.awards,
         }),
       });
+      if (!res.ok && res.status !== 401) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setSaveError(data.error ?? "Could not save your card to the server.");
+        return;
+      }
     } catch {
-      /* offline demo still saves locally */
+      /* offline — the card is still saved on this device */
     }
+    setSaved(true);
   };
 
   return (
@@ -316,7 +334,13 @@ export default function DraftPage() {
                 >
                   {saved ? "Card saved ✓" : "Save my card"}
                 </button>
-              ) : (
+              ) : null}
+              {paid && saveError ? (
+                <p role="alert" className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                  {saveError}
+                </p>
+              ) : null}
+              {paid ? null : (
                 <Link
                   href="/enter"
                   className="rounded-full bg-gold py-2.5 text-center text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"

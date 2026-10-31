@@ -28,6 +28,8 @@ export type Entry = {
   squad?: string[];
   captain?: string | null;
   predictions?: Record<string, string>;
+  awards?: { mvp: string | null; topScorer: string | null; rookie: string | null };
+  updatedAt?: string;
 };
 
 type Db = { users: User[]; version: number };
@@ -46,7 +48,33 @@ async function readDb(): Promise<Db> {
 
 async function writeDb(db: Db): Promise<void> {
   await fs.mkdir(path.dirname(FILE), { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify(db, null, 2), "utf8");
+  // Write to a temp file then rename, so a crash mid-write can't truncate the store.
+  const tmp = `${FILE}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify(db, null, 2), "utf8");
+  await fs.rename(tmp, FILE);
+}
+
+/**
+ * Every mutation is read-modify-write on one file. Without a queue, two requests
+ * landing together both read the old file and the second write silently drops
+ * the first (e.g. two people paying at once). Serialise them in-process.
+ */
+let queue: Promise<unknown> = Promise.resolve();
+function mutate<T>(fn: (db: Db) => Promise<T> | T): Promise<T> {
+  const run = queue.then(async () => {
+    const db = await readDb();
+    const result = await fn(db);
+    await writeDb(db);
+    return result;
+  });
+  queue = run.catch(() => undefined);
+  return run;
+}
+
+export async function findUserByEmail(email: string): Promise<User | null> {
+  const db = await readDb();
+  const needle = email.trim().toLowerCase();
+  return db.users.find((u) => u.email.toLowerCase() === needle) ?? null;
 }
 
 export async function findUser(id: string): Promise<User | null> {
@@ -59,48 +87,47 @@ export async function upsertUser(input: {
   manager: string;
   teamName: string;
 }): Promise<User> {
-  const db = await readDb();
-  const existing = db.users.find(
-    (u) => u.email.toLowerCase() === input.email.toLowerCase(),
-  );
-  if (existing) {
-    existing.manager = input.manager || existing.manager;
-    existing.teamName = input.teamName || existing.teamName;
-    await writeDb(db);
-    return existing;
-  }
-  const user: User = {
-    id: crypto.randomUUID(),
-    email: input.email,
-    manager: input.manager,
-    teamName: input.teamName,
-    createdAt: new Date().toISOString(),
-  };
-  db.users.push(user);
-  await writeDb(db);
-  return user;
+  return mutate((db) => {
+    const existing = db.users.find(
+      (u) => u.email.toLowerCase() === input.email.toLowerCase(),
+    );
+    if (existing) {
+      existing.manager = input.manager || existing.manager;
+      existing.teamName = input.teamName || existing.teamName;
+      return existing;
+    }
+    const user: User = {
+      id: crypto.randomUUID(),
+      email: input.email,
+      manager: input.manager,
+      teamName: input.teamName,
+      createdAt: new Date().toISOString(),
+    };
+    db.users.push(user);
+    return user;
+  });
 }
 
 export async function saveEntry(
   userId: string,
   patch: Partial<Entry> & { plan: string },
 ): Promise<User | null> {
-  const db = await readDb();
-  const user = db.users.find((u) => u.id === userId);
-  if (!user) return null;
-  const ref =
-    user.entry?.ref ??
-    `TE-${Math.random().toString(16).slice(2, 6).toUpperCase()}-ADRE`;
-  user.entry = {
-    ...user.entry,
-    ref,
-    plan: patch.plan,
-    amount: patch.amount ?? user.entry?.amount ?? 0,
-    paidAt: user.entry?.paidAt ?? new Date().toISOString(),
-    editionId: patch.editionId ?? user.entry?.editionId ?? "adare-2027",
-  };
-  await writeDb(db);
-  return user;
+  return mutate((db) => {
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) return null;
+    const ref =
+      user.entry?.ref ??
+      `TE-${crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}-ADRE`;
+    user.entry = {
+      ...user.entry,
+      ref,
+      plan: patch.plan,
+      amount: patch.amount ?? user.entry?.amount ?? 0,
+      paidAt: user.entry?.paidAt ?? new Date().toISOString(),
+      editionId: patch.editionId ?? user.entry?.editionId ?? "adare-2027",
+    };
+    return user;
+  });
 }
 
 export async function updateTeam(
@@ -110,12 +137,13 @@ export async function updateTeam(
     squad?: string[];
     captain?: string | null;
     predictions?: Record<string, string>;
+    awards?: Entry["awards"];
   },
 ): Promise<User | null> {
-  const db = await readDb();
-  const user = db.users.find((u) => u.id === userId);
-  if (!user?.entry) return null;
-  user.entry = { ...user.entry, ...team };
-  await writeDb(db);
-  return user;
+  return mutate((db) => {
+    const user = db.users.find((u) => u.id === userId);
+    if (!user?.entry) return null;
+    user.entry = { ...user.entry, ...team, updatedAt: new Date().toISOString() };
+    return user;
+  });
 }
