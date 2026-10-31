@@ -7,7 +7,7 @@
  * Outputs:
  *   $OUT/frames/01-desktop/*.jpg + timing.json   (input for encode.mjs)
  *   $OUT/frames/02-mobile/*.jpg  + timing.json
- *   $OUT/shots/01-home.png … 26-mobile-account.png  (+ 27 from takeover.mjs)
+ *   $OUT/shots/01-home.png … (+ the takeover shot from takeover.mjs)
  *   $OUT/shots.json, $OUT/email.txt
  *
  * Run it against a production build with a clean store: the flow creates a real
@@ -24,6 +24,8 @@ fs.mkdirSync(SHOTS, { recursive: true });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = [];
+/** Screenshots are numbered in the order they are taken, across both stages. */
+let shotIndex = 0;
 
 async function stage(name, width, height, flow) {
   const browser = await launch({ width, height });
@@ -37,7 +39,8 @@ async function stage(name, width, height, flow) {
   const stream = await startScreencast(page, path.join(OUT, "frames", name));
 
   const snap = async (label) => {
-    const file = path.join(SHOTS, `${label}.png`);
+    shotIndex += 1;
+    const file = path.join(SHOTS, `${String(shotIndex).padStart(2, "0")}-${label}.png`);
     await page.screenshot({ path: file });
     log.push({ stage: name, shot: path.basename(file), url: page.url() });
     return file;
@@ -80,60 +83,61 @@ fs.writeFileSync(path.join(OUT, "email.txt"), email);
 await stage("01-desktop", 1280, 800, async ({ page, snap, click, fill, text }) => {
   await page.goto(BASE + "/", { waitUntil: "networkidle0" });
   await sleep(1200);
-  await snap("01-home");
+  await snap("home");
 
   await page.goto(BASE + "/enter", { waitUntil: "networkidle0" });
   await sleep(600);
-  await snap("02-checkout-empty");
+  await snap("checkout-empty");
   await fill("you@example.com", email);
   await fill("Séamus Ryan", "Aoife Byrne");
   await fill("Bogey Merchants", "Adare Aces");
-  await fill("4242 4242 4242 4242", "4242 4242 4242 4242");
-  await fill("09 / 27", "09 / 27");
-  await fill("123", "123");
-  await snap("03-checkout-filled");
-  await click(/Pay €10 & enter/, 1600);
-  await snap("04-receipt");
+  await snap("checkout-filled");
+  await click(/Continue to payment/, 1800);
+  await page.waitForFunction(() => /\/pay\/ORD-/.test(location.pathname), { timeout: 10_000 });
+  await sleep(700);
+  await snap("payment");
+  await click(/Pay €10 · demo card/, 1800);
+  await snap("receipt");
   if (!/TE-[A-Z0-9]{6}-ADRE/.test(await text())) throw new Error("no receipt after paying");
 
   await page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
   await sleep(500);
   await click(/Captain's Dozen/, 700);
-  await snap("05-draft-empty");
+  await snap("draft-empty");
   await click(/Auto-pick/, 900);
-  await snap("06-draft-filled");
+  await snap("draft-filled");
   await click(/Save my card/, 1400);
-  await snap("07-card-saved");
+  await snap("card-saved");
 
   await page.goto(BASE + "/predict", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("08-predictor-empty");
+  await snap("predictor-empty");
   await click(/Favourites auto-pick/, 900);
-  await snap("09-predictor-filled");
+  await snap("predictor-filled");
   await click(/Save my picks/, 1300);
-  await snap("10-picks-saved");
+  await snap("picks-saved");
 
   await page.goto(BASE + "/account", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("11-account");
+  await snap("account");
 
   await page.goto(BASE + "/leaderboard", { waitUntil: "networkidle0" });
   await sleep(1400);
-  await snap("12-leaderboard");
+  await snap("leaderboard");
 
   await page.goto(BASE + "/pinpoint", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("13-pinpoint-empty");
+  await snap("pinpoint-empty");
   const guesses = await page.$$("input[inputmode=decimal], input[inputmode=numeric]");
   if (guesses[0]) { await guesses[0].click({ clickCount: 3 }); await guesses[0].type("4.5", { delay: 15 }); }
   if (guesses[1]) { await guesses[1].click({ clickCount: 3 }); await guesses[1].type("352", { delay: 15 }); }
-  await snap("14-pinpoint-guess");
+  await snap("pinpoint-guess");
   await click(/Save my guesses/, 1300);
-  await snap("15-pinpoint-saved");
+  await snap("pinpoint-saved");
 
   await page.goto(BASE + "/leagues", { waitUntil: "networkidle0" });
   await sleep(700);
-  await snap("16-leagues");
+  await snap("leagues");
   await click(/Create (a )?league|New league|Start a league/, 700);
   await sleep(400);
   const inputs = await page.$$("input");
@@ -141,19 +145,20 @@ await stage("01-desktop", 1280, 800, async ({ page, snap, click, fill, text }) =
     await inputs[0].click({ clickCount: 3 });
     await inputs[0].type("Sunday Singles", { delay: 15 });
   }
-  await snap("17-league-form");
+  await snap("league-form");
   await click(/Create|Start|Save/, 1400);
-  await snap("18-league-created");
+  await snap("league-created");
 
   await page.goto(BASE + "/live", { waitUntil: "networkidle0" });
   await sleep(1500);
-  await snap("19-live");
+  await snap("live");
+
 });
 
 await stage("02-mobile", 390, 844, async ({ page, snap, click, fill }) => {
   await page.goto(BASE + "/", { waitUntil: "networkidle0" });
   await sleep(900);
-  await snap("22-mobile-home");
+  await snap("mobile-home");
 
   const mobileEmail = `mobile+${Date.now()}@example.com`;
   fs.writeFileSync(path.join(OUT, "mobile-email.txt"), mobileEmail);
@@ -162,22 +167,51 @@ await stage("02-mobile", 390, 844, async ({ page, snap, click, fill }) => {
   await fill("you@example.com", mobileEmail);
   await fill("Séamus Ryan", "Cian Doyle");
   await fill("Bogey Merchants", "Kerry Bogtrotters");
-  await fill("4242 4242 4242 4242", "4242 4242 4242 4242");
-  await fill("09 / 27", "09 / 27");
-  await fill("123", "123");
-  await snap("23-mobile-checkout");
-  await click(/Pay €10 & enter/, 1600);
-  await snap("24-mobile-receipt");
+  await snap("mobile-checkout");
+  await click(/Continue to payment/, 1800);
+  await page.waitForFunction(() => /\/pay\/ORD-/.test(location.pathname), { timeout: 10_000 });
+  await sleep(600);
+  await snap("mobile-payment");
+  await click(/Pay €10 · demo card/, 1800);
+  await snap("mobile-receipt");
 
   await page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
   await sleep(500);
   await click(/Auto-pick/, 900);
-  await snap("25-mobile-draft");
+  await snap("mobile-draft");
   await click(/Save my card/, 1300);
 
   await page.goto(BASE + "/account", { waitUntil: "networkidle0" });
   await sleep(600);
-  await snap("26-mobile-account");
+  await snap("mobile-account");
+});
+
+await stage("03-admin", 1280, 900, async ({ page, snap, click }) => {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) return;
+  await page.goto(BASE + "/admin", { waitUntil: "networkidle0" });
+  await sleep(500);
+  await page.evaluate((value) => {
+    const input = document.querySelector('input[type="password"]');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }, adminToken);
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => /^Connect$/i.test(b.textContent.trim()))?.click());
+  await sleep(1800);
+  await snap("admin-payments");
+
+  await page.evaluate(() => [...document.querySelectorAll('[role="tab"]')].find((b) => /prizes/i.test(b.textContent))?.click());
+  await sleep(800);
+  await snap("admin-prizes-empty");
+
+  // The mobile entrant plays alone, so their fee is the global pot.
+  await click(/Settle the global pot/, 1600);
+  await snap("admin-prizes");
+
+  await page.evaluate(() => [...document.querySelectorAll('[role="tab"]')].find((b) => /results/i.test(b.textContent))?.click());
+  await sleep(800);
+  await snap("admin-results");
 });
 
 fs.writeFileSync(path.join(OUT, "shots.json"), JSON.stringify(log, null, 2));

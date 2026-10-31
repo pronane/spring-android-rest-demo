@@ -7,6 +7,7 @@
  *
  * Exits non-zero on the first failing suite result. Writes api-results.json.
  */
+import { createHmac } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -27,7 +28,8 @@ const call = async (route, { method = "GET", body, cookie, headers = {} } = {}) 
       ...(cookie ? { cookie } : {}),
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    // Raw strings (webhook payloads) must not be re-encoded: the signature covers bytes.
+    body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
   });
   const json = await res.json().catch(() => null);
   return { status: res.status, json, cookie: (res.headers.getSetCookie?.() ?? [])[0]?.split(";")[0] ?? "" };
@@ -61,7 +63,32 @@ r = await call("/api/checkout", { method: "POST", cookie, body: { planId: "free"
 check("unknown plan rejected", r.status === 400, `status ${r.status}`);
 
 r = await call("/api/checkout", { method: "POST", cookie, body: { planId: "single" } });
-check("checkout issues a receipt ref", r.status === 200 && /^TE-[A-Z0-9]{6}-ADRE$/.test(r.json?.entry?.ref ?? ""), r.json?.entry?.ref);
+const orderRef = r.json?.order?.ref ?? "";
+check("checkout opens a pending order", r.status === 200 && r.json?.order?.status === "pending" && /^ORD-[A-Z0-9]{6}$/.test(orderRef), `${r.status} ${orderRef}`);
+check("checkout returns a payment url", typeof r.json?.url === "string" && r.json.url.length > 0, r.json?.url);
+check("checkout takes no entry of its own", !r.json?.entry, JSON.stringify(r.json?.entry ?? null));
+
+r = await call("/api/entry", {
+  method: "PUT",
+  cookie,
+  body: { mode: "classic", squad: ["rory", "lowry", "aberg", "scheffler", "morikawa", "straka"], captain: "rory" },
+});
+check("a pending order does not unlock the game", r.status === 402, `status ${r.status}`);
+
+r = await call(`/api/orders/${orderRef}/confirm`, { method: "POST", cookie });
+check("demo payment settles the order", r.status === 200 && r.json?.order?.status === "paid" && /^TE-[A-Z0-9]{6}-ADRE$/.test(r.json?.entry?.ref ?? ""), `${r.status} ${r.json?.entry?.ref}`);
+
+r = await call(`/api/orders/${orderRef}/confirm`, { method: "POST", cookie });
+check("re-confirming a paid order is idempotent", r.status === 200 && r.json?.alreadyPaid === true, `alreadyPaid ${r.json?.alreadyPaid}`);
+
+r = await call(`/api/orders/${orderRef}`, { cookie });
+check("the owner can read the order", r.status === 200 && r.json?.order?.status === "paid", `status ${r.status}`);
+
+r = await call(`/api/orders/${orderRef}`);
+check("order status needs a session", r.status === 401, `status ${r.status}`);
+
+r = await call(`/api/orders/ORD-000000`, { cookie });
+check("an unknown order is a 404", r.status === 404, `status ${r.status}`);
 
 const rawCookie = await fetch(BASE + "/api/session", {
   method: "POST",
@@ -189,6 +216,92 @@ if (process.env.ADMIN_TOKEN) {
 } else {
   r = await call("/api/admin/results");
   check("admin corrections fail closed without ADMIN_TOKEN", r.status === 503, `status ${r.status}`);
+}
+
+/* ——— payments, ledger and prizes ——— */
+
+r = await call("/api/webhooks/stripe", { method: "POST", body: {} });
+if (process.env.STRIPE_WEBHOOK_SECRET) {
+  check("a webhook with no signature is refused", r.status === 400, `status ${r.status}`);
+
+  const event = JSON.stringify({
+    id: `evt_${Date.now()}`,
+    type: "checkout.session.completed",
+    data: { object: { id: "cs_harness", payment_status: "paid", metadata: { orderRef } } },
+  });
+  const stale = Math.floor(Date.now() / 1000) - 400;
+  const staleSig = createHmac("sha256", process.env.STRIPE_WEBHOOK_SECRET).update(`${stale}.${event}`).digest("hex");
+  r = await call("/api/webhooks/stripe", {
+    method: "POST",
+    headers: { "stripe-signature": `t=${stale},v1=${staleSig}` },
+    body: event,
+  });
+  check("a replayed webhook is refused", r.status === 400, `status ${r.status}`);
+
+  const now = Math.floor(Date.now() / 1000);
+  const sig = createHmac("sha256", process.env.STRIPE_WEBHOOK_SECRET).update(`${now}.${event}`).digest("hex");
+  r = await call("/api/webhooks/stripe", {
+    method: "POST",
+    headers: { "stripe-signature": `t=${now},v1=${sig}` },
+    body: event,
+  });
+  check("a valid webhook cannot settle a demo order",
+    r.status === 200 && r.json?.action === "ignored" && /demo/.test(r.json?.why ?? ""),
+    `${r.status} ${r.json?.action} ${r.json?.why ?? ""}`);
+
+  r = await call("/api/webhooks/stripe", {
+    method: "POST",
+    headers: { "stripe-signature": "t=1,v1=deadbeef" },
+    body: event,
+  });
+  check("a forged signature is refused", r.status === 400, `status ${r.status}`);
+} else {
+  check("webhooks fail closed without STRIPE_WEBHOOK_SECRET", r.status === 503, `status ${r.status}`);
+}
+
+if (process.env.ADMIN_TOKEN) {
+  const auth = { authorization: `Bearer ${process.env.ADMIN_TOKEN}` };
+
+  r = await call("/api/admin/orders", { headers: auth });
+  const money = r.json?.money ?? {};
+  check("the ledger knows what was taken and what was pooled",
+    r.status === 200 && money.grossCents >= 1000 && money.poolCents === money.grossCents - money.feeCents,
+    `gross ${money.grossCents}, fee ${money.feeCents}, pool ${money.poolCents}`);
+  check("the order list shows the settled order",
+    (r.json?.orders ?? []).some((order) => order.ref === orderRef && order.status === "paid"),
+    `${(r.json?.orders ?? []).length} orders`);
+
+  r = await call("/api/admin/prizes", { headers: auth });
+  check("the prize board starts from the paid pot", r.status === 200 && r.json?.potCents >= 950, `pot ${r.json?.potCents}`);
+
+  // The entry bought above plays in a league, so its fee funds that league's pot.
+  r = await call("/api/admin/prizes", { method: "POST", headers: auth, body: { action: "settle", leagueId: scoreLeagueId } });
+  const awards = r.json?.awards ?? [];
+  check("settling awards the podium from the table", r.status === 200 && awards.length > 0 && awards[0].label === "1st overall", `${r.status} ${awards.length} awards ${r.json?.potCents ?? ""}`);
+  check("no award is larger than the pot", awards.every((award) => award.amountCents <= (r.json?.potCents ?? 0)), "awards inside the pot");
+
+  r = await call("/api/admin/prizes", { method: "POST", headers: auth, body: { action: "pay", leagueId: scoreLeagueId } });
+  check("prizes can be marked paid", r.status === 200 && (r.json?.awards ?? []).every((award) => award.status === "paid"), `${(r.json?.awards ?? []).length} paid`);
+
+  r = await call("/api/admin/prizes", { method: "POST", headers: auth, body: { action: "settle", leagueId: scoreLeagueId } });
+  check("a paid pot cannot be settled twice", r.status === 409, `status ${r.status}`);
+
+  // A second buyer, so the refund does not disturb the entry used above.
+  const buyerEmail = `refund+${Date.now()}@example.com`;
+  const buyer = await call("/api/session", { method: "POST", body: { email: buyerEmail } });
+  const buyerCookie = buyer.cookie;
+  const buyerOrder = await call("/api/checkout", { method: "POST", cookie: buyerCookie, body: { planId: "season" } });
+  const buyerRef = buyerOrder.json?.order?.ref ?? "";
+  check("a season pass costs €24 and pools 95%", buyerOrder.json?.order?.amountCents === 2400, `${buyerOrder.json?.order?.amountCents} cents`);
+  await call(`/api/orders/${buyerRef}/confirm`, { method: "POST", cookie: buyerCookie });
+
+  r = await call("/api/admin/orders", { method: "POST", headers: auth, body: { ref: buyerRef, action: "refund" } });
+  check("an operator can refund an order", r.status === 200 && r.json?.order?.status === "refunded" && r.json?.prizeEligible === false, `${r.status} ${r.json?.order?.status}`);
+
+  const afterRefund = await call("/api/admin/orders", { headers: auth });
+  check("a refund comes back out of the pool",
+    afterRefund.json?.money?.grossCents === 1000,
+    `gross ${afterRefund.json?.money?.grossCents}`);
 }
 
 const passed = results.filter((x) => x.pass).length;

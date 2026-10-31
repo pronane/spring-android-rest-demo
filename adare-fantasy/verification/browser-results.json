@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 18,
-  "total": 18,
+  "passed": 24,
+  "total": 24,
   "results": [
     {
       "name": "fresh visitor is offered a paid entry, not a card",
@@ -24,9 +24,14 @@
       "detail": ""
     },
     {
-      "name": "payment issues a receipt",
+      "name": "the payment page issues an entry ref",
       "pass": true,
-      "detail": "TE-844A5C-ADRE"
+      "detail": "TE-9F7DBC-ADRE"
+    },
+    {
+      "name": "paying lands on a settled order",
+      "pass": true,
+      "detail": ""
     },
     {
       "name": "header shows My card after paying",
@@ -90,6 +95,31 @@
     },
     {
       "name": "second browser cannot take over the account",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "a blocked takeover never reaches the payment page",
+      "pass": true,
+      "detail": "http://127.0.0.1:3000/enter"
+    },
+    {
+      "name": "the console asks for the admin token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the console shows the money taken",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the console lists the settled orders",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the console can open the results tab",
       "pass": true,
       "detail": ""
     }

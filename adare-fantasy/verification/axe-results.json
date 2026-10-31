@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "clean": 26,
-  "total": 26,
+  "clean": 30,
+  "total": 30,
   "results": [
     {
       "route": "/",
@@ -24,6 +24,16 @@
       "violations": []
     },
     {
+      "route": "/admin",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/admin",
+      "width": 1440,
+      "violations": []
+    },
+    {
       "route": "/draft",
       "width": 390,
       "violations": []
@@ -80,6 +90,16 @@
     },
     {
       "route": "/live",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "/pay/ORD-000000",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/pay/ORD-000000",
       "width": 1440,
       "violations": []
     },

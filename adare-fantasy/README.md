@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.4
+# Twenty-Eight — fantasy for the Ryder Cup · v0.5
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -38,6 +38,26 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 ---
 
+## What's new in v0.5
+
+- **Payments are real.** `POST /api/checkout` no longer grants anything: it opens a **pending order**
+  and returns a Stripe Checkout URL (or, without keys, the demo payment page). An entry is created only
+  when the order settles — by Stripe webhook, or by the demo provider. Paying twice, refreshing, or a
+  retried webhook all end with one entry.
+- **A ledger, not a number.** Every settled payment writes three rows — cash in, the platform's 5%, the
+  prize pool's 95% — and refunds reverse them, so "taken", "fees", "pool" and "paid out" always add up.
+- **Prizes settle from the table.** `POST /api/admin/prizes` ranks the eligible field *inside its pot*
+  (a league pot or the global one), applies the published split, and records who is owed what. Lines
+  that cannot be awarded — no 2nd place, nobody outside the podium, no predictor points — are returned
+  and shown, rather than quietly dropped. A settled pot can be paid, and then cannot be re-settled.
+- **An operator console.** `/admin` is a real page: paste the `ADMIN_TOKEN`, then correct results,
+  refund orders and settle prizes from the same API the tests call.
+- **Webhooks are verified, not trusted.** `POST /api/webhooks/stripe` checks the `Stripe-Signature`
+  HMAC (5-minute tolerance), reads the raw body, dedupes by event id, and refuses to touch demo orders.
+  With no `STRIPE_WEBHOOK_SECRET` it returns 503 rather than accepting unsigned JSON.
+- **Rules under test, again.** `npm run payments:check` covers signatures, idempotent settlement,
+  refunds, prize maths and payout guards — 47 assertions, no network, in CI.
+
 ## What's new in v0.4
 
 - **Points are computed on the server.** `lib/scoring.ts` scores cards and predictions from one results
@@ -65,7 +85,10 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 - **Live scores adapter.** `/live` runs the simulation until `LIVE_FEED_URL` points at a JSON feed of real match states (format documented in `lib/live.ts`); then it shows real scores, refreshed every 30 s, and fantasy points follow them. `LIVE_FEED_TOKEN` is sent as a bearer token if set. A broken feed falls back to the simulation.
 
-Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`, `DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`, `ADMIN_TOKEN` (enables operator result corrections; the endpoint fails closed when unset).
+Environment: `SESSION_SECRET` (required in production), `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`,
+`DB_FILE`, `LIVE_FEED_URL`, `LIVE_FEED_TOKEN`, `ADMIN_TOKEN` (enables the admin endpoints; they fail
+closed when unset), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_BASE` (point the Stripe
+client at a stub), `PAYMENTS_PROVIDER` (`demo` or `stripe`; defaults to `stripe` when a key is set).
 
 ---
 
@@ -111,6 +134,44 @@ singles — plus **MVP, top scorer and rookie of the week**.
 
 Picks lock with your card at the first tee. Pairings before the announcement are the projected
 ones, labelled as such.
+
+---
+
+## Payments and the prize ledger
+
+The rule the code enforces: **an entry exists because an order was paid**, never because a form was
+submitted.
+
+```
+POST /api/checkout          → pending order + where to pay   (Stripe URL, or /pay/ORD-…)
+GET  /api/orders/:ref       → status for the payment page    (owner only)
+POST /api/orders/:ref/confirm → demo provider settles it     (refused for Stripe orders)
+POST /api/webhooks/stripe   → Stripe settles it              (signed, deduped)
+POST /api/admin/orders      → refund an order                (reverses the ledger, drops eligibility)
+GET  /api/admin/prizes      → pot, awards, what is unclaimed
+POST /api/admin/prizes      → {action:"settle"} · {action:"pay"}
+```
+
+| Money | Rule |
+|---|---|
+| Entry fee | €10 single · €60 league pack · €24 season pass |
+| Platform & card fees | 5% of every settled payment |
+| Prize pool | the other 95%, attributed to the league pot the entrant plays in (or the global pot) |
+| Prizes | 35 / 15 / 8 / 20 / 7 / 10 % across 1st, 2nd, 3rd, top 10%, best session, predictor |
+
+`lib/server/money.ts` does the arithmetic in cents and pushes rounding drift onto first place, so the
+published split always adds up to the pot. `lib/server/orders.ts` owns the state machine;
+`lib/server/stripe.ts` is the API client and the signature check (no SDK, so it is testable offline).
+
+**Prizes are ranked inside the pot, not globally.** A player who is 7th overall can still be 1st in a
+league of eight, and an ineligible (refunded or comped) entry never takes a place.
+
+**Without Stripe keys** the app uses a demo provider: the payment page's button runs the same
+settlement function a webhook would, and writes the same three ledger rows. Nothing is charged.
+
+**With keys** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`), checkout creates a real hosted Checkout
+Session, `success_url` returns you to `/pay/ORD-…`, and the page polls until the webhook settles it.
+Sales tax, receipts and disputes stay Stripe's problem; the app only stores the order reference.
 
 ---
 
@@ -266,9 +327,10 @@ The entry store lives in `.data/twenty-eight.json` (created on first write; dele
 
 ```
 adare-fantasy/
-├─ app/                  # /, /draft, /predict, /live, /leaderboard, /enter, /editions,
-│                        # /leagues, /team, /account, /players, /rules
-│                        # + /api/{session,checkout,entry,leaderboard,score,admin/results}
+├─ app/                  # /, /draft, /predict, /live, /leaderboard, /enter, /pay/[ref],
+│                        # /admin, /editions, /leagues, /team, /account, /players, /rules
+│                        # + /api/{session,checkout,orders,entry,leaderboard,score,
+│                        #        webhooks/stripe,admin/{results,orders,prizes}}
 ├─ components/           # brand, header/footer, tiles, squad board, league table,
 │                        # conditions card, countdown
 ├─ data/snapshots/       # committed free-data snapshots (Wikipedia + Wikidata + Open-Meteo)
@@ -279,7 +341,8 @@ adare-fantasy/
 │  ├─ scoring.ts         # pure points engine: cards, predictions, ranking
 │  ├─ providers.ts       # snapshot reader (staleness, compass, conditions summary)
 │  ├─ store.tsx          # card state + localStorage (key `twentyeight:v2`)
-│  └─ server/            # JSON store, cookie session, results snapshot, standings
+│  └─ server/            # JSON store, cookie session, results snapshot, standings,
+│                        # orders + ledger, money maths, Stripe client
 ├─ scripts/refresh-data.mjs
 ├─ public/               # hero art, self-hosted fonts
 └─ screenshots/          # the captures in this doc
@@ -294,13 +357,13 @@ screen has content on first visit. "Start fresh" clears it.
 
 1. **Real field and prices** — nightly ingest of the European points list, US qualifying standings
    and OWGR; "field confirmed" flow with automatic refunds for missing players.
-2. **Postgres + Prisma** — move entries, payments, leagues, results and the audit trail off the JSON
-   file; signed payment webhooks.
+2. **Postgres + Prisma** — move entries, orders, the ledger, prizes, leagues results and the audit
+   trail off the JSON file. The state machine is already the one Postgres would run in a transaction.
 3. **Scoring beyond the simulation** — the engine, the tables and the correction API are in (v0.4);
    what is missing is a licensed feed or a volunteer scorer console with two-person verification, and
    hole-by-hole updates pushed over websockets instead of the 30-second poll.
-4. **Payments for real** — Stripe/Stripe Tax, T&Cs, 18+, geo-gating, responsible-play copy, and a
-   published prize-pool guarantee.
+4. **Payments in anger** — Stripe live keys, Stripe Tax, receipts and dispute handling, T&Cs, 18+,
+   geo-gating, responsible-play copy, and a published prize-pool guarantee.
 5. **Game depth** — transfer market at the lock, per-session captaincy, head-to-head private
    leagues, champion's bonus for the winning side.
 6. **Growth** — PWA install, OG cards for team shares, WhatsApp invite previews, Irish-language
@@ -334,14 +397,17 @@ build with an empty store:
 
 - [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, the regressions found
   and fixed, how the scoring engine is put together, and the full results table
-- [`verification/videos/`](verification/videos) — three recordings: the desktop purchase → draft →
-  predictor → account → table → Pinpoint → league → live journey (49 s), the mobile pass (14 s), and
-  Sunday singles at 4× to a decided cup (25 s)
-- [`verification/screenshots/`](verification/screenshots) — 27 step-by-step captures, one per action
-  in the videos, including the scored table and a blocked account-takeover attempt
+- [`verification/videos/`](verification/videos) — four recordings: the desktop order → payment →
+  draft → predictor → account → table → Pinpoint → league → live journey (50 s), the mobile pass
+  including payment (17 s), Sunday singles at 4× to a decided cup (23 s), and the operator console
+  settling the prize pot (10 s)
+- [`verification/screenshots/`](verification/screenshots) — 33 step-by-step captures, one per action
+  in the videos, including the payment page, the console's prize settlement and a blocked
+  account-takeover attempt
 - `api-results.json`, `browser-results.json`, `axe-results.json`, `capture-log.json` —
-  machine-readable results (38 API checks, 18 browser checks, 26 accessibility checks; all passing,
-  plus 22 scoring-rule assertions from `npm run scoring:check` — 104 in total)
+  machine-readable results (60 API checks, 24 browser checks, 30 accessibility checks; all passing,
+  plus 22 scoring-rule and 47 payment assertions from `npm run scoring:check` / `payments:check` —
+  183 in total)
 - [`verification/harness/`](verification/harness) — the scripts that produced all of it
   (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
   `CHROME_PATH` and `FFMPEG` overridable; see its README
