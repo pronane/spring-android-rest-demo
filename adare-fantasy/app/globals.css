@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/fraunces-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/fraunces-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/fraunces-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/inter-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/inter-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin-700-normal.woff2") format("woff2");
+}
+
+@theme {
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-forest-950: #04100c;
+  --color-forest-900: #071a13;
+  --color-forest-850: #09221a;
+  --color-forest-800: #0b2a20;
+  --color-forest-700: #0f3528;
+  --color-forest-600: #154434;
+  --color-forest-500: #1d5742;
+
+  --color-cream: #f5efe2;
+  --color-cream-soft: #ece2cf;
+  --color-cream-dim: #d9cdb6;
+  --color-sand: #b9ab90;
+  --color-gold: #c9a44c;
+  --color-gold-soft: #e6cd94;
+
+  --color-europe: #6f9bea;
+  --color-europe-deep: #31538f;
+  --color-usa: #e0776a;
+  --color-usa-deep: #8f3a30;
+  --color-shamrock: #86c9a1;
+
+  --radius-xl2: 1.25rem;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-forest-950);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background: var(--color-gold);
+    color: #08150f;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+  .eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .rule-gold {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(201, 164, 76, 0.45),
+      transparent
+    );
+  }
+  .panel {
+    background:
+      linear-gradient(180deg, rgba(245, 239, 226, 0.045), rgba(245, 239, 226, 0.015));
+    border: 1px solid rgba(245, 239, 226, 0.1);
+  }
+  .panel-cream {
+    background: var(--color-cream);
+    color: var(--color-forest-900);
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.25;
+    background-image: radial-gradient(
+        rgba(255, 255, 255, 0.06) 0.5px,
+        transparent 0.5px
+      );
+    background-size: 3px 3px;
+    mix-blend-mode: overlay;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
