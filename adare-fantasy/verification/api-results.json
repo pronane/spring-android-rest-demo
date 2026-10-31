@@ -36,12 +36,12 @@
     {
       "name": "checkout opens a pending order",
       "pass": true,
-      "detail": "200 ORD-45A5C2"
+      "detail": "200 ORD-B4B88A"
     },
     {
       "name": "checkout returns a payment url",
       "pass": true,
-      "detail": "/pay/ORD-45A5C2"
+      "detail": "/pay/ORD-B4B88A"
     },
     {
       "name": "checkout takes no entry of its own",
@@ -56,7 +56,7 @@
     {
       "name": "demo payment settles the order",
       "pass": true,
-      "detail": "200 TE-4397EE-ADRE"
+      "detail": "200 TE-6961AB-ADRE"
     },
     {
       "name": "re-confirming a paid order is idempotent",
@@ -81,7 +81,7 @@
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Sun, 28 Feb 2027 18:31:11 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 22:49:06 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -136,7 +136,7 @@
     {
       "name": "league is created with a join code",
       "pass": true,
-      "detail": "201 HARU6G"
+      "detail": "201 HARND6"
     },
     {
       "name": "league list includes the new league",
@@ -301,7 +301,7 @@
     {
       "name": "a refund comes back out of the pool",
       "pass": true,
-      "detail": "gross 1000"
+      "detail": "gross 3400 → 1000"
     }
   ]
 }

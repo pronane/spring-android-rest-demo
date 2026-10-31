@@ -396,21 +396,53 @@ export async function payPrizes(
   return markPrizesPaid({ editionId, leagueId });
 }
 
+export type PotSummary = {
+  leagueId: string | null;
+  label: string;
+  potCents: number;
+  awardedCents: number;
+  paidOutCents: number;
+  toSettleCents: number;
+};
+
+/**
+ * One row per pot: the global pot plus a pot for every league. Each entry fee
+ * funds exactly one of them, so the rows add up to the whole pool.
+ */
 export async function prizeBoard(editionId = ACTIVE_EDITION_ID) {
-  const [awards, ledger] = await Promise.all([listPrizes(), listLedger()]);
+  const [awards, ledger, leagues] = await Promise.all([listPrizes(), listLedger(), listAllLeagues()]);
   const scoped = awards.filter((row) => row.editionId === editionId);
   const money = totals(ledger.filter((row) => row.editionId === editionId));
-  const awardedCents = scoped
-    .filter((row) => row.status === "awarded")
-    .reduce((sum, row) => sum + row.amountCents, 0);
+
+  const pots: PotSummary[] = [];
+  for (const league of [{ id: null as string | null, name: "Global" }, ...leagues.map((row) => ({ id: row.id, name: row.name }))]) {
+    const leagueId = league.id;
+    const pot = await potCents(leagueId, editionId);
+    const rows = scoped.filter((row) => row.leagueId === leagueId);
+    const awardedCents = rows
+      .filter((row) => row.status === "awarded")
+      .reduce((sum, row) => sum + row.amountCents, 0);
+    const paidOutCents = rows
+      .filter((row) => row.status === "paid")
+      .reduce((sum, row) => sum + row.amountCents, 0);
+    pots.push({
+      leagueId,
+      label: league.name,
+      potCents: pot,
+      awardedCents,
+      paidOutCents,
+      toSettleCents: Math.max(0, pot - awardedCents - paidOutCents),
+    });
+  }
+
   return {
     potCents: money.poolCents,
-    awardedCents,
+    awardedCents: scoped
+      .filter((row) => row.status === "awarded")
+      .reduce((sum, row) => sum + row.amountCents, 0),
     paidOutCents: money.paidOutCents,
     awards: scoped,
-    // What is still to be settled or paid: the pool less anything already
-    // awarded or paid out.
-    unclaimedCents: Math.max(0, money.poolCents - money.paidOutCents - awardedCents),
+    pots,
   };
 }
 

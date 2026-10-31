@@ -45,6 +45,15 @@ type Money = {
   orders: { pending: number; paid: number; failed: number; refunded: number };
 };
 
+type Pot = {
+  leagueId: string | null;
+  label: string;
+  potCents: number;
+  awardedCents: number;
+  paidOutCents: number;
+  toSettleCents: number;
+};
+
 type Award = {
   id: string;
   leagueId: string | null;
@@ -80,6 +89,8 @@ export default function AdminPage() {
     unclaimedCents: 0,
   });
   const [unclaimed, setUnclaimed] = useState<{ label: string; cents: number; why: string }[]>([]);
+  const [pots, setPots] = useState<Pot[]>([]);
+  const [potKey, setPotKey] = useState("global");
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Record<string, string>>({});
 
@@ -122,11 +133,12 @@ export default function AdminPage() {
       setOrders((p.orders as OrderRow[]) ?? []);
       setSummary((p.money as Money) ?? null);
       setAwards((z.awards as Award[]) ?? []);
+      setPots((z.pots as Pot[]) ?? []);
       setPrizeTotals({
         potCents: Number(z.potCents ?? 0),
         awardedCents: Number(z.awardedCents ?? 0),
         paidOutCents: Number(z.paidOutCents ?? 0),
-        unclaimedCents: Number(z.unclaimedCents ?? 0),
+        unclaimedCents: 0,
       });
       setConnected(true);
     } catch (err) {
@@ -214,6 +226,9 @@ export default function AdminPage() {
       setError(err instanceof Error ? err.message : "Payout failed.");
     }
   };
+
+  const selected = pots.find((pot) => (pot.leagueId ?? "global") === potKey) ?? null;
+  const potAwards = awards.filter((award) => (award.leagueId ?? "global") === potKey);
 
   const statusPill = (status: string) => {
     const tone =
@@ -396,12 +411,42 @@ export default function AdminPage() {
 
       {tab === "prizes" ? (
         <section className="mt-5">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-[12px] text-cream/70">
+              Pot
+              <select
+                value={potKey}
+                onChange={(event) => {
+                  setPotKey(event.target.value);
+                  setUnclaimed([]);
+                  setNote(null);
+                }}
+                className="rounded-lg border border-white/15 bg-forest-950 px-2.5 py-1.5 text-[12.5px] text-cream"
+              >
+                <option value="global">Global</option>
+                {pots
+                  .filter((pot) => pot.leagueId)
+                  .map((pot) => (
+                    <option key={pot.leagueId} value={pot.leagueId as string}>
+                      {pot.label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            {selected ? (
+              <p className="text-[11.5px] text-cream/50">
+                {selected.label} · {money(selected.potCents)} funded by{" "}
+                {selected.potCents === 0 ? "no paid entries" : "paid entries in this pot"}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { label: "Prize pool", value: money(prizeTotals.potCents) },
-              { label: "Awarded", value: money(prizeTotals.awardedCents) },
-              { label: "Paid out", value: money(prizeTotals.paidOutCents) },
-              { label: "To settle", value: money(prizeTotals.unclaimedCents) },
+              { label: "Prize pool", value: money(selected?.potCents ?? 0) },
+              { label: "Awarded", value: money(selected?.awardedCents ?? 0) },
+              { label: "Paid out", value: money(selected?.paidOutCents ?? 0) },
+              { label: "To settle", value: money(selected?.toSettleCents ?? 0) },
             ].map((card) => (
               <div key={card.label} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
                 <p className="eyebrow text-cream/55">{card.label}</p>
@@ -413,14 +458,14 @@ export default function AdminPage() {
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => void settle(null)}
+              onClick={() => void settle(potKey === "global" ? null : potKey)}
               className="rounded-full bg-gold px-4 py-2 text-[12.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
             >
-              Settle the global pot
+              Settle this pot
             </button>
             <button
               type="button"
-              onClick={() => void payOut(null)}
+              onClick={() => void payOut(potKey === "global" ? null : potKey)}
               className="rounded-full border border-white/15 px-4 py-2 text-[12.5px] text-cream/80 transition hover:border-gold/60"
             >
               Mark paid
@@ -452,14 +497,14 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {awards.length === 0 ? (
+                {potAwards.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-center text-cream/50">
                       Nothing settled yet. Settle the pot to award the published split.
                     </td>
                   </tr>
                 ) : (
-                  awards.map((award) => (
+                  potAwards.map((award) => (
                     <tr key={award.id} className="border-t border-white/[0.07]">
                       <td className="px-4 py-2.5 text-cream/70 tnum">#{award.place}</td>
                       <td className="px-4 py-2.5 text-cream">{award.team}</td>

@@ -295,13 +295,16 @@ if (process.env.ADMIN_TOKEN) {
   check("a season pass costs €24 and pools 95%", buyerOrder.json?.order?.amountCents === 2400, `${buyerOrder.json?.order?.amountCents} cents`);
   await call(`/api/orders/${buyerRef}/confirm`, { method: "POST", cookie: buyerCookie });
 
+  const beforeRefund = await call("/api/admin/orders", { headers: auth });
   r = await call("/api/admin/orders", { method: "POST", headers: auth, body: { ref: buyerRef, action: "refund" } });
   check("an operator can refund an order", r.status === 200 && r.json?.order?.status === "refunded" && r.json?.prizeEligible === false, `${r.status} ${r.json?.order?.status}`);
 
   const afterRefund = await call("/api/admin/orders", { headers: auth });
+  const grossBefore = beforeRefund.json?.money?.grossCents ?? 0;
+  const grossAfter = afterRefund.json?.money?.grossCents ?? 0;
   check("a refund comes back out of the pool",
-    afterRefund.json?.money?.grossCents === 1000,
-    `gross ${afterRefund.json?.money?.grossCents}`);
+    grossBefore - grossAfter === 2400,
+    `gross ${grossBefore} → ${grossAfter}`);
 }
 
 const passed = results.filter((x) => x.pass).length;

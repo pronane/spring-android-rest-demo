@@ -11,6 +11,10 @@ Two ways to play, one paid entry, a 28-match predictor, and a live Sunday you ca
 |---|---|---|
 | ![Draft](screenshots/02-draft-classic.png) | ![Predictor](screenshots/05-predict.png) | ![Live](screenshots/06-live-sunday.png) |
 
+▶ **[Watch the 2:48 start-to-finish demo](demo/twenty-eight-start-to-finish.webm)** — a paid entry, a
+drafted card, 28 predictions, a private league, a decided cup and the prize pot settled, recorded from
+this build ([what happens, minute by minute](demo/README.md)).
+
 > v0.2 is a fan project. Not affiliated with the Ryder Cup, DP World Tour, PGA of America or Adare
 > Manor. Checkout is a demo — no card is ever charged and no card data is stored.
 
@@ -411,6 +415,14 @@ build with an empty store:
 - [`verification/harness/`](verification/harness) — the scripts that produced all of it
   (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
   `CHROME_PATH` and `FFMPEG` overridable; see its README
+
+## Demo film
+
+[`demo/twenty-eight-start-to-finish.webm`](demo/twenty-eight-start-to-finish.webm) (2:48, 1440×900,
+VP9, captions burned in) is the whole product in one sitting, recorded by
+[`demo/record-tour.mjs`](demo/record-tour.mjs) and rendered by
+[`demo/render-tour.mjs`](demo/render-tour.mjs). Pairs of captions and steps are listed in
+[`demo/README.md`](demo/README.md); `demo/run/stills/` holds one frame per step from the same run.
 
 ## Screenshot method
 
