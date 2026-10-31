@@ -111,10 +111,10 @@ export default function TeamPage() {
             </span>
           )}
           <Link
-            href="/draft"
+            href="/team/transfers"
             className="rounded-full border border-white/20 px-4 py-2 text-[12.5px] font-medium text-cream/80 transition hover:border-gold/50 hover:text-gold-soft"
           >
-            Make transfers
+            Transfers &amp; armband
           </Link>
           <button
             type="button"

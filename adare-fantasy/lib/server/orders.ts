@@ -13,6 +13,7 @@ import { PLANS } from "@/lib/tournaments";
 import {
   attachProviderRef,
   createOrder,
+  grantReferral,
   failOrder,
   findOrder,
   findOrderByProviderRef,
@@ -66,6 +67,7 @@ export async function startCheckout(
   user: User,
   planId: string,
   request: Request,
+  referralCode?: string | null,
 ): Promise<CheckoutStart> {
   const plan = PLANS.find((p) => p.id === planId);
   if (!plan) throw new CheckoutError("Unknown plan.", 400);
@@ -85,6 +87,7 @@ export async function startCheckout(
     status: "pending",
     provider,
     providerRef: null,
+    referralCode: referralCode ?? null,
     createdAt: new Date().toISOString(),
     paidAt: null,
     refundedAt: null,
@@ -129,7 +132,18 @@ export async function confirmDemoPayment(
   }
   const settled = await settleOrder(order.ref);
   if (!settled) throw new CheckoutError("No such order.", 404);
+  await honourReferral(order, settled.user);
   return settled;
+}
+
+/**
+ * An invite is only worth anything once the invited player is actually in:
+ * both cards get one extra free transfer, once. Safe to call on every webhook
+ * retry — `grantReferral` is idempotent.
+ */
+async function honourReferral(order: Order, user: User): Promise<void> {
+  if (!order.referralCode) return;
+  await grantReferral(user.id, order.referralCode);
 }
 
 export async function refundByRef(ref: string): Promise<{ order: Order; user: User }> {
@@ -172,7 +186,8 @@ export async function applyStripeEvent(
     if (order.provider !== "stripe") {
       return { action: "ignored", ref: order.ref, why: "order belongs to the demo provider" };
     }
-    await settleOrder(order.ref, { providerRef: sessionId });
+    const settled = await settleOrder(order.ref, { providerRef: sessionId });
+    if (settled) await honourReferral(order, settled.user);
     return { action: "settled", ref: order.ref };
   }
 

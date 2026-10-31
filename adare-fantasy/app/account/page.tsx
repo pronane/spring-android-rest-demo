@@ -8,6 +8,7 @@ import { eur } from "@/lib/helpers";
 import type { User } from "@/lib/server/db";
 import type { EntryScore, Results } from "@/lib/scoring";
 import { PLAYER_BY_ID } from "@/lib/data";
+import { ShareButtons } from "@/components/ShareButtons";
 
 type Breakdown = {
   entry: { ref: string; team: string; manager: string; prizeEligible: boolean };
@@ -19,8 +20,15 @@ type Breakdown = {
     cup: { europe: number; usa: number };
     awards: { mvp: string | null; topScorer: string | null; rookie: string | null };
     updatedAt: string;
+    clock?: string;
+    minute?: number;
+    phase?: "pre" | "live" | "done";
+    inPlay?: number;
+    provisional?: boolean;
   };
 };
+
+type Invite = { code: string; invited: number; bonusTransfers: number; referredBy: string | null };
 
 export default function AccountPage() {
   const { state, projected, mode, hydrate, ready } = useFantasy();
@@ -31,6 +39,7 @@ export default function AccountPage() {
   const [devLink, setDevLink] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
+  const [invite, setInvite] = useState<Invite | null>(null);
 
   useEffect(() => {
     // Read ?signin= without useSearchParams (which would need a Suspense boundary).
@@ -65,6 +74,24 @@ export default function AccountPage() {
       cancelled = true;
     };
   }, [user?.entry?.squad, user?.entry?.captain, user?.entry?.predictions, user?.entry?.awards]);
+
+  // The invite code is the entry ref: no separate share identity to manage.
+  useEffect(() => {
+    if (!user?.entry?.ref) {
+      setInvite(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/referral", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Invite | null) => {
+        if (!cancelled) setInvite(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.entry?.ref]);
 
   // Signed in on a new device: pull the saved card down from the server so the
   // browser shows the real entry instead of the demo card.
@@ -264,8 +291,17 @@ export default function AccountPage() {
               <p className="text-[11.5px] text-cream/70">
                 Card {breakdown.score.card.total.toFixed(1)} · picks{" "}
                 {breakdown.score.predictions.total.toFixed(1)} ·{" "}
+                {breakdown.score.transferPenalty
+                  ? `transfers −${breakdown.score.transferPenalty} · `
+                  : ""}
                 {breakdown.results.finals}/{breakdown.results.total} matches in
               </p>
+              {breakdown.results.clock ? (
+                <p className="mt-1 text-[10.5px] text-cream/50">
+                  {breakdown.results.clock}
+                  {breakdown.results.provisional ? " · provisional" : ""}
+                </p>
+              ) : null}
             </div>
             <Link
               href="/leaderboard"
@@ -296,14 +332,65 @@ export default function AccountPage() {
               ))}
           </ul>
 
-          <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
+          <p className="mt-1 text-[10.5px] leading-relaxed text-cream/60">
+            Armband: {(["fri", "sat", "sun"] as const)
+              .map((day) => {
+                const id = breakdown.score.card.sessionCaptains[day];
+                const label = day === "fri" ? "Fri" : day === "sat" ? "Sat" : "Sun";
+                return `${label} ${id ? PLAYER_BY_ID[id]?.shortName ?? id : "—"}`;
+              })
+              .join(" · ")}
+            {breakdown.score.card.captainBonus > 0
+              ? ` · +${breakdown.score.card.captainBonus.toFixed(1)} from doubling`
+              : ""}
+          </p>
+
+          <p className="mt-1 text-[10.5px] leading-relaxed text-cream/60">
             Predictor: {breakdown.score.predictions.matchHits} matches called
             {breakdown.score.predictions.awardHits.length
               ? `, ${breakdown.score.predictions.awardHits.length} award${breakdown.score.predictions.awardHits.length === 1 ? "" : "s"}`
               : ""}
             {breakdown.score.predictions.exact ? ", exact scoreline" : ""}. Results are{" "}
-            {breakdown.results.source === "simulation" ? "simulated" : "operator-corrected"}.
+            {breakdown.results.source === "simulation"
+              ? "simulated"
+              : breakdown.results.source === "feed"
+                ? "from the live feed"
+                : "operator-corrected"}.
           </p>
+        </div>
+      ) : null}
+
+      {user?.entry ? (
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="eyebrow text-cream/60">Share your card · invite a friend</p>
+              <p className="mt-1 text-[13px] text-cream/80">
+                {user.teamName} · <Link href={`/t/${user.entry.ref}`} className="text-gold-soft underline decoration-gold/40">/t/{user.entry.ref}</Link>
+              </p>
+              <p className="mt-1 max-w-md text-[11.5px] leading-relaxed text-cream/55">
+                The link shows your live card and your rank. Anyone who enters with it gets a free
+                transfer — and so do you.
+              </p>
+              <p className="mt-2 text-[11px] text-cream/60">
+                Invited: {invite?.invited ?? 0} · free transfers earned: {invite?.bonusTransfers ?? 0}
+                {invite?.referredBy ? ` · you joined on ${invite.referredBy}` : ""}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <ShareButtons
+                url={`/t/${user.entry.ref}`}
+                text={`${user.teamName} on ${breakdown?.score.total.toFixed(1) ?? "—"} points at Adare 2027. Beat that.`}
+                compact
+              />
+              <Link
+                href={`/enter?ref=${encodeURIComponent(user.entry.ref)}`}
+                className="text-[11.5px] text-cream/60 underline decoration-white/25"
+              >
+                Preview the invite
+              </Link>
+            </div>
+          </div>
         </div>
       ) : null}
 

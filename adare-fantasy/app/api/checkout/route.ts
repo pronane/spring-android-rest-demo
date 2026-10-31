@@ -22,9 +22,14 @@ export async function POST(request: Request) {
   const user = await findUser(userId);
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const body = (await request.json().catch(() => ({}))) as { planId?: string };
+  const body = (await request.json().catch(() => ({}))) as { planId?: string; referralCode?: string };
   try {
-    const start = await startCheckout(user, body.planId ?? "single", request);
+    const start = await startCheckout(
+      user,
+      body.planId ?? "single",
+      request,
+      typeof body.referralCode === "string" ? body.referralCode.slice(0, 32) : null,
+    );
     return NextResponse.json({
       order: {
         ref: start.order.ref,

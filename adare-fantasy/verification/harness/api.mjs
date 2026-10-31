@@ -259,6 +259,98 @@ if (process.env.STRIPE_WEBHOOK_SECRET) {
   check("webhooks fail closed without STRIPE_WEBHOOK_SECRET", r.status === 503, `status ${r.status}`);
 }
 
+/* ——— v0.6: transfers, the armband, referrals, share cards, live snapshots ——— */
+
+r = await call("/api/entry/transfer");
+check("the transfer page needs a session", r.status === 401, `status ${r.status}`);
+
+r = await call("/api/entry/transfer", { cookie });
+const card = r.json;
+check("the saved card is readable with the transfer rules attached",
+  r.status === 200 && card?.squad?.length === 12 && card?.state?.free >= 2,
+  `${card?.squad?.length} players, ${card?.state?.free} free`);
+
+const dropId = card?.squad?.[0]?.id ?? "";
+const incoming = card?.options?.[dropId]?.[0]?.id ?? "";
+check("a replacement is offered for every player on the card", Boolean(incoming), `${dropId} → ${incoming}`);
+
+r = await call("/api/entry/transfer", { method: "PUT", cookie, body: { fri: "ghost" } });
+check("the armband must go to a player on the card", r.status === 422, `${r.status}: ${r.json?.error}`);
+
+r = await call("/api/entry/transfer", { method: "PUT", cookie, body: { fri: dropId, sun: null } });
+check("the armband can be set per day", r.status === 200 && r.json?.sessionCaptains?.fri === dropId && r.json?.sessionCaptains?.sun === null, JSON.stringify(r.json?.sessionCaptains));
+
+r = await call("/api/score", { cookie });
+const withArmband = r.json?.score;
+check("the per-day armband is scored", withArmband?.card?.sessionCaptains?.fri === dropId, JSON.stringify(withArmband?.card?.sessionCaptains));
+check("the armband shows what doubling was worth", typeof withArmband?.card?.captainBonus === "number", `${withArmband?.card?.captainBonus}`);
+
+r = await call("/api/entry/transfer", { method: "POST", cookie, body: { out: dropId, in: "ghost" } });
+check("a transfer to an unknown player is refused", r.status === 422, `${r.status}: ${r.json?.error}`);
+
+r = await call("/api/entry/transfer", { method: "POST", cookie, body: { out: dropId, in: incoming } });
+const transferred = r.json;
+check("a legal transfer swaps the squad", r.status === 200 && transferred?.squad?.some((p) => p.id === incoming) && !transferred?.squad?.some((p) => p.id === dropId), `${dropId} → ${incoming}`);
+check("a transfer before the first tee is free", transferred?.penalty === 0 && transferred?.state?.remainingFree === card?.state?.free, `penalty ${transferred?.penalty}`);
+check("the transfer is recorded with its window", transferred?.transfers?.length === 1 && transferred?.transfers?.[0]?.window === "pre", JSON.stringify(transferred?.transfers?.[0] ?? null));
+
+r = await call("/api/entry/transfer", { method: "POST", cookie, body: { out: dropId, in: incoming } });
+check("the same player cannot be swapped out twice", r.status === 422, `${r.status}: ${r.json?.error}`);
+
+// Referrals: the entry ref is the invite code, and both cards get a free change.
+r = await call("/api/referral", { cookie });
+const inviteCode = r.json?.code ?? "";
+check("an entry has an invite code", /^TE-[A-Z0-9]{6}-ADRE$/.test(inviteCode), inviteCode);
+check("the invite link points at the entry page", r.json?.link === `/enter?ref=${inviteCode}`, r.json?.link);
+
+const friendEmail = `friend+${Date.now()}@example.com`;
+const friend = await call("/api/session", { method: "POST", body: { email: friendEmail, manager: "Invited Player", teamName: "Guest Card" } });
+const friendCookie = friend.cookie;
+const friendOrder = await call("/api/checkout", {
+  method: "POST",
+  cookie: friendCookie,
+  body: { planId: "single", referralCode: inviteCode },
+});
+const friendRef = friendOrder.json?.order?.ref ?? "";
+await call(`/api/orders/${friendRef}/confirm`, { method: "POST", cookie: friendCookie });
+
+r = await call("/api/referral", { cookie: friendCookie });
+check("the invited player is credited a free transfer on top of the two",
+  r.status === 200 && r.json?.bonusTransfers === 1 && r.json?.referredBy === inviteCode,
+  `${r.json?.bonusTransfers} bonus, by ${r.json?.referredBy}`);
+
+r = await call("/api/referral", { cookie });
+check("the inviter is credited too", r.json?.invited >= 1 && r.json?.bonusTransfers === 1, `${r.json?.invited} invited, ${r.json?.bonusTransfers} bonus`);
+
+r = await call("/api/referral", { method: "POST", cookie, body: { code: inviteCode } });
+check("an invite cannot be claimed twice", r.status === 409, `${r.status}: ${r.json?.error}`);
+
+r = await call("/api/referral", { method: "POST", cookie, body: { code: "TE-NOPE00-ADRE" } });
+check("an invented invite code is refused", r.status === 404, `${r.status}: ${r.json?.error}`);
+
+// The public card and its preview image.
+const shareRes = await fetch(`${BASE}/t/${inviteCode}`);
+const shareHtml = await shareRes.text();
+check("a public card renders for a paid entry", shareRes.status === 200 && shareHtml.includes("Contract FC"), `status ${shareRes.status}`);
+check("the public card carries share metadata", /og:title/.test(shareHtml) && /og:image/.test(shareHtml), "og tags present");
+const ogRes = await fetch(`${BASE}/t/${inviteCode}/opengraph-image`);
+check("the share image is a real png", ogRes.status === 200 && ogRes.headers.get("content-type")?.includes("image/png") === true, `${ogRes.status} ${ogRes.headers.get("content-type")}`);
+
+r = await fetch(`${BASE}/t/TE-NOPE00-ADRE`);
+check("an unknown card is a 404", r.status === 404, `status ${r.status}`);
+
+// A snapshot of the weekend at a given minute: only finished matches score.
+r = await call("/api/leaderboard?at=600");
+const early = r.json;
+check("a replay scores only the matches finished by then",
+  early?.results?.finals === 8 && early?.results?.provisional === true,
+  `${early?.results?.finals} finished, provisional ${early?.results?.provisional}`);
+check("the replay names the session", /Fri 17 Sep \u00b7 Fourball/.test(early?.results?.clock ?? ""), early?.results?.clock);
+check("the replay ranks the same entries differently", early?.rows?.every((row) => row.total <= (boardRows.find((b) => b.entryId === row.entryId)?.total ?? Infinity)), `${early?.rows?.length} rows`);
+
+r = await call("/api/leaderboard?at=0");
+check("before the first tee there are no points", r.json?.results?.finals === 0 && (r.json?.rows ?? []).every((row) => row.total === 0), `${r.json?.results?.finals} finished`);
+
 if (process.env.ADMIN_TOKEN) {
   const auth = { authorization: `Bearer ${process.env.ADMIN_TOKEN}` };
 

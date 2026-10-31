@@ -11,9 +11,10 @@ SESSION_SECRET="$(openssl rand -hex 24)" npm start      # http://localhost:3000
 
 cd verification/harness
 npm install
-node api.mjs                 # 17 contract checks   -> run/api-results.json
-node checks.mjs              # 15 browser checks    -> run/browser-results.json
-node audit.mjs               # 22 axe sweeps        -> run/axe-results.json
+node api.mjs                 # 86 contract checks   -> run/api-results.json
+node checks.mjs              # 35 browser checks    -> run/browser-results.json
+node audit.mjs               # 34 axe sweeps        -> run/axe-results.json
+node clock.mjs               # 9 card-clock checks  -> run/clock-results.json  (needs SCORING_CLOCK=at:600)
 node record.mjs              # desktop + mobile     -> run/frames, run/shots
 node record-live.mjs         # live simulation      -> run/frames/03-live
 node takeover.mjs            # blocked takeover     -> run/shots/23-takeover-blocked.png

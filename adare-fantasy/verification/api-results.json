@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 60,
-  "total": 60,
+  "passed": 86,
+  "total": 86,
   "results": [
     {
       "name": "invalid email rejected",
@@ -36,12 +36,12 @@
     {
       "name": "checkout opens a pending order",
       "pass": true,
-      "detail": "200 ORD-B4B88A"
+      "detail": "200 ORD-726B2B"
     },
     {
       "name": "checkout returns a payment url",
       "pass": true,
-      "detail": "/pay/ORD-B4B88A"
+      "detail": "/pay/ORD-726B2B"
     },
     {
       "name": "checkout takes no entry of its own",
@@ -56,7 +56,7 @@
     {
       "name": "demo payment settles the order",
       "pass": true,
-      "detail": "200 TE-6961AB-ADRE"
+      "detail": "200 TE-D7B93D-ADRE"
     },
     {
       "name": "re-confirming a paid order is idempotent",
@@ -81,7 +81,7 @@
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Sun, 28 Feb 2027 22:49:06 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Sun, 28 Feb 2027 23:19:29 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -136,7 +136,7 @@
     {
       "name": "league is created with a join code",
       "pass": true,
-      "detail": "201 HARND6"
+      "detail": "201 HARP73"
     },
     {
       "name": "league list includes the new league",
@@ -254,19 +254,149 @@
       "detail": "status 400"
     },
     {
+      "name": "the transfer page needs a session",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "the saved card is readable with the transfer rules attached",
+      "pass": true,
+      "detail": "12 players, 2 free"
+    },
+    {
+      "name": "a replacement is offered for every player on the card",
+      "pass": true,
+      "detail": "rory → fleetwood"
+    },
+    {
+      "name": "the armband must go to a player on the card",
+      "pass": true,
+      "detail": "422: The armband has to go to a player on your card."
+    },
+    {
+      "name": "the armband can be set per day",
+      "pass": true,
+      "detail": "{\"fri\":\"rory\",\"sun\":null}"
+    },
+    {
+      "name": "the per-day armband is scored",
+      "pass": true,
+      "detail": "{\"fri\":\"rory\",\"sun\":null}"
+    },
+    {
+      "name": "the armband shows what doubling was worth",
+      "pass": true,
+      "detail": "7.5"
+    },
+    {
+      "name": "a transfer to an unknown player is refused",
+      "pass": true,
+      "detail": "422: That player is not in the pool."
+    },
+    {
+      "name": "a legal transfer swaps the squad",
+      "pass": true,
+      "detail": "rory → fleetwood"
+    },
+    {
+      "name": "a transfer before the first tee is free",
+      "pass": true,
+      "detail": "penalty 0"
+    },
+    {
+      "name": "the transfer is recorded with its window",
+      "pass": true,
+      "detail": "{\"out\":\"rory\",\"in\":\"fleetwood\",\"at\":\"2026-10-31T23:19:30.105Z\",\"window\":\"pre\",\"penalty\":0}"
+    },
+    {
+      "name": "the same player cannot be swapped out twice",
+      "pass": true,
+      "detail": "422: That player is not on your card."
+    },
+    {
+      "name": "an entry has an invite code",
+      "pass": true,
+      "detail": "TE-D7B93D-ADRE"
+    },
+    {
+      "name": "the invite link points at the entry page",
+      "pass": true,
+      "detail": "/enter?ref=TE-D7B93D-ADRE"
+    },
+    {
+      "name": "the invited player is credited a free transfer on top of the two",
+      "pass": true,
+      "detail": "1 bonus, by TE-D7B93D-ADRE"
+    },
+    {
+      "name": "the inviter is credited too",
+      "pass": true,
+      "detail": "1 invited, 1 bonus"
+    },
+    {
+      "name": "an invite cannot be claimed twice",
+      "pass": true,
+      "detail": "409: That invite has already been claimed, or there is no paid entry to credit yet."
+    },
+    {
+      "name": "an invented invite code is refused",
+      "pass": true,
+      "detail": "404: That invite code does not exist."
+    },
+    {
+      "name": "a public card renders for a paid entry",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "the public card carries share metadata",
+      "pass": true,
+      "detail": "og tags present"
+    },
+    {
+      "name": "the share image is a real png",
+      "pass": true,
+      "detail": "200 image/png"
+    },
+    {
+      "name": "an unknown card is a 404",
+      "pass": true,
+      "detail": "status 404"
+    },
+    {
+      "name": "a replay scores only the matches finished by then",
+      "pass": true,
+      "detail": "8 finished, provisional true"
+    },
+    {
+      "name": "the replay names the session",
+      "pass": true,
+      "detail": "Fri 17 Sep · Fourball · 8 of 28 finished"
+    },
+    {
+      "name": "the replay ranks the same entries differently",
+      "pass": true,
+      "detail": "1 rows"
+    },
+    {
+      "name": "before the first tee there are no points",
+      "pass": true,
+      "detail": "0 finished"
+    },
+    {
       "name": "the ledger knows what was taken and what was pooled",
       "pass": true,
-      "detail": "gross 1000, fee 50, pool 950"
+      "detail": "gross 2000, fee 100, pool 1900"
     },
     {
       "name": "the order list shows the settled order",
       "pass": true,
-      "detail": "1 orders"
+      "detail": "2 orders"
     },
     {
       "name": "the prize board starts from the paid pot",
       "pass": true,
-      "detail": "pot 950"
+      "detail": "pot 1900"
     },
     {
       "name": "settling awards the podium from the table",
@@ -301,7 +431,7 @@
     {
       "name": "a refund comes back out of the pool",
       "pass": true,
-      "detail": "gross 3400 → 1000"
+      "detail": "gross 4400 → 2000"
     }
   ]
 }

@@ -35,6 +35,20 @@ export type Entry = {
   pinpoint?: Record<string, { pin: number | null; drive: number | null }>;
   /** Only entries bought on a prize-eligible plan can win anything. */
   prizeEligible?: boolean;
+  /** The armband, day by day. `null` means nobody that day. */
+  sessionCaptains?: { fri?: string | null; sat?: string | null; sun?: string | null };
+  /** Every swap made after the card was saved, free or not. */
+  transfers?: {
+    out: string;
+    in: string;
+    at: string;
+    window: string;
+    penalty: number;
+  }[];
+  /** Extra free changes, granted by referrals. */
+  bonusTransfers?: number;
+  /** The entry ref of whoever invited this player. */
+  referredBy?: string;
   updatedAt?: string;
 };
 
@@ -65,6 +79,8 @@ export type Order = {
   prizeEligible: boolean;
   status: "pending" | "paid" | "failed" | "refunded";
   provider: "demo" | "stripe";
+  /** Invite code presented at checkout, honoured when the order settles. */
+  referralCode?: string | null;
   /** Stripe checkout session id, when there is one. */
   providerRef: string | null;
   createdAt: string;
@@ -189,6 +205,50 @@ export async function findUser(id: string): Promise<User | null> {
   return db.users.find((u) => u.id === id) ?? null;
 }
 
+/** A public entry ref (`TE-ABC123-ADRE`) → the account behind it. */
+export async function findUserByEntryRef(ref: string): Promise<User | null> {
+  const db = await readDb();
+  const needle = ref.trim().toUpperCase();
+  return db.users.find((u) => u.entry?.ref?.toUpperCase() === needle) ?? null;
+}
+
+/** Everyone who joined on someone's invite, for the sharing page. */
+export async function countReferrals(ref: string): Promise<number> {
+  const db = await readDb();
+  const needle = ref.trim().toUpperCase();
+  return db.users.filter((u) => u.entry?.referredBy?.toUpperCase() === needle).length;
+}
+
+/**
+ * Applies a referral once: the invitee and the inviter each get one free
+ * transfer. Idempotent — replaying a settled webhook must not stack credits.
+ */
+export async function grantReferral(
+  userId: string,
+  code: string,
+): Promise<{ credited: boolean; invitee: User | null; inviter: User | null }> {
+  return mutate((db) => {
+    const invitee = db.users.find((u) => u.id === userId);
+    const inviter = db.users.find((u) => u.entry?.ref?.toUpperCase() === code.trim().toUpperCase());
+    if (!invitee?.entry || !inviter?.entry || inviter.id === invitee.id) {
+      return { credited: false, invitee: invitee ?? null, inviter: inviter ?? null };
+    }
+    if (invitee.entry.referredBy) {
+      return { credited: false, invitee, inviter };
+    }
+    invitee.entry = {
+      ...invitee.entry,
+      referredBy: inviter.entry.ref,
+      bonusTransfers: (invitee.entry.bonusTransfers ?? 0) + 1,
+    };
+    inviter.entry = {
+      ...inviter.entry,
+      bonusTransfers: (inviter.entry.bonusTransfers ?? 0) + 1,
+    };
+    return { credited: true, invitee, inviter };
+  });
+}
+
 export async function upsertUser(input: {
   email: string;
   manager: string;
@@ -249,13 +309,83 @@ export async function updateTeam(
     predictions?: Record<string, string>;
     awards?: Entry["awards"];
     pinpoint?: Entry["pinpoint"];
+    sessionCaptains?: Entry["sessionCaptains"];
   },
 ): Promise<User | null> {
   return mutate((db) => {
     const user = db.users.find((u) => u.id === userId);
     if (!user?.entry) return null;
-    user.entry = { ...user.entry, ...team, updatedAt: new Date().toISOString() };
+    const next = { ...user.entry, ...team, updatedAt: new Date().toISOString() };
+    // A day's armband only means something if the player is still on the card.
+    if (next.sessionCaptains) {
+      next.sessionCaptains = Object.fromEntries(
+        Object.entries(next.sessionCaptains).map(([day, id]) => [
+          day,
+          id && next.squad?.includes(id) ? id : null,
+        ]),
+      ) as Entry["sessionCaptains"];
+    }
+    user.entry = next;
     return user;
+  });
+}
+
+/* ——— Transfers and the armband ——— */
+
+/** The saved card, as the transfer page needs it. */
+export async function readCard(userId: string): Promise<Entry | null> {
+  const user = await findUser(userId);
+  return user?.entry ?? null;
+}
+
+/**
+ * Records one legal swap. The caller (`lib/server/transfers.ts`) has already
+ * enforced the rules; this only writes, and refuses if the card moved under it.
+ */
+export async function recordTransfer(
+  userId: string,
+  swap: { out: string; in: string; window: string; penalty: number; at?: string },
+): Promise<Entry | null> {
+  return mutate((db) => {
+    const user = db.users.find((u) => u.id === userId);
+    const entry = user?.entry;
+    if (!entry?.squad?.includes(swap.out)) return null;
+    const squad = entry.squad.map((id) => (id === swap.out ? swap.in : id));
+    entry.squad = squad;
+    entry.transfers = [
+      ...(entry.transfers ?? []),
+      {
+        out: swap.out,
+        in: swap.in,
+        at: swap.at ?? new Date().toISOString(),
+        window: swap.window,
+        penalty: swap.penalty,
+      },
+    ];
+    // The armband must belong to the card.
+    if (entry.captain && !squad.includes(entry.captain)) entry.captain = squad[0] ?? null;
+    if (entry.sessionCaptains) {
+      entry.sessionCaptains = Object.fromEntries(
+        Object.entries(entry.sessionCaptains).map(([day, id]) => [
+          day,
+          id && squad.includes(id) ? id : null,
+        ]),
+      ) as Entry["sessionCaptains"];
+    }
+    entry.updatedAt = new Date().toISOString();
+    return entry;
+  });
+}
+
+export async function setSessionCaptains(
+  userId: string,
+  captains: Entry["sessionCaptains"],
+): Promise<Entry | null> {
+  return mutate((db) => {
+    const user = db.users.find((u) => u.id === userId);
+    if (!user?.entry) return null;
+    user.entry = { ...user.entry, sessionCaptains: captains, updatedAt: new Date().toISOString() };
+    return user.entry;
   });
 }
 

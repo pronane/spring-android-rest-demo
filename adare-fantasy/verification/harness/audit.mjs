@@ -13,7 +13,44 @@ const OUT = process.env.OUT ?? path.join(process.cwd(), "run");
 const AXE = process.env.AXE ?? "axe-core/axe.min.js";
 const source = fs.readFileSync(AXE.startsWith("/") ? AXE : path.join(process.cwd(), "node_modules", AXE), "utf8");
 
-const ROUTES = ["/", "/account", "/admin", "/draft", "/editions", "/enter", "/leaderboard", "/leagues", "/live", "/pay/ORD-000000", "/pinpoint", "/players", "/predict", "/rules", "/team"];
+const BASE_ROUTES = ["/", "/account", "/admin", "/draft", "/editions", "/enter", "/leaderboard", "/leagues", "/live", "/pay/ORD-000000", "/pinpoint", "/players", "/predict", "/rules", "/team", "/team/transfers"];
+
+/**
+ * A public card needs a real entry behind it, so one is created through the API
+ * first (and a card saved, so the page has players on it).
+ */
+async function seedEntry() {
+  const email = `audit+${Date.now()}@example.com`;
+  const post = (route, body, cookie) =>
+    fetch(BASE + route, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  try {
+    const session = await post("/api/session", { email, manager: "Audit Runner", teamName: "Audit FC" });
+    const cookie = (session.headers.getSetCookie?.() ?? [])[0]?.split(";")[0] ?? "";
+    const order = await (await post("/api/checkout", { planId: "single" }, cookie)).json();
+    await post(`/api/orders/${order?.order?.ref}/confirm`, undefined, cookie);
+    await fetch(BASE + "/api/entry", {
+      method: "PUT",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify({
+        mode: "classic",
+        squad: ["scheffler", "rory", "schauffele", "rahm", "aberg", "hovland"],
+        captain: "rory",
+        sessionCaptains: { fri: "rory", sat: null, sun: "scheffler" },
+      }),
+    });
+    const me = await (await fetch(BASE + "/api/session", { headers: { cookie } })).json();
+    return me?.user?.entry?.ref ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const entryRef = await seedEntry();
+const ROUTES = [...BASE_ROUTES, `/t/${entryRef ?? "TE-AUD123-ADRE"}`];
 const WIDTHS = [390, 1440];
 
 const SEED = {

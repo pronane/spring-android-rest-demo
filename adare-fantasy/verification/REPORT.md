@@ -1,16 +1,30 @@
-# Verification report — Twenty-Eight v0.5
+# Verification report — Twenty-Eight v0.6
 
-**Scope:** payments and the prize ledger. Checkout now opens a pending order instead of granting an
-entry; an entry exists only once that order settles (Stripe webhook, or the demo provider); every
-payment writes three ledger rows; refunds reverse them; prizes settle from the table inside each pot,
-and an operator console at `/admin` does all of it. The scoring engine from v0.4 is unchanged.
+**Scope:** three strands on top of v0.5 — **(1)** fantasy points scored on the server from a clock
+plus the live feed, mid-weekend included; **(2)** transfers with windows, an allowance and a price,
+and a captain you can name day by day; **(3)** a public card per entry with an Open Graph image,
+plus invites that credit both cards. Payments and the prize ledger from v0.5 are unchanged and still
+covered by their suite.
 
 **Re-run:** 31 October 2026 against a production build (`next build && next start`) with an empty
 store, `PAYMENTS_PROVIDER=demo` and a webhook secret set so the signature paths are exercised.
 
-**Result: 183/183 automated checks pass** — 22 scoring rules, 47 payment and ledger
-assertions, 60 API, 24 browser, 30 accessibility — with zero
-console errors while recording.
+**Result: 266/266 automated checks pass** — 55 scoring rules, 47 payment and ledger assertions,
+86 API, 35 browser, 34 accessibility, 9 on the card clock — with zero console errors while
+recording.
+
+---
+
+## 0. What v0.6 changed
+
+| Strand | What it means | Where |
+|---|---|---|
+| **Server scoring** | A results snapshot is the matches **finished at a given minute**; the clock is server-side and can follow real time (`SCORING_CLOCK=live`), a replay (`at:<minute>`) or a single request (`?at=`). Partial tables are labelled provisional with the session and matches in play. | `lib/server/clock.ts`, `lib/server/results.ts`, `app/api/{leaderboard,score}/route.ts` |
+| **Feed on the server** | The provider feed is fetched once per 20 s and overlaid on the pairings, so the table, leagues, share cards and API all score the same finals. A broken feed still falls back to the simulation. | `lib/server/feed.ts`, `lib/server/results.ts`, `app/api/live/route.ts` |
+| **Transfers** | Two free changes after the lock, then −4 points each; possible only in the pre-tee and overnight windows; every swap re-checked on the server against budget and side limits and recorded with its window and price. | `lib/transfers.ts`, `lib/server/transfers.ts`, `app/api/entry/transfer/route.ts`, `app/team/transfers` |
+| **Armband by day** | A captain per day (Fri/Sat/Sun) doubles that day's match points only; the overall captain remains the fallback, so older cards score unchanged; the breakdown reports what the doubling was worth. | `lib/scoring.ts` (`scoreCard`), `app/team/transfers` |
+| **Sharing and growth** | A public card at `/t/<entry ref>` with a generated OG image, copy/WhatsApp/X buttons, and an invite code that *is* the entry ref: both cards get one extra free transfer when the invitee's order settles. | `app/t/[ref]/`, `components/ShareButtons.tsx`, `lib/server/db.ts` (`grantReferral`) |
+
 
 ---
 
@@ -114,10 +128,14 @@ demo flag), with Pinpoint state carried alongside it.
 
 ## 4. Test results
 
-### 4.1 Scoring rules — 22/22 (`npm run scoring:check`)
+### 4.1 Scoring rules — 55/55 (`npm run scoring:check`)
 
-Unchanged from v0.4: captain doubling, halves, appearance points, event bonuses, the unbeaten rule and
-its completeness guard, the 0.9 scale, predictor scoring, tie ranking.
+The v0.4 rules (captain doubling, halves, appearance points, event bonuses, the unbeaten rule and its
+completeness guard, the 0.9 scale, predictor scoring, tie ranking) plus 33 assertions for v0.6: the
+per-day armband (including an explicit null day and the fallback to the overall captain), the captain
+bonus that is reported, transfer penalties taken off the total rather than the card, the three
+windows and the closed gaps between them, the free allowance and what a referral adds, refusal of a
+swap during play / for an unknown player / over budget, and the clock in all three modes.
 
 ### 4.2 Payments and ledger — 47/47 (`npm run payments:check`)
 
@@ -127,7 +145,16 @@ order granting nothing, settlement writing exactly three ledger rows, repeat set
 refunds reversing the pool, provider-mismatch webhooks being ignored, webhook dedupe, prize settlement
 inside the pot, unclaimed lines, payout rows, and the refusal to re-settle a paid pot.
 
-### 4.3 API contract — 60/60 (`api-results.json`)
+### 4.3 API contract — 86/86 (`api-results.json`)
+
+The 60 checks from v0.5 plus 26 for this landing: the transfer page needs a session; the saved card
+comes back with the rules attached; a replacement is offered for every player; the armband must be on
+the card and can be set per day (and is scored, with the doubling reported); an unknown player is
+refused; a legal swap changes the squad, is free before the first tee and is recorded with its
+window; the same player cannot be swapped out twice; invite codes are entry refs; an invited player
+and the inviter each get one extra free transfer, once; an invented code is 404; a public card renders
+with OG tags and a real PNG image, and an unknown card is 404; `?at=600` scores 8 matches as
+provisional with the session named, and `?at=0` scores nobody.
 
 | Check | Observed |
 |---|---|
@@ -192,7 +219,13 @@ inside the pot, unclaimed lines, payout rows, and the refusal to re-settle a pai
 | an operator can refund an order | 200 refunded |
 | a refund comes back out of the pool | gross 1000 |
 
-### 4.4 Browser — 24/24 (`browser-results.json`)
+### 4.4 Browser — 35/35 (`browser-results.json`)
+
+The 24 checks from v0.5 plus 11 for this landing: the transfer page opens for a saved card, shows the
+window and allowance, offers replacements, completes a swap through the UI ("Done — that change was
+free"), lands it in the history, and sets the armband per day; the account page offers the share card
+and explains the invite; the public card renders on its own URL with points and a rank and an entry
+CTA.
 
 One fresh profile per persona against the production server and a clean database.
 
@@ -223,12 +256,29 @@ One fresh profile per persona against the production server and a clean database
 | the console lists the settled orders | ✅ |
 | the console can open the results tab | ✅ |
 
-### 4.5 Accessibility — 30/30 (`axe-results.json`)
+### 4.5 Accessibility — 34/34 (`axe-results.json`)
 
-axe-core 4.14 on 15 routes × 2 viewports (390 / 1440), including `/admin` and a payment page in its
-error state. **0 violations.**
+axe-core 4.14 on 17 routes × 2 viewports (390 / 1440), including `/admin`, a payment page in its
+error state, `/team/transfers` (signed out and signed in) and a real public card seeded through the
+API. **0 violations.** Two were caught by this sweep and fixed: the signed-out transfers page had no
+`h1`, and the footer note on a public card was 4.06:1.
 
-### 4.6 Production configuration
+### 4.6 The card clock — 9/9 (`clock.mjs`)
+
+The suites above run against the demo clock, which sits before the first tee, where changes are free
+by design. To cover the other half of the transfer rules the same build was started with
+`SCORING_CLOCK=at:600` — Friday night — and `clock.mjs` checked: the window opens, two changes are
+free, the third costs four points, the allowance reports zero left with a cost of four, all three
+swaps appear in the history with their price, the penalty comes off the score's total rather than the
+card (gross 62 → net 58), the table row carries `penalty: 4`, and the snapshot scores only the eight
+matches finished by minute 600 and labels itself provisional.
+
+```bash
+SCORING_CLOCK=at:600 npm start          # in adare-fantasy/
+node verification/harness/clock.mjs     # 9 checks
+```
+
+### 4.7 Production configuration
 
 | Check | Result |
 |---|---|
@@ -272,7 +322,10 @@ last three shots come from the live-simulation and takeover scripts.
 | [`videos/03-live-simulation.mp4`](videos/03-live-simulation.mp4) | 23 s | 1280×800 | Sunday singles at 4× from `?t=2700` to a decided cup |
 | [`videos/04-operator-console.mp4`](videos/04-operator-console.mp4) | 10 s | 1280×900 | `/admin`: connect, read the ledger, settle the global pot, check corrections |
 
-### Screenshots (33)
+### Screenshots (36)
+
+Three were added for this landing: **34** the transfers page mid-window (swap completed, Friday
+armband set), **35** the account page's share and invite block, **36** a public card at `/t/<ref>`.
 
 | # | Step | # | Step |
 |---|---|---|---|
@@ -286,6 +339,9 @@ last three shots come from the live-simulation and takeover scripts.
 | 13 | The table | 30 | **Console**: results corrections |
 | 14–16 | Pinpoint guesses and save | 31–32 | Live simulation start and decided cup |
 | 17 | Leagues | 33 | Takeover blocked (409) |
+| | | 34 | **Transfers**: window, allowance, swap, armband |
+| | | 35 | **Account**: share card, copy/WhatsApp/X, invites |
+| | | 36 | **Public card** `/t/<ref>` with points and rank |
 
 ---
 
@@ -294,7 +350,7 @@ last three shots come from the live-simulation and takeover scripts.
 ```bash
 cd adare-fantasy
 npm install
-npm run scoring:check && npm run payments:check   # 22 + 47 assertions, no server
+npm run scoring:check && npm run payments:check   # 55 + 47 assertions, no server
 rm -rf .data
 npm run build
 SESSION_SECRET="$(openssl rand -hex 24)" \
@@ -303,9 +359,10 @@ STRIPE_WEBHOOK_SECRET="$(openssl rand -hex 24)" \
 PAYMENTS_PROVIDER=demo npm start
 
 cd verification/harness && npm install
-ADMIN_TOKEN=… STRIPE_WEBHOOK_SECRET=… node api.mjs   # 60 contract checks
-node checks.mjs                                       # 24 browser assertions
-node audit.mjs                                        # axe, 15 routes x 2 viewports
+ADMIN_TOKEN=… STRIPE_WEBHOOK_SECRET=… node api.mjs   # 86 contract checks
+node checks.mjs                                       # 35 browser assertions
+node audit.mjs                                        # axe, 17 routes x 2 viewports
+node clock.mjs                                        # 9 checks, needs SCORING_CLOCK=at:600
 node record.mjs && node record-live.mjs && node takeover.mjs
 FFMPEG=$(command -v ffmpeg) node encode.mjs
 ```
@@ -327,5 +384,15 @@ Stripe and the payment page waits for the webhook.
   points are not stored, so that line is reported as unclaimed rather than guessed.
 - **The store is still a JSON file.** A settlement is one serialised write, but production needs
   Postgres so a crash between the payment and the entry is impossible.
-- Results still come from the seeded simulation; the live adapter is wired but has no provider.
+- **Results still come from the seeded simulation.** The feed reader is server-side and tested
+  against a fixture, but no provider is connected here, so the "feed" source is exercised only by
+  the adapter tests.
+- **The scoring clock is a demo convenience.** Unset, results show the finished weekend (so the table
+  has 28 matches) while the card clock stays in the pre-lock window (so transfers can be demonstrated).
+  A real deployment sets `SCORING_CLOCK=live` for the weekend; `at:<minute>` is the replay path.
+- **Mid-window transfers need a clock override to see them.** The demo server's card clock is
+  pre-lock, where changes are free by design; start it with `SCORING_CLOCK=at:600` to walk through
+  the overnight window and the −4 penalty (`verification/harness/clock.mjs` does exactly that).
+- **The public card is a share page, not a feed.** It re-scores on each request; there is no cache or
+  CDN invalidation to think about until the real feed lands.
 - Accessibility is automated (axe) plus scripted keyboard checks — no screen-reader session.

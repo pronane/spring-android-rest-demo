@@ -34,13 +34,17 @@ const BONUS_ROWS = [
   { label: "Albatross", value: `+${SCORING.albatross}`, note: "the rarest score in golf" },
   { label: "Hole in one", value: `+${SCORING.holeInOne}`, note: "one per tournament, we suspect" },
   { label: "Unbeaten week", value: `+${SCORING.unbeatenBonus}`, note: "3+ matches, no losses" },
-  { label: "Captain", value: `×${SCORING.captainMultiplier}`, note: "match points only, not bonuses" },
+  {
+    label: "Armband",
+    value: `×${SCORING.captainMultiplier}`,
+    note: "match points only, and it can move day by day",
+  },
 ];
 
 const FAQ = [
   {
     q: "When does my squad lock?",
-    a: `At the first tee on Friday 17 September 2027 — 07:35 Irish time. You get ${SCORING.freeTransfers} free transfers before then; every one after that costs ${SCORING.transferPenalty} points.`,
+    a: `At the first tee on Friday 17 September 2027 — 07:35 Irish time. Until then the card is open and every change is free. After the lock you have ${SCORING.freeTransfers} free transfers for the rest of the edition, and then each one costs ${SCORING.transferPenalty} points. Changes are only possible between sessions — never while matches are under way.`,
   },
   {
     q: "What happens when the real teams are named?",
@@ -52,7 +56,15 @@ const FAQ = [
   },
   {
     q: "How is the captain chosen?",
-    a: "One of your six wears the armband. His match points are doubled — so a Sunday singles win is worth 12. You can move the armband freely before the lock and once between sessions.",
+    a: "One player wears the armband and his match points are doubled — so a Sunday singles win is worth 12. You can also give the armband day by day (Friday, Saturday, Sunday), which doubles that day only. Set it from the transfers page; leave a day blank and nobody is doubled that day.",
+  },
+  {
+    q: "Can I share my card?",
+    a: "Yes. Every entry has a public card at /t/ followed by its entry ref — your team, your points and your rank, scored by the server and refreshed as matches finish. It previews properly in WhatsApp and X, and a friend can enter straight from it.",
+  },
+  {
+    q: "What do I get for inviting someone?",
+    a: "A free transfer each. The invite code is your entry ref, so sharing the link does the work; when the invited player's entry is paid, both cards get one extra free change.",
   },
   {
     q: "What if a match is halved?",
@@ -60,14 +72,14 @@ const FAQ = [
   },
   {
     q: "Is it free?",
-    a: "Yes. No entry fee, no card details, no premium armband. Private leagues can sort out their own forfeits.",
+    a: "No — entry is paid, and that is the point: the fee funds the prize pool. €10 for a single entry, €24 for the season pass that also covers the 2029 and 2031 editions. 95% of every paid fee goes into the pool; the platform keeps 5% for card and running costs. There is no free tier and no premium armband — one fee buys the whole game.",
   },
 ];
 
 export default function RulesPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
-      <Eyebrow>{PLATFORM.name} · scoring &amp; rules · v0.2</Eyebrow>
+      <Eyebrow>{PLATFORM.name} · scoring &amp; rules · v0.6</Eyebrow>
       <h1 className="mt-2 max-w-3xl text-balance text-4xl text-cream sm:text-5xl">
         Simple enough to explain in the pub. Deep enough to argue about until Sunday.
       </h1>
@@ -207,8 +219,10 @@ export default function RulesPage() {
             { k: "Captain's Dozen", v: "12 players · 200m" },
             { k: "Max per side", v: "4 (classic) / 6 (dozen)" },
             { k: "Min per side", v: "1 player" },
-            { k: "Free transfers", v: `${SCORING.freeTransfers} before the lock` },
-            { k: "Armband", v: "1, movable before the lock" },
+            { k: "Free transfers", v: `${SCORING.freeTransfers} after the lock, then −${SCORING.transferPenalty}` },
+            { k: "Transfer windows", v: "pre-tee + overnight" },
+            { k: "Armband", v: "one per day (Fri / Sat / Sun)" },
+            { k: "Invites", v: "+1 free transfer each" },
           ].map((item) => (
             <div
               key={item.k}

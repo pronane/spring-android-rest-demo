@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseFeed } from "@/lib/live";
+import { readLiveFeed } from "@/lib/server/feed";
 
 export const dynamic = "force-dynamic";
 
@@ -10,24 +10,9 @@ export const dynamic = "force-dynamic";
  * the provider.
  */
 export async function GET() {
-  const url = process.env.LIVE_FEED_URL;
-  if (!url) return NextResponse.json({ source: "simulation" });
-
-  try {
-    const res = await fetch(url, {
-      headers: process.env.LIVE_FEED_TOKEN
-        ? { authorization: `Bearer ${process.env.LIVE_FEED_TOKEN}` }
-        : undefined,
-      next: { revalidate: 20 },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) throw new Error(`feed responded ${res.status}`);
-    const feed = parseFeed(await res.json());
-    if (!feed) throw new Error("feed JSON did not match the expected shape");
-    return NextResponse.json({ source: "feed", feed });
-  } catch (err) {
-    console.error("[live feed]", err);
-    // Fall back to the simulation rather than showing an empty page.
-    return NextResponse.json({ source: "simulation", error: "Live feed unavailable" });
-  }
+  const read = await readLiveFeed();
+  if (read.feed) return NextResponse.json({ source: "feed", feed: read.feed });
+  if (!read.error) return NextResponse.json({ source: "simulation" });
+  // Fall back to the simulation rather than showing an empty page.
+  return NextResponse.json({ source: "simulation", error: "Live feed unavailable" });
 }

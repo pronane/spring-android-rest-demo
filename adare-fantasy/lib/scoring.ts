@@ -52,7 +52,17 @@ export type Results = {
   finals: number;
   total: number;
   updatedAt: string;
-  source: "simulation" | "admin" | "mixed";
+  source: "simulation" | "feed" | "admin" | "mixed";
+  /**
+   * Where the weekend had got to when this snapshot was taken. Only completed
+   * matches are scored, so a mid-Sunday snapshot is a real, provisional table
+   * rather than a projection.
+   */
+  minute?: number;
+  phase?: "pre" | "live" | "done";
+  inPlay?: number;
+  provisional?: boolean;
+  clock?: string;
 };
 
 /** What an operator can change without touching the simulation. */
@@ -63,10 +73,19 @@ export type ResultsOverride = {
   updatedBy?: string;
 };
 
+/** The armband can move day by day: Friday, Saturday, Sunday. */
+export type SessionCaptains = Partial<Record<"fri" | "sat" | "sun", string | null>>;
+
 export type CardInput = {
   squad: string[];
   captain: string | null;
   mode: ModeId;
+  /**
+   * Optional per-day armband. A day present with a player id doubles that
+   * player's match points that day; a day present as `null` means no armband
+   * that day; a day absent falls back to `captain`.
+   */
+  sessionCaptains?: SessionCaptains;
 };
 
 export type PredictionInput = {
@@ -94,6 +113,9 @@ export type CardScore = {
   total: number;
   players: PlayerPoints[];
   captainId: string | null;
+  sessionCaptains: SessionCaptains;
+  /** Match points added by the armband, so the change is visible in the UI. */
+  captainBonus: number;
   unbeaten: string[];
 };
 
@@ -111,10 +133,23 @@ export type PredictionScore = {
 };
 
 export type EntryScore = {
+  /** Net of any transfer penalties. */
   total: number;
+  /** Card + predictions before penalties. */
+  gross: number;
+  transferPenalty: number;
   card: CardScore;
   predictions: PredictionScore;
 };
+
+const DAY_ORDER = ["fri", "sat", "sun"] as const;
+export type SessionDay = (typeof DAY_ORDER)[number];
+
+/** `fri-am-3` → `fri`. */
+export function sessionDay(sessionId: string): SessionDay | null {
+  const day = sessionId.split("-")[0];
+  return (DAY_ORDER as readonly string[]).includes(day) ? (day as SessionDay) : null;
+}
 
 const EVENT_POINTS: Record<EventKind, number> = {
   birdie: SCORING.birdie,
@@ -194,7 +229,18 @@ export function scoreCard(card: CardInput, results: Results): CardScore {
     });
   }
 
+  // Who wears the armband in a given session: the day's pick if the entry has
+  // one (including an explicit "nobody"), otherwise the overall captain.
+  const captainFor = (sessionId: string): string | null => {
+    const day = sessionDay(sessionId);
+    const dayPick = day ? card.sessionCaptains?.[day] : undefined;
+    if (dayPick !== undefined) return dayPick ?? null;
+    return card.captain ?? null;
+  };
+  let captainBonus = 0;
+
   for (const match of results.matches) {
+    const armband = captainFor(match.sessionId);
     const sides: [string[], "europe" | "usa"][] = [
       [match.europe, "europe"],
       [match.usa, "usa"],
@@ -208,8 +254,10 @@ export function scoreCard(card: CardInput, results: Results): CardScore {
         if (match.result === "half") row.halves += 1;
         else if (value > 0) row.wins += 1;
         else row.losses += 1;
-        const multiplier = card.captain && id === card.captain ? SCORING.captainMultiplier : 1;
+        const doubled = Boolean(armband) && id === armband;
+        const multiplier = doubled ? SCORING.captainMultiplier : 1;
         row.matchPoints += value * multiplier;
+        if (doubled) captainBonus += value * (multiplier - 1);
         row.bonusPoints += SCORING.appearance;
       }
     }
@@ -234,7 +282,14 @@ export function scoreCard(card: CardInput, results: Results): CardScore {
     total += row.total;
   }
 
-  return { total: round(total), players: [...rows.values()], captainId: card.captain, unbeaten };
+  return {
+    total: round(total),
+    players: [...rows.values()],
+    captainId: card.captain,
+    sessionCaptains: card.sessionCaptains ?? {},
+    captainBonus: round(captainBonus),
+    unbeaten,
+  };
 }
 
 /**
@@ -281,11 +336,20 @@ export function scorePredictions(entry: PredictionInput, results: Results): Pred
   };
 }
 
-export function scoreEntry(card: CardInput, entry: PredictionInput, results: Results): EntryScore {
+export function scoreEntry(
+  card: CardInput,
+  entry: PredictionInput,
+  results: Results,
+  transferPenalty = 0,
+): EntryScore {
   const cardScore = scoreCard(card, results);
   const predictionScore = scorePredictions(entry, results);
+  const gross = round(cardScore.total + predictionScore.total);
+  const penalty = Math.max(0, round(transferPenalty));
   return {
-    total: round(cardScore.total + predictionScore.total),
+    total: round(gross - penalty),
+    gross,
+    transferPenalty: penalty,
     card: cardScore,
     predictions: predictionScore,
   };
@@ -299,6 +363,8 @@ export type LeaderboardRow = {
   card: number;
   predictions: number;
   total: number;
+  /** Points already deducted for extra transfers. */
+  penalty?: number;
   prizeEligible: boolean;
   isYou?: boolean;
 };

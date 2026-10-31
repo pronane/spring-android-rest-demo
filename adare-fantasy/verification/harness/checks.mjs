@@ -154,6 +154,61 @@ const email = `checks+${Date.now()}@example.com`;
   await s.browser.close();
 }
 
+/* ——— transfers, the armband and sharing ——— */
+{
+  const s = await open();
+  const email4 = `transfer+${Date.now()}@example.com`;
+  await pay(s, email4);
+  await s.page.goto(BASE + "/draft", { waitUntil: "networkidle0" });
+  await sleep(500);
+  await s.click(/Auto-pick/, 800);
+  await s.click(/Save my card/, 1500);
+
+  await s.page.goto(BASE + "/team/transfers", { waitUntil: "networkidle0" });
+  await sleep(1400);
+  const transferPage = await s.text();
+  check("the transfer page opens for a saved card", /Change your card between sessions/i.test(transferPage));
+  check("it shows the window and the allowance",
+    /Free transfers left/i.test(transferPage) && /Before the first tee/i.test(transferPage),
+    transferPage.split("\n").slice(0, 4).join(" / "));
+  check("it offers a replacement for the picked player", /Swap in/i.test(transferPage));
+
+  await s.click(/Swap in · free/, 1600);
+  const afterSwap = await s.text();
+  check("a swap goes through on the server", /Done — that change was free/i.test(afterSwap), afterSwap.split("\n").find((l) => /Done/.test(l)) ?? "no notice");
+  check("the swap lands in the history", /Transfer history/i.test(afterSwap));
+
+  const armband = await s.page.evaluate(() => {
+    const select = document.querySelector("select");
+    if (!select) return "";
+    const option = [...select.options].find((o) => o.value);
+    if (!option) return "";
+    select.value = option.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    return option.textContent ?? "";
+  });
+  await sleep(1400);
+  check("the armband can be given per day",
+    Boolean(armband) && /armband:/i.test(await s.text()),
+    armband || "no option");
+
+  await s.page.goto(BASE + "/account", { waitUntil: "networkidle0" });
+  await sleep(1400);
+  const account = await s.text();
+  check("the account page offers a share card", /Share your card/i.test(account) && /Copy link/i.test(account));
+  check("the account page explains the invite", /free transfer/i.test(account));
+
+  const ref = (account.match(/TE-[A-Z0-9]{6}-ADRE/) ?? [""])[0];
+  await s.page.goto(`${BASE}/t/${ref}`, { waitUntil: "networkidle0" });
+  await sleep(900);
+  const card = await s.text();
+  check("a public card renders on its own url", /Public card/i.test(card) && /Assertion FC/.test(card), ref);
+  check("the public card shows points and a rank", /points/i.test(card) && /Rank \d+ of \d+/.test(card));
+  check("a visitor can enter from the shared card", /Enter with this card/.test(card));
+
+  await s.browser.close();
+}
+
 /* ——— takeover ——— */
 {
   const s = await open();
