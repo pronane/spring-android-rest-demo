@@ -13,7 +13,7 @@ const OUT = process.env.OUT ?? path.join(process.cwd(), "run");
 const AXE = process.env.AXE ?? "axe-core/axe.min.js";
 const source = fs.readFileSync(AXE.startsWith("/") ? AXE : path.join(process.cwd(), "node_modules", AXE), "utf8");
 
-const ROUTES = ["/", "/account", "/draft", "/editions", "/enter", "/leagues", "/live", "/pinpoint", "/players", "/predict", "/rules", "/team"];
+const ROUTES = ["/", "/account", "/draft", "/editions", "/enter", "/leaderboard", "/leagues", "/live", "/pinpoint", "/players", "/predict", "/rules", "/team"];
 const WIDTHS = [390, 1440];
 
 const SEED = {

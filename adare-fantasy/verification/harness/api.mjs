@@ -19,10 +19,14 @@ const check = (name, pass, detail = "") => {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`);
 };
 
-const call = async (route, { method = "GET", body, cookie } = {}) => {
+const call = async (route, { method = "GET", body, cookie, headers = {} } = {}) => {
   const res = await fetch(BASE + route, {
     method,
-    headers: { ...(body ? { "content-type": "application/json" } : {}), ...(cookie ? { cookie } : {}) },
+    headers: {
+      ...(body ? { "content-type": "application/json" } : {}),
+      ...(cookie ? { cookie } : {}),
+      ...headers,
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
   const json = await res.json().catch(() => null);
@@ -132,6 +136,60 @@ check("sign-in link is not echoed in production", r.status === 200 && !r.json?.d
 
 r = await call("/api/live");
 check("live endpoint falls back to the simulation without a feed", r.status === 200 && r.json?.source === "simulation", r.json?.source);
+
+/* ——— scoring engine, standings, operator corrections ——— */
+
+r = await call("/api/score");
+check("score endpoint needs a session", r.status === 401, `status ${r.status}`);
+
+r = await call("/api/score", { cookie });
+check("score returns a breakdown for the saved card",
+  r.status === 200 && typeof r.json?.score?.total === "number" && Array.isArray(r.json?.score?.card?.players),
+  `total ${r.json?.score?.total}`);
+
+r = await call("/api/leaderboard");
+const boardRows = r.json?.rows ?? [];
+check("global table scores every card server-side",
+  r.status === 200 && boardRows.length > 0 && boardRows.every((row) => typeof row.total === "number"),
+  `${boardRows.length} rows`);
+check("global table ranks in order", boardRows.every((row, i) => i === 0 || row.total <= boardRows[i - 1].total), JSON.stringify(boardRows.map((x) => x.total)));
+check("results snapshot covers the whole cup", r.json?.results?.finals === r.json?.results?.total, `${r.json?.results?.finals}/${r.json?.results?.total}`);
+check("card and predictor add up to the total",
+  boardRows.every((row) => Math.abs(row.card + row.predictions - row.total) < 0.001), "row totals consistent");
+
+r = await call("/api/leagues", { method: "POST", cookie, body: { name: "Scoring League" } });
+const scoreLeagueId = r.json?.league?.id;
+r = await call(`/api/leaderboard?league=${scoreLeagueId}`, { cookie });
+check("league table only scores that league", r.status === 200 && r.json?.rows?.length === 1 && r.json?.scope?.kind === "league", `${r.json?.rows?.length} rows`);
+
+r = await call("/api/leaderboard?league=00000000-0000-0000-0000-000000000000", { cookie });
+check("league you are not in is refused", r.status === 404, `status ${r.status}`);
+
+if (process.env.ADMIN_TOKEN) {
+  r = await call("/api/admin/results", { headers: { authorization: "Bearer wrong-token" } });
+  check("admin corrections reject a bad token", r.status === 401, `status ${r.status}`);
+
+  const auth = { authorization: `Bearer ${process.env.ADMIN_TOKEN}` };
+  r = await call("/api/admin/results", {
+    method: "POST",
+    headers: auth,
+    body: { matches: { "fri-am-1": { result: "usa" }, "ghost-match": { result: "europe" } }, awards: { mvp: "rory" } },
+  });
+  check("operator correction applies and drops unknown matches",
+    r.status === 200 && r.json?.applied === 1 && (r.json?.dropped ?? []).includes("ghost-match"),
+    `applied ${r.json?.applied}, dropped ${JSON.stringify(r.json?.dropped)}`);
+
+  const after = await call("/api/leaderboard");
+  check("table re-scores from the correction", after.json?.results?.source === "mixed", after.json?.results?.source);
+
+  r = await call("/api/admin/results", { method: "DELETE", headers: auth });
+  const cleared = await call("/api/leaderboard");
+  check("clearing corrections returns to the simulation",
+    r.status === 200 && cleared.json?.results?.source === "simulation", cleared.json?.results?.source);
+} else {
+  r = await call("/api/admin/results");
+  check("admin corrections fail closed without ADMIN_TOKEN", r.status === 503, `status ${r.status}`);
+}
 
 const passed = results.filter((x) => x.pass).length;
 fs.mkdirSync(OUT, { recursive: true });

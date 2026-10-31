@@ -34,7 +34,7 @@ export const SESSIONS: SimSession[] = [
 export const SIM_END = 3300;
 export const SIM_START = 0;
 
-type Match = {
+export type Match = {
   id: string;
   no: number;
   sessionId: string;
