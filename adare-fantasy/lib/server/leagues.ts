@@ -31,7 +31,7 @@ function rowFor(user: User, me: string): LeagueRow {
     team: user.teamName,
     points: Math.round(points * 10) / 10,
     isYou: user.id === me,
-    prizeEntry: (entry?.amount ?? 0) > 0,
+    prizeEntry: entry?.prizeEligible ?? (entry?.amount ?? 0) > 0,
   };
 }
 

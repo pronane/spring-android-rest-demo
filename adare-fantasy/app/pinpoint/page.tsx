@@ -139,7 +139,7 @@ export default function PinpointPage() {
             href="/enter"
             className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
           >
-            Play free to save guesses
+            Enter to save guesses
           </Link>
         )}
         <button

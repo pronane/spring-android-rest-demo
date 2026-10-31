@@ -31,6 +31,8 @@ export type Entry = {
   predictions?: Record<string, string>;
   awards?: { mvp: string | null; topScorer: string | null; rookie: string | null };
   pinpoint?: Record<string, { pin: number | null; drive: number | null }>;
+  /** Only entries bought on a prize-eligible plan can win anything. */
+  prizeEligible?: boolean;
   updatedAt?: string;
 };
 
@@ -146,6 +148,9 @@ export async function saveEntry(
       amount: patch.amount ?? user.entry?.amount ?? 0,
       paidAt: user.entry?.paidAt ?? new Date().toISOString(),
       editionId: patch.editionId ?? user.entry?.editionId ?? "adare-2027",
+      // Recorded at checkout from the plan, so prize pools never have to infer
+      // eligibility from the amount paid.
+      prizeEligible: patch.prizeEligible ?? user.entry?.prizeEligible ?? (patch.amount ?? 0) > 0,
     };
     return user;
   });

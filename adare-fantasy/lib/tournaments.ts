@@ -184,17 +184,6 @@ export const MODE_LIST = [MODES.classic, MODES.full];
 
 export const PLANS = [
   {
-    id: "free",
-    name: "Free play",
-    price: 0,
-    currency: "EUR",
-    entries: 1,
-    blurb: "Draft, predict and run private leagues with friends. No prize pool.",
-    features: ["Classic Six or Captain's Dozen", "Match predictor & Pinpoint", "Private leagues with friends"],
-    highlight: false,
-    prizeEligible: false,
-  },
-  {
     id: "single",
     name: "Single entry",
     price: 10,

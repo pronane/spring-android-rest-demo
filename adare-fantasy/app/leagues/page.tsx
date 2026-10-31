@@ -102,7 +102,7 @@ export default function LeaguesPage() {
       return;
     }
     if (!signedIn) {
-      setMessage({ ok: false, text: "Join the game first (it's free) so friends can find your league." });
+      setMessage({ ok: false, text: "Enter the game first so friends can find your league." });
       return;
     }
     const res = await fetch("/api/leagues", {
@@ -135,7 +135,7 @@ export default function LeaguesPage() {
       return;
     }
     if (!signedIn) {
-      setMessage({ ok: false, text: "Join the game first (it's free), then enter the code." });
+      setMessage({ ok: false, text: "Enter the game first, then use the code." });
       return;
     }
     const res = await fetch("/api/leagues/join", {
@@ -246,7 +246,7 @@ export default function LeaguesPage() {
         <p className="mt-4 rounded-xl border border-gold/30 bg-gold/[0.07] px-4 py-3 text-[12.5px] text-cream/70">
           Private leagues are shared between accounts.{" "}
           <Link href="/enter" className="text-gold-soft underline">
-            Play free
+            Get your entry
           </Link>{" "}
           to create or join one, or{" "}
           <Link href="/account" className="text-gold-soft underline">

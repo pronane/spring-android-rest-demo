@@ -101,6 +101,38 @@ check("tampered cookie rejected", r.status === 401, `status ${r.status}`);
 r = await call("/api/session", { cookie });
 check("session returns the saved card", r.json?.user?.entry?.squad?.length === 12 && r.json?.user?.entry?.captain === "rory", `${r.json?.user?.entry?.squad?.length} players`);
 
+/* ——— private leagues, sign-in links, live feed ——— */
+
+r = await call("/api/leagues", { method: "POST", body: { name: "No Session" } });
+check("league creation needs a session", r.status === 401, `status ${r.status}`);
+
+r = await call("/api/leagues", { method: "POST", cookie, body: { name: "Harness League", buyIn: 20 } });
+const leagueCode = r.json?.league?.code ?? "";
+check("league is created with a join code", r.status === 201 && /^[A-Z]{3}[A-Z0-9]{3}$/.test(leagueCode), `${r.status} ${leagueCode}`);
+const leagueId = r.json?.league?.id;
+
+r = await call("/api/leagues", { cookie });
+check("league list includes the new league", r.json?.leagues?.some((l) => l.id === leagueId) === true, `${r.json?.leagues?.length} leagues`);
+
+r = await call("/api/leagues/join", { method: "POST", cookie, body: { code: leagueCode } });
+check("joining your own league is refused", r.status === 404 && /already/i.test(r.json?.error ?? ""), `${r.status}: ${r.json?.error}`);
+
+r = await call("/api/leagues/join", { method: "POST", cookie, body: { code: "ZZZZ9" } });
+check("unknown join code is refused", r.status >= 400, `${r.status}: ${r.json?.error}`);
+
+r = await call(`/api/leagues/${leagueId}`, { method: "DELETE", cookie });
+check("leaving drops the league", r.status === 200, `status ${r.status}`);
+
+r = await call("/api/session/link", { method: "POST", body: { email: "nobody@example.com" } });
+check("sign-in link does not reveal whether an email has an entry",
+  r.status === 200 && r.json?.ok === true && !r.json?.devLink, `${r.status} devLink=${Boolean(r.json?.devLink)}`);
+
+r = await call("/api/session/link", { method: "POST", body: { email } });
+check("sign-in link is not echoed in production", r.status === 200 && !r.json?.devLink, `status ${r.status}`);
+
+r = await call("/api/live");
+check("live endpoint falls back to the simulation without a feed", r.status === 200 && r.json?.source === "simulation", r.json?.source);
+
 const passed = results.filter((x) => x.pass).length;
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "api-results.json"), JSON.stringify({ base: BASE, passed, total: results.length, results }, null, 2));

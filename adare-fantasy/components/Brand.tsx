@@ -55,13 +55,13 @@ export function Brand({
   edition?: boolean;
 }) {
   return (
-    <Link href="/" className="group flex items-center gap-2.5">
+    <Link href="/" className="group flex shrink-0 items-center gap-2.5">
       <Emblem size={compact ? 32 : 38} />
-      <span className="leading-none">
+      <span className="whitespace-nowrap leading-none">
         <span className="block font-display text-[17px] tracking-[0.005em] text-cream">
           {PLATFORM.name}
         </span>
-        <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.24em] text-cream/70">
+        <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-cream/70 xl:tracking-[0.24em]">
           {edition ? `Cup fantasy · ${ACTIVE_EDITION.name}` : PLATFORM.tagline}
         </span>
       </span>

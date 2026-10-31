@@ -137,7 +137,7 @@ export default function AccountPage() {
                 href="/enter"
                 className="mt-4 inline-flex rounded-full border border-white/20 px-4 py-2 text-[12px] text-cream/75"
               >
-                New here? Play free
+                New here? Get your entry
               </Link>
             </>
           )}
@@ -156,7 +156,9 @@ export default function AccountPage() {
                 <div className="flex justify-between">
                   <dt className="text-cream/70">Paid</dt>
                   <dd className="text-cream/85">
-                    {user.entry.amount > 0 ? `${eur(user.entry.amount)} · prize entry` : "Free play"}
+                    {user.entry.prizeEligible ?? user.entry.amount > 0
+                      ? `${eur(user.entry.amount)} · prize entry`
+                      : `${eur(user.entry.amount)} · not prize eligible`}
                   </dd>
                 </div>
                 <div className="flex justify-between">

@@ -35,11 +35,11 @@ const click = async (re, wait = 400) => {
 
 await page.goto(BASE + "/live?t=2700", { waitUntil: "networkidle0" });
 await sleep(1200);
-await page.screenshot({ path: path.join(SHOTS, "21-live-sunday.png") });
+await page.screenshot({ path: path.join(SHOTS, "19-live-sunday.png") });
 await click(/^4×$/, 300);
 await click(/Play/, 900);
 await sleep(16_000);
-await page.screenshot({ path: path.join(SHOTS, "22-live-final.png") });
+await page.screenshot({ path: path.join(SHOTS, "20-live-final.png") });
 
 const { frames, seconds } = await stream.stop();
 await browser.close();

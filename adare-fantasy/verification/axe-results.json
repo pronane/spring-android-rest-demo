@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "clean": 22,
-  "total": 22,
+  "clean": 24,
+  "total": 24,
   "results": [
     {
       "route": "/",
@@ -70,6 +70,16 @@
     },
     {
       "route": "/live",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "route": "/pinpoint",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "route": "/pinpoint",
       "width": 1440,
       "violations": []
     },

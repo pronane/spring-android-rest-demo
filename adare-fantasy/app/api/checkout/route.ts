@@ -28,6 +28,7 @@ export async function POST(request: Request) {
     plan: plan.id,
     amount: plan.price,
     editionId: "adare-2027",
+    prizeEligible: plan.prizeEligible,
   });
 
   return NextResponse.json({
