@@ -22,8 +22,32 @@ const PICKS: { value: Pick; label: string }[] = [
 ];
 
 export default function PredictPage() {
-  const { state, setPrediction, clearPredictions, setAward } = useFantasy();
+  const { state, setPrediction, clearPredictions, setAward, paid } = useFantasy();
   const [activeSession, setActiveSession] = useState(0);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  // Picks used to live only in this browser; nothing sent them to the server
+  // unless you went back to /draft and re-saved the card.
+  const savePicks = async () => {
+    setSaveMsg(null);
+    try {
+      const res = await fetch("/api/entry", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode: state.mode,
+          squad: state.squad,
+          captain: state.captain,
+          predictions: state.predictions,
+          awards: state.awards,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      setSaveMsg(res.ok ? "Picks saved ✓" : (data.error ?? "Could not save your picks."));
+    } catch {
+      setSaveMsg("You're offline — picks are kept on this device.");
+    }
+  };
 
   const matches = useMemo(() => pairingsFor(), []);
   const picks = state.predictions;
@@ -252,6 +276,21 @@ export default function PredictPage() {
                 <span className="font-display text-lg text-gold-soft tnum">{potential}</span>
               </div>
             </div>
+
+            {paid ? (
+              <button
+                type="button"
+                onClick={savePicks}
+                className="mt-4 block w-full rounded-full border border-gold/50 py-2.5 text-center text-[12.5px] font-semibold text-gold-soft transition hover:bg-gold/10"
+              >
+                Save my picks
+              </button>
+            ) : null}
+            {saveMsg ? (
+              <p role="status" className="mt-2 text-center text-[11px] text-cream/60">
+                {saveMsg}
+              </p>
+            ) : null}
 
             <Link
               href="/live"

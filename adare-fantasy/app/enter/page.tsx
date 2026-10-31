@@ -53,7 +53,10 @@ export default function EnterPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, manager, teamName }),
       });
-      if (!sessionRes.ok) throw new Error("Could not create the account.");
+      if (!sessionRes.ok) {
+        const sessionData = (await sessionRes.json().catch(() => ({}))) as { error?: string };
+        throw new Error(sessionData.error ?? "Could not create the account.");
+      }
       setIdentity(manager, teamName);
 
       const res = await fetch("/api/checkout", {

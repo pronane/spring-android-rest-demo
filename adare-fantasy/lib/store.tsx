@@ -75,13 +75,10 @@ const DEMO_STATE: TeamState = {
   mode: "classic",
   predictions: DEMO_PREDICTIONS,
   awards: { mvp: "rory", topScorer: "scheffler", rookie: "rasmus" },
-  entry: {
-    paid: true,
-    plan: "single",
-    ref: "TE-8F42-ADRE",
-    amount: 10,
-    paidAt: "2026-10-24T09:12:00.000Z",
-  },
+  // The demo card is a preview only. It used to carry a paid entry, so every
+  // first-time visitor saw "My card", a receipt on /enter and an unlocked Save
+  // button without ever paying.
+  entry: { paid: false, plan: null, ref: null, amount: 0, paidAt: null },
   joinedLeagues: ["portrush-pints", "nineteenth-hole"],
   customLeagues: [],
   updatedAt: "2026-10-24T09:12:00.000Z",
@@ -140,14 +137,19 @@ const FantasyContext = createContext<FantasyContextValue | null>(null);
 function normalise(raw: Partial<TeamState> | null): TeamState {
   if (!raw) return DEMO_STATE;
   const mode: ModeId = raw.mode === "full" ? "full" : "classic";
+  const squad = Array.isArray(raw.squad)
+    ? [...new Set(raw.squad.filter((id) => PLAYER_BY_ID[id]))].slice(0, MODES[mode].squadSize)
+    : [];
   return {
-    ...DEMO_STATE,
+    ...EMPTY_STATE,
     ...raw,
     mode,
+    captain: raw.captain && squad.includes(raw.captain) ? raw.captain : null,
     predictions: raw.predictions && typeof raw.predictions === "object" ? raw.predictions : {},
     awards: { ...EMPTY_STATE.awards, ...(raw.awards ?? {}) },
-    entry: { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
-    squad: Array.isArray(raw.squad) ? raw.squad.slice(0, MODES[mode].squadSize) : [],
+    // Older builds stored a "paid" demo entry; never treat the demo as paid.
+    entry: raw.isDemo ? EMPTY_STATE.entry : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
+    squad,
     joinedLeagues: Array.isArray(raw.joinedLeagues) ? raw.joinedLeagues : [],
     customLeagues: Array.isArray(raw.customLeagues) ? raw.customLeagues : [],
   };
@@ -212,7 +214,9 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setCaptain = useCallback((id: string | null) => {
-    setState((prev) => ({ ...prev, captain: id }));
+    setState((prev) =>
+      id === null || prev.squad.includes(id) ? { ...prev, captain: id, isDemo: false } : prev,
+    );
   }, []);
 
   const setIdentity = useCallback((manager: string, teamName: string) => {
@@ -253,7 +257,13 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
 
   const createLeague = useCallback(
     (name: string, buyIn = 0) => {
-      const code = `${name.replace(/[^a-zA-Z]/g, "").toUpperCase()}27`.slice(0, 6).padEnd(6, "X");
+      // Codes must be unique, or "join by code" lands people in the wrong league.
+      const taken = new Set([...LEAGUES, ...state.customLeagues].map((l) => l.code));
+      const stem = (name.replace(/[^a-zA-Z]/g, "").toUpperCase() || "LEAGUE").slice(0, 4);
+      let code = `${stem}27`.padEnd(6, "X");
+      while (taken.has(code)) {
+        code = `${stem.slice(0, 3)}${Math.floor(Math.random() * 900 + 100)}`;
+      }
       const league: League = {
         id: `custom-${Date.now()}`,
         name: name.trim() || "New league",
@@ -278,7 +288,7 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
       }));
       return league;
     },
-    [state.captain, state.manager, state.mode, state.squad, state.teamName],
+    [state.captain, state.customLeagues, state.manager, state.mode, state.squad, state.teamName],
   );
 
   const leaveLeague = useCallback((id: string) => {
@@ -293,7 +303,8 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadDemo = useCallback(() => {
-    setState({ ...DEMO_STATE, updatedAt: new Date().toISOString() });
+    // Keep a real paid entry if there is one — loading the demo shouldn't lose it.
+    setState((prev) => ({ ...DEMO_STATE, entry: prev.entry, updatedAt: new Date().toISOString() }));
   }, []);
 
   const clearSquad = useCallback(() => {

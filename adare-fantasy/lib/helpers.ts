@@ -49,16 +49,19 @@ export function projectedOf(
 export function validateSquad(squad: string[], mode: ModeId = "classic"): string[] {
   const cfg = modeConfig(mode);
   const errors: string[] = [];
+  if (new Set(squad).size !== squad.length) {
+    errors.push("A player can only be picked once.");
+  }
+  if (squad.some((id) => !PLAYER_BY_ID[id])) {
+    errors.push("Your card includes a player who is no longer in the pool.");
+  }
   if (squad.length !== cfg.squadSize) {
     errors.push(`Pick ${cfg.squadSize} players — you have ${squad.length}.`);
   }
   if (spendOf(squad) > cfg.budget) {
     errors.push(`You are ${credits(spendOf(squad) - cfg.budget)}m over the ${cfg.budget}m budget.`);
   }
-  if (sideCount(squad, "europe") > cfg.maxPerSide) {
-    errors.push(`Maximum ${cfg.maxPerSide} players from one side.`);
-  }
-  if (sideCount(squad, "usa") > cfg.maxPerSide) {
+  if (sideCount(squad, "europe") > cfg.maxPerSide || sideCount(squad, "usa") > cfg.maxPerSide) {
     errors.push(`Maximum ${cfg.maxPerSide} players from one side.`);
   }
   if (squad.length > 0 && (sideCount(squad, "europe") === 0 || sideCount(squad, "usa") === 0)) {
@@ -67,45 +70,61 @@ export function validateSquad(squad: string[], mode: ModeId = "classic"): string
   return errors;
 }
 
-/** Brute-force the highest-projected legal card for the selected mode. */
+/**
+ * Highest-projected legal card for the selected mode. Depth-first search with
+ * pruning on budget and side caps: the unpruned version enumerated every
+ * C(24,12) ≈ 2.7M twelve-man card on the main thread and froze phones when
+ * "Auto-pick" was tapped in Captain's Dozen.
+ */
 export function autoPick(mode: ModeId = "classic"): { squad: string[]; captain: string } {
   const cfg = modeConfig(mode);
-  const pool = PLAYERS;
+  // Best players first so good cards are found early and the bound bites sooner.
+  const pool = [...PLAYERS].sort((a, b) => b.projected - a.projected);
   const n = pool.length;
-  const found: { best: { ids: string[]; score: number } | null } = { best: null };
+  const cheapest = Math.min(...pool.map((p) => p.price));
+  let best: { ids: string[]; score: number } | null = null;
   const chosen: number[] = [];
 
-  const walk = (start: number) => {
-    if (chosen.length === cfg.squadSize) {
-      let europe = 0;
-      let budget = 0;
-      for (const i of chosen) {
-        if (pool[i].side === "europe") europe += 1;
-        budget += pool[i].price;
-      }
-      const usa = cfg.squadSize - europe;
-      if (budget > cfg.budget || europe > cfg.maxPerSide || usa > cfg.maxPerSide) return;
-      // Require at least one from each side.
+  const walk = (start: number, budget: number, europe: number, usa: number, score: number) => {
+    const left = cfg.squadSize - chosen.length;
+    if (left === 0) {
       if (europe === 0 || usa === 0) return;
-      const score = chosen.reduce((sum, i) => sum + pool[i].projected * 1.15, 0);
-      if (!found.best || score > found.best.score) {
-        found.best = { ids: chosen.map((i) => pool[i].id), score };
-      }
+      if (!best || score > best.score) best = { ids: chosen.map((i) => pool[i].id), score };
       return;
     }
+    if (n - start < left) return;
+    if (budget + cheapest * left > cfg.budget) return;
+    // Upper bound: the next `left` players in projection order.
+    if (best) {
+      let bound = score;
+      for (let i = start; i < start + left; i += 1) bound += pool[i].projected;
+      if (bound <= best.score) return;
+    }
     for (let i = start; i < n; i += 1) {
+      const p = pool[i];
+      const nextBudget = budget + p.price;
+      if (nextBudget > cfg.budget) continue;
+      const e = europe + (p.side === "europe" ? 1 : 0);
+      const u = usa + (p.side === "usa" ? 1 : 0);
+      if (e > cfg.maxPerSide || u > cfg.maxPerSide) continue;
       chosen.push(i);
-      walk(i + 1);
+      walk(i + 1, nextBudget, e, u, score + p.projected);
       chosen.pop();
     }
   };
 
-  walk(0);
-  const ids = found.best?.ids ?? [];
+  walk(0, 0, 0, 0, 0);
+  const ids: string[] = (best as { ids: string[] } | null)?.ids ?? [];
   const captain = [...ids].sort(
     (a, b) => PLAYER_BY_ID[b].projected - PLAYER_BY_ID[a].projected,
   )[0];
   return { squad: ids, captain };
+}
+
+/** Cards and predictions freeze at the first tee of the edition. */
+export function isLocked(firstTee: string, now: Date = new Date()): boolean {
+  const lock = Date.parse(firstTee);
+  return Number.isFinite(lock) && now.getTime() >= lock;
 }
 
 export function rankOf(value: number, field: number[]): number {
