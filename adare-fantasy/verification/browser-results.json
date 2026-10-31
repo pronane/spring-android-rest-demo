@@ -1,0 +1,101 @@
+{
+  "passed": 19,
+  "total": 19,
+  "results": [
+    {
+      "name": "fresh visitor sees the demo card, not a paid account",
+      "pass": true,
+      "detail": "header CTA is \"Enter · €10\""
+    },
+    {
+      "name": "fresh visitor gets the checkout form, not a receipt",
+      "pass": true,
+      "detail": "checkout visible"
+    },
+    {
+      "name": "checkout is not pre-filled with the demo identity",
+      "pass": true,
+      "detail": "manager field is \"\""
+    },
+    {
+      "name": "unpaid draft offers entry instead of save",
+      "pass": true,
+      "detail": "CTA reads Enter €10 to save"
+    },
+    {
+      "name": "checkout returns a receipt reference",
+      "pass": true,
+      "detail": "TE-CFF87A-ADRE"
+    },
+    {
+      "name": "the paid entry survives a reload",
+      "pass": true,
+      "detail": "header CTA is \"My card\""
+    },
+    {
+      "name": "Captain's Dozen auto-picks a legal 12",
+      "pass": true,
+      "detail": "12/12, within budget"
+    },
+    {
+      "name": "card saves to the server",
+      "pass": true,
+      "detail": "Card saved ✓"
+    },
+    {
+      "name": "predictor fills all 28 matches",
+      "pass": true,
+      "detail": "28/28 called"
+    },
+    {
+      "name": "picks save to the server",
+      "pass": true,
+      "detail": "Picks saved ✓"
+    },
+    {
+      "name": "account shows the saved card",
+      "pass": true,
+      "detail": "12 players server-side"
+    },
+    {
+      "name": "account shows the paid receipt",
+      "pass": true,
+      "detail": "TE-CFF87A-ADRE"
+    },
+    {
+      "name": "desktop flow recorded",
+      "pass": true,
+      "detail": "859 frames"
+    },
+    {
+      "name": "live clock advances while playing",
+      "pass": true,
+      "detail": "clock visible"
+    },
+    {
+      "name": "live flow recorded",
+      "pass": true,
+      "detail": "317 frames"
+    },
+    {
+      "name": "mobile checkout completes",
+      "pass": true,
+      "detail": "receipt shown"
+    },
+    {
+      "name": "mobile account reads the paid session",
+      "pass": true,
+      "detail": "manager name from server"
+    },
+    {
+      "name": "mobile flow recorded",
+      "pass": true,
+      "detail": "112 frames"
+    },
+    {
+      "name": "a second browser cannot claim an existing email",
+      "pass": true,
+      "detail": "409 surfaced in the UI as an alert"
+    }
+  ]
+}

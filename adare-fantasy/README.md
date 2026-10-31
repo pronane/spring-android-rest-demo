@@ -179,14 +179,21 @@ imported by server components).
 ```bash
 cd adare-fantasy
 npm install
-npm run dev        # http://localhost:3000
-npm run build      # production build
+npm run dev        # http://localhost:3000 — no configuration needed
+npm run build
+SESSION_SECRET="$(openssl rand -hex 24)" npm start   # production
 npm run typecheck
 npm run data:refresh
 ```
 
-No environment variables are required. Dev server picks up `.env.local` if present. The entry store
-lives in `.data/twenty-eight.json` (created on first write; delete it to reset).
+**One environment variable is required in production:** `SESSION_SECRET` (16+ characters). The
+session cookie is HMAC-signed, and the old bundled fallback secret is public — it is in this repo —
+so `lib/server/auth.ts` throws rather than sign with it when `NODE_ENV=production`. Without the
+variable, pages still render but every cookie-signing route (`/api/session`, `/api/checkout`,
+`/api/entry`) returns 500 and checkout shows "Could not create the account." Copy `.env.example` to
+`.env.local` for local production builds; `npm run dev` falls back to the dev secret.
+
+The entry store lives in `.data/twenty-eight.json` (created on first write; delete it to reset).
 
 ### Structure
 
@@ -249,6 +256,21 @@ The first pass was designed for looks; this one is designed to be usable by ever
 Verified with **axe-core 4.14** across 11 routes at 390px and 1440px: **0 violations** (down from 30
 violation types, mostly contrast). Keyboard, `aria-current`, toggle state, reduced motion and the
 checkout field metadata are asserted in the same scripted pass.
+
+## Verification (v0.2.2)
+
+`verification/` holds the review and end-to-end evidence for the current build:
+
+- [`verification/REPORT.md`](verification/REPORT.md) — what changed on `master`, two regressions
+  found and fixed (a paid entry being erased on reload, and the checkout pre-filling the demo
+  identity), plus the full results table
+- [`verification/videos/`](verification/videos) — three recordings: the desktop purchase → draft →
+  predictor → account journey (35 s), the Sunday singles simulation at 4× (18 s), and the mobile pass
+  (13 s)
+- [`verification/screenshots/`](verification/screenshots) — 21 step-by-step captures, including the
+  fresh-visitor state and a blocked account-takeover attempt
+- `api-results.json`, `browser-results.json`, `axe-results.json` — machine-readable results
+  (17 API checks, 19 browser checks, 22 accessibility checks; all passing)
 
 ## Screenshot method
 

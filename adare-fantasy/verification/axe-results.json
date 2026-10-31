@@ -1,0 +1,116 @@
+{
+  "total": 22,
+  "failing": 0,
+  "summary": [
+    {
+      "url": "/",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/draft",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/draft",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/predict",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/predict",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/live?t=3080",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/live?t=3080",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/leagues",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/leagues",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/rules",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/rules",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/enter",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/enter",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/editions",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/editions",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/account",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/account",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/players",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/players",
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "url": "/team",
+      "width": 390,
+      "violations": []
+    },
+    {
+      "url": "/team",
+      "width": 1440,
+      "violations": []
+    }
+  ]
+}

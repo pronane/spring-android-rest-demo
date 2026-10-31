@@ -134,9 +134,16 @@ type FantasyContextValue = {
 
 const FantasyContext = createContext<FantasyContextValue | null>(null);
 
+/** The old demo card shipped a fake paid receipt. Drop that reference only. */
+const LEGACY_DEMO_REF = "TE-8F42-ADRE";
+
 function normalise(raw: Partial<TeamState> | null): TeamState {
   if (!raw) return DEMO_STATE;
   const mode: ModeId = raw.mode === "full" ? "full" : "classic";
+  const storedEntry =
+    raw.entry?.ref === LEGACY_DEMO_REF
+      ? EMPTY_STATE.entry
+      : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) };
   const squad = Array.isArray(raw.squad)
     ? [...new Set(raw.squad.filter((id) => PLAYER_BY_ID[id]))].slice(0, MODES[mode].squadSize)
     : [];
@@ -147,8 +154,10 @@ function normalise(raw: Partial<TeamState> | null): TeamState {
     captain: raw.captain && squad.includes(raw.captain) ? raw.captain : null,
     predictions: raw.predictions && typeof raw.predictions === "object" ? raw.predictions : {},
     awards: { ...EMPTY_STATE.awards, ...(raw.awards ?? {}) },
-    // Older builds stored a "paid" demo entry; never treat the demo as paid.
-    entry: raw.isDemo ? EMPTY_STATE.entry : { ...EMPTY_STATE.entry, ...(raw.entry ?? {}) },
+    // A paid entry always wins over the demo flag: paying on the demo card is a
+    // real purchase and must survive a reload (it used to be wiped).
+    entry: storedEntry,
+    isDemo: Boolean(raw.isDemo) && !storedEntry.paid,
     squad,
     joinedLeagues: Array.isArray(raw.joinedLeagues) ? raw.joinedLeagues : [],
     customLeagues: Array.isArray(raw.customLeagues) ? raw.customLeagues : [],
@@ -331,7 +340,11 @@ export function FantasyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setEntry = useCallback((entry: Partial<Entry>) => {
-    setState((prev) => ({ ...prev, entry: { ...prev.entry, ...entry } }));
+    setState((prev) => ({
+      ...prev,
+      entry: { ...prev.entry, ...entry },
+      isDemo: entry.paid ? false : prev.isDemo,
+    }));
   }, []);
 
   const hydrate = useCallback((partial: Partial<TeamState>) => {

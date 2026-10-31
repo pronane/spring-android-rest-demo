@@ -1,0 +1,92 @@
+{
+  "email": "qa+1793428322219@example.com",
+  "passed": 17,
+  "total": 17,
+  "results": [
+    {
+      "name": "session rejects an invalid email",
+      "pass": true,
+      "detail": "status 400"
+    },
+    {
+      "name": "session creates an account",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "typing an existing email without its session is refused",
+      "pass": true,
+      "detail": "status 409 That email already has an entry. Sign in from the device you entered on, or contact support."
+    },
+    {
+      "name": "re-submitting your own email with your session works",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "entry write without a session is 401",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "entry write before paying is 402",
+      "pass": true,
+      "detail": "status 402"
+    },
+    {
+      "name": "checkout rejects an unknown plan",
+      "pass": true,
+      "detail": "status 400"
+    },
+    {
+      "name": "checkout records a paid entry",
+      "pass": true,
+      "detail": "TE-1390A1-ADRE status 200"
+    },
+    {
+      "name": "valid Captain's Dozen saves",
+      "pass": true,
+      "detail": "status 200"
+    },
+    {
+      "name": "bogus match ids and picks are dropped",
+      "pass": true,
+      "detail": "{\"fri-am-1\":\"europe\"}"
+    },
+    {
+      "name": "unknown player ids are nulled in awards",
+      "pass": true,
+      "detail": "{\"mvp\":\"rory\",\"topScorer\":null,\"rookie\":null}"
+    },
+    {
+      "name": "classic card with 7 players is rejected",
+      "pass": true,
+      "detail": "status 422: Pick 6 players — you have 7."
+    },
+    {
+      "name": "over-budget card is rejected",
+      "pass": true,
+      "detail": "status 422: You are 0.5m over the 100m budget."
+    },
+    {
+      "name": "captain must be in the squad",
+      "pass": true,
+      "detail": "status 422: Pick a captain from your card."
+    },
+    {
+      "name": "a one-sided card is rejected",
+      "pass": true,
+      "detail": "status 422: Maximum 4 players from one side."
+    },
+    {
+      "name": "a tampered session cookie is refused",
+      "pass": true,
+      "detail": "status 401"
+    },
+    {
+      "name": "session returns the saved card",
+      "pass": true,
+      "detail": "12 players, captain rory"
+    }
+  ]
+}
