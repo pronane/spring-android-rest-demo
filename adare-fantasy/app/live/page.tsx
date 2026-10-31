@@ -92,12 +92,12 @@ export default function LivePage() {
               </span>
               Live
             </span>
-            <span className="text-[11px] text-cream/40">
+            <span className="text-[11px] text-cream/60">
               {ACTIVE_EDITION.name} · {ACTIVE_EDITION.venue}
             </span>
           </div>
           <h1 className="mt-3 text-4xl text-cream sm:text-5xl">{sim.heading}</h1>
-          <p className="mt-1.5 tnum text-[13px] text-cream/50">
+          <p className="mt-1.5 tnum text-[13px] text-cream/70">
             {sim.clock} · {sim.completed}/28 matches complete · {sim.cup.inPlay} in play
           </p>
         </div>
@@ -107,6 +107,7 @@ export default function LivePage() {
             <button
               type="button"
               onClick={() => setPlaying((p) => !p)}
+              aria-label={playing ? "Pause the simulation" : "Play the simulation"}
               className="flex items-center gap-1.5 rounded-full bg-gold px-3.5 py-1.5 text-[12px] font-semibold text-forest-950 transition hover:bg-gold-soft"
             >
               {playing ? "❙❙ Pause" : "▶ Play"}
@@ -126,15 +127,17 @@ export default function LivePage() {
                 key={s}
                 type="button"
                 onClick={() => setSpeed(s)}
+                aria-pressed={speed === s}
+                aria-label={`Playback speed ${s} times`}
                 className={`rounded-full px-2.5 py-1.5 text-[11px] tnum transition ${
-                  speed === s ? "bg-white/10 text-cream" : "text-cream/40 hover:text-cream"
+                  speed === s ? "bg-white/10 text-cream" : "text-cream/60 hover:text-cream"
                 }`}
               >
                 {s}×
               </button>
             ))}
           </div>
-          <div className="hidden items-center gap-1 text-[10.5px] text-cream/35 sm:flex">
+          <div className="hidden items-center gap-1 text-[10.5px] text-cream/60 sm:flex">
             {JUMPS.map((jump) => (
               <button
                 key={jump.label}
@@ -143,6 +146,8 @@ export default function LivePage() {
                   setMinute(jump.minute);
                   setPlaying(false);
                 }}
+                aria-current={Math.abs(minute - jump.minute) < 60 ? "true" : undefined}
+                aria-label={`Jump to ${jump.label}`}
                 className={`rounded-full px-2 py-1 transition hover:text-gold-soft ${
                   Math.abs(minute - jump.minute) < 60 ? "text-gold-soft" : ""
                 }`}
@@ -158,13 +163,13 @@ export default function LivePage() {
       <div className="mt-6 grid gap-px overflow-hidden rounded-2xl border border-white/12 bg-white/[0.08] sm:grid-cols-[1fr_auto_1fr]">
         <ScoreSide side="europe" points={sim.cup.europe} aligned="left" />
         <div className="flex flex-col items-center justify-center bg-forest-900 px-6 py-4">
-          <p className="text-[9px] uppercase tracking-[0.18em] text-cream/35">Cup score</p>
+          <p className="text-[9px] uppercase tracking-[0.18em] text-cream/60">Cup score</p>
           <p className="font-display text-lg text-cream/70">
             {sim.cup.europe % 1 === 0 ? sim.cup.europe : sim.cup.europe.toFixed(1)}
-            <span className="mx-2 text-cream/25">–</span>
+            <span className="mx-2 text-cream/60">–</span>
             {sim.cup.usa % 1 === 0 ? sim.cup.usa : sim.cup.usa.toFixed(1)}
           </p>
-          <p className="mt-1 text-[10px] text-cream/35">
+          <p className="mt-1 text-[10px] text-cream/60">
             {cupDecided ? "Cup decided" : `${sim.cup.remaining} points to play for`}
           </p>
         </div>
@@ -178,7 +183,7 @@ export default function LivePage() {
             <h2 className="text-xl text-cream">
               {sim.session ? `${sim.session.day} · ${sim.session.label}` : "First tee"}
             </h2>
-            <span className="text-[11px] text-cream/40 tnum">
+            <span className="text-[11px] text-cream/60 tnum">
               Session {Math.max(1, sim.sessionIndex + 1)} of 5
             </span>
           </div>
@@ -209,8 +214,8 @@ export default function LivePage() {
                     active
                       ? "border-gold/50 bg-gold/10 text-gold-soft"
                       : done
-                        ? "border-white/10 text-cream/45"
-                        : "border-white/10 text-cream/30 hover:border-white/25"
+                        ? "border-white/10 text-cream/70"
+                        : "border-white/10 text-cream/60 hover:border-white/25"
                   }`}
                 >
                   {session.day.replace(" 2027", "")} {session.label}
@@ -222,12 +227,12 @@ export default function LivePage() {
 
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
             <div className="flex items-center justify-between">
-              <p className="eyebrow text-cream/40">Wire</p>
-              <span className="text-[10px] text-cream/30">every birdie, as it lands</span>
+              <p className="eyebrow text-cream/60">Wire</p>
+              <span className="text-[10px] text-cream/60">every birdie, as it lands</span>
             </div>
             <ul className="mt-3 space-y-1.5">
               {sim.feed.length === 0 ? (
-                <li className="text-[12px] text-cream/35">
+                <li className="text-[12px] text-cream/60">
                   No holes completed yet. Press play.
                 </li>
               ) : (
@@ -253,16 +258,16 @@ export default function LivePage() {
           <div className="rounded-2xl border border-gold/25 bg-gold/[0.06] p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="eyebrow text-cream/40">Your live points</p>
+                <p className="eyebrow text-cream/60">Your live points</p>
                 <p className="mt-1 font-display text-4xl text-gold-soft tnum">
                   {score.total.toFixed(1)}
                 </p>
-                <p className="mt-1 text-[11.5px] text-cream/45">
+                <p className="mt-1 text-[11.5px] text-cream/70">
                   {rank === 1 ? "Leading" : `${rank}${rank === 2 ? "nd" : rank === 3 ? "rd" : "th"}`}{" "}
                   in {league.name} · {state.teamName || "your card"}
                 </p>
               </div>
-              <span className="rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-cream/55">
+              <span className="rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-cream/70">
                 {mode.short} · {state.squad.length}/{mode.squadSize}
               </span>
             </div>
@@ -305,13 +310,13 @@ export default function LivePage() {
                   );
                 })}
                 {score.players.length > 8 ? (
-                  <li className="pt-1 text-[11px] text-cream/35">
+                  <li className="pt-1 text-[11px] text-cream/60">
                     + {score.players.length - 8} more on your card
                   </li>
                 ) : null}
               </ul>
             )}
-            <p className="mt-3 border-t border-white/10 pt-2.5 text-[10.5px] text-cream/35">
+            <p className="mt-3 border-t border-white/10 pt-2.5 text-[10.5px] text-cream/60">
               Projected pre-event: {projected.toFixed(0)} pts. Points land when a match finishes.
             </p>
           </div>
@@ -319,7 +324,7 @@ export default function LivePage() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/40">Live table</p>
+                <p className="eyebrow text-cream/60">Live table</p>
                 <p className="mt-1 text-[15px] text-cream">{league.name}</p>
               </div>
               <span className="rounded-lg border border-gold/30 bg-gold/[0.07] px-2 py-1 text-[10px] tracking-[0.12em] text-gold-soft">
@@ -334,7 +339,7 @@ export default function LivePage() {
                     row.isYou ? "bg-gold/10" : ""
                   }`}
                 >
-                  <span className="w-4 text-[10px] text-cream/30 tnum">{i + 1}</span>
+                  <span className="w-4 text-[10px] text-cream/60 tnum">{i + 1}</span>
                   <span className="flex-1 truncate text-cream/80">{row.team}</span>
                   <span className="tnum text-cream/85">{row.points.toFixed(1)}</span>
                 </li>
@@ -367,7 +372,7 @@ function ScoreSide({
   return (
     <div className="flex items-center justify-between bg-forest-900 px-5 py-4">
       <div className={aligned === "right" ? "order-2 text-right" : ""}>
-        <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/45">
+        <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/70">
           <span className="h-2 w-2 rounded-full" style={{ background: SIDE_COLOR[side] }} />
           {side === "europe" ? "Europe" : "United States"}
         </p>
@@ -375,7 +380,7 @@ function ScoreSide({
           {points % 1 === 0 ? points : points.toFixed(1)}
         </p>
       </div>
-      <span className="text-[10px] text-cream/30">{aligned === "left" ? "holders" : "challengers"}</span>
+      <span className="text-[10px] text-cream/60">{aligned === "left" ? "holders" : "challengers"}</span>
     </div>
   );
 }
@@ -406,13 +411,13 @@ function MatchCard({ match }: { match: LiveMatch }) {
 
   return (
     <div className={`rounded-xl border p-3.5 ${tone}`}>
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-cream/35">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-cream/60">
         <span>
           Match {match.no} · {match.format === "singles" ? "Singles" : match.format === "fourball" ? "Fourball" : "Foursomes"}
         </span>
         <span
           className={
-            match.status === "live" ? "text-usa" : match.status === "final" ? "text-cream/55" : ""
+            match.status === "live" ? "text-usa" : match.status === "final" ? "text-cream/70" : ""
           }
         >
           {resultLabel}
@@ -423,7 +428,7 @@ function MatchCard({ match }: { match: LiveMatch }) {
       <div className="mt-2.5 space-y-1.5">
         <div className="flex items-center gap-2 text-[12.5px]">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: SIDE_COLOR.europe }} />
-          <span className={`flex-1 truncate ${match.leader === "europe" ? "text-cream" : "text-cream/55"}`}>
+          <span className={`flex-1 truncate ${match.leader === "europe" ? "text-cream" : "text-cream/70"}`}>
             {europe}
           </span>
           {match.leader === "europe" ? (
@@ -432,7 +437,7 @@ function MatchCard({ match }: { match: LiveMatch }) {
         </div>
         <div className="flex items-center gap-2 text-[12.5px]">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: SIDE_COLOR.usa }} />
-          <span className={`flex-1 truncate ${match.leader === "usa" ? "text-cream" : "text-cream/55"}`}>
+          <span className={`flex-1 truncate ${match.leader === "usa" ? "text-cream" : "text-cream/70"}`}>
             {usa}
           </span>
           {match.leader === "usa" ? (

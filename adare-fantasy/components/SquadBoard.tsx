@@ -33,10 +33,10 @@ export function SquadBoard({
               key={`empty-${index}`}
               className="flex h-[62px] items-center gap-3 rounded-xl border border-dashed border-white/12 bg-white/[0.015] px-3"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full border border-white/15 text-[11px] text-cream/30 tnum">
+              <span className="grid h-7 w-7 place-items-center rounded-full border border-white/15 text-[11px] text-cream/60 tnum">
                 {index + 1}
               </span>
-              <span className="text-[13px] text-cream/30">Empty slot</span>
+              <span className="text-[13px] text-cream/60">Empty slot</span>
             </li>
           );
         }
@@ -63,7 +63,7 @@ export function SquadBoard({
                   </span>
                 ) : null}
               </div>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-cream/40">
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-cream/60">
                 <CountryChip code={player.countryCode} />
                 <span className="tnum">{credits(player.price)}m</span>
                 {variant === "full" ? (
@@ -83,7 +83,7 @@ export function SquadBoard({
                   className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition ${
                     isCaptain
                       ? "border-gold bg-gold text-forest-950"
-                      : "border-white/15 text-cream/50 hover:border-gold/50 hover:text-gold-soft"
+                      : "border-white/15 text-cream/70 hover:border-gold/50 hover:text-gold-soft"
                   }`}
                 >
                   C
@@ -94,7 +94,7 @@ export function SquadBoard({
                   type="button"
                   onClick={() => onRemove(player.id)}
                   aria-label={`Remove ${player.name}`}
-                  className="grid h-6 w-6 place-items-center rounded-full text-cream/35 transition hover:bg-white/10 hover:text-cream"
+                  className="grid h-6 w-6 place-items-center rounded-full text-cream/60 transition hover:bg-white/10 hover:text-cream"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
                     <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -115,7 +115,7 @@ export function BudgetBar({ spend, budget = 100 }: { spend: number; budget?: num
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="eyebrow text-cream/40">Budget spent</span>
+        <span className="eyebrow text-cream/60">Budget spent</span>
         <span className={`tnum text-sm ${over ? "text-usa" : "text-cream/80"}`}>
           {credits(spend)} / {budget}m
         </span>
@@ -136,7 +136,7 @@ export function SquadEmpty({ label = "No team yet" }: { label?: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.02] p-6 text-center">
       <p className="font-display text-lg text-cream/80">{label}</p>
-      <p className="mx-auto mt-2 max-w-xs text-[13px] text-cream/45">
+      <p className="mx-auto mt-2 max-w-xs text-[13px] text-cream/70">
         Pick your card before the lock — Classic Six (100m) or a full Captain&apos;s Dozen (200m) —
         and name one captain.
       </p>

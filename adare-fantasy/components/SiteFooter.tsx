@@ -11,16 +11,16 @@ export function SiteFooter() {
             <Emblem size={34} />
             <div>
               <p className="font-display text-base text-cream">{PLATFORM.name}</p>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-cream/40">
+              <p className="text-[10px] uppercase tracking-[0.22em] text-cream/60">
                 Cup fantasy · est. 2026
               </p>
             </div>
           </div>
-          <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-cream/45">
+          <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-cream/70">
             {PLATFORM.description} Currently playing: {ACTIVE_EDITION.name} — {ACTIVE_EDITION.venue},{" "}
             {ACTIVE_EDITION.village}.
           </p>
-          <p className="mt-4 text-[11px] text-cream/30">{PLATFORM.domain}</p>
+          <p className="mt-4 text-[11px] text-cream/60">{PLATFORM.domain}</p>
         </div>
 
         <FooterCol
@@ -44,17 +44,17 @@ export function SiteFooter() {
           ]}
         />
         <div>
-          <p className="eyebrow text-cream/40">Editions</p>
-          <ul className="mt-4 space-y-2 text-[13px] text-cream/55">
+          <p className="eyebrow text-cream/60">Editions</p>
+          <ul className="mt-4 space-y-2 text-[13px] text-cream/70">
             {EDITIONS.map((edition) => (
               <li key={edition.id}>
                 <Link href="/editions" className="transition hover:text-gold-soft">
                   {edition.name}
                   {edition.status === "upcoming" ? (
-                    <span className="ml-1.5 text-[10px] text-cream/25">soon</span>
+                    <span className="ml-1.5 text-[10px] text-cream/60">soon</span>
                   ) : null}
                   {edition.status === "archive" ? (
-                    <span className="ml-1.5 text-[10px] text-cream/25">archive</span>
+                    <span className="ml-1.5 text-[10px] text-cream/60">archive</span>
                   ) : null}
                 </Link>
               </li>
@@ -64,7 +64,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/[0.07]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-[11px] text-cream/35 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-[11px] text-cream/60 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
           <p>
             v0.2 · Fan project. Not affiliated with the Ryder Cup, DP World Tour, PGA of America or
             Adare Manor. Demo checkout — no card is ever charged.
@@ -85,11 +85,11 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="eyebrow text-cream/40">{title}</p>
+      <p className="eyebrow text-cream/60">{title}</p>
       <ul className="mt-4 space-y-2 text-[13px]">
         {links.map((l) => (
           <li key={l.href + l.label}>
-            <Link href={l.href} className="text-cream/55 transition hover:text-gold-soft">
+            <Link href={l.href} className="text-cream/70 transition hover:text-gold-soft">
               {l.label}
             </Link>
           </li>

@@ -96,21 +96,21 @@ export default function DraftPage() {
         <div>
           <Eyebrow>The draft · {ACTIVE_EDITION.name}</Eyebrow>
           <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Build your card</h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
+          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
             {mode.blurb} Locks {ACTIVE_EDITION.matchesLabel.split("–")[0]} at the first tee — free
             transfers until then.
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
           <div className="text-right">
-            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/35">Projected</p>
+            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/60">Projected</p>
             <p className="tnum font-display text-xl text-gold-soft">
               {ready ? projected.toFixed(1) : "—"}
             </p>
           </div>
           <div className="h-8 w-px bg-white/10" />
           <div>
-            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/35">Left</p>
+            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/60">Left</p>
             <p className={`tnum font-display text-xl ${remaining < 0 ? "text-usa" : "text-cream"}`}>
               {credits(remaining)}m
             </p>
@@ -130,6 +130,7 @@ export default function DraftPage() {
                 setMode(option.id as ModeId);
                 setSaved(false);
               }}
+              aria-pressed={active}
               className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
                 active
                   ? "border-gold/50 bg-gold/[0.07]"
@@ -140,7 +141,7 @@ export default function DraftPage() {
                 className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border font-display text-[13px] ${
                   active
                     ? "border-gold bg-gold text-forest-950"
-                    : "border-white/20 text-cream/50"
+                    : "border-white/20 text-cream/70"
                 }`}
               >
                 {option.squadSize}
@@ -154,7 +155,7 @@ export default function DraftPage() {
                     </span>
                   ) : null}
                 </span>
-                <span className="mt-0.5 block text-[11px] leading-relaxed text-cream/45">
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-cream/70">
                   {option.tagline} · {option.budget}m budget · max {option.maxPerSide} per side
                 </span>
               </span>
@@ -163,6 +164,7 @@ export default function DraftPage() {
         })}
       </div>
 
+      <h2 className="sr-only">Player pool</h2>
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_356px]">
         {/* pool */}
         <div>
@@ -170,7 +172,7 @@ export default function DraftPage() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative w-full sm:min-w-[180px] sm:flex-1">
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/30"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/60"
                   width="14"
                   height="14"
                   viewBox="0 0 16 16"
@@ -181,10 +183,12 @@ export default function DraftPage() {
                   <path d="m11 11 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
                 <input
+                  type="search"
+                  aria-label="Search players or countries"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search players or countries"
-                  className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2.5 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/30 focus:border-gold/50 focus:outline-none"
+                  className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2.5 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
                 />
               </div>
               <div className="flex rounded-full border border-white/12 bg-white/[0.03] p-0.5">
@@ -193,15 +197,16 @@ export default function DraftPage() {
                     key={option}
                     type="button"
                     onClick={() => setSide(option)}
+                    aria-pressed={side === option}
                     className={`rounded-full px-3 py-1.5 text-[12px] font-medium capitalize transition ${
-                      side === option ? "bg-cream text-forest-900" : "text-cream/55 hover:text-cream"
+                      side === option ? "bg-cream text-forest-900" : "text-cream/70 hover:text-cream"
                     }`}
                   >
                     {option === "all" ? "All" : option === "europe" ? "Europe" : "USA"}
                   </button>
                 ))}
               </div>
-              <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/55">
+              <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/70">
                 <span>Sort</span>
                 <select
                   value={sort}
@@ -234,7 +239,7 @@ export default function DraftPage() {
           </div>
 
           {visible.length === 0 ? (
-            <p className="mt-10 text-center text-[13px] text-cream/40">
+            <p className="mt-10 text-center text-[13px] text-cream/60">
               Nobody matches that search. Try “Lowry”, “USA” or clear the filters.
             </p>
           ) : null}
@@ -245,12 +250,12 @@ export default function DraftPage() {
           <div className="rounded-2xl border border-white/12 bg-forest-900/70 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/40">{mode.name}</p>
+                <p className="eyebrow text-cream/60">{mode.name}</p>
                 <p className="mt-1 font-display text-lg text-cream">
                   {state.squad.length}/{mode.squadSize} picked
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-cream/50">
+              <div className="flex items-center gap-2 text-[11px] text-cream/70">
                 <span className="flex items-center gap-1">
                   <TeamDot side="europe" size={6} /> {europeCount}
                 </span>
@@ -306,7 +311,7 @@ export default function DraftPage() {
                   className={`rounded-full py-2.5 text-[13px] font-semibold transition ${
                     complete
                       ? "bg-gold text-forest-950 hover:bg-gold-soft"
-                      : "cursor-not-allowed bg-white/10 text-cream/30"
+                      : "cursor-not-allowed bg-white/10 text-cream/60"
                   }`}
                 >
                   {saved ? "Card saved ✓" : "Save my card"}
@@ -336,7 +341,7 @@ export default function DraftPage() {
                     clearSquad();
                     setSaved(false);
                   }}
-                  className="rounded-full border border-white/15 py-2 text-[12px] font-medium text-cream/55 transition hover:border-usa/50 hover:text-usa"
+                  className="rounded-full border border-white/15 py-2 text-[12px] font-medium text-cream/70 transition hover:border-usa/50 hover:text-usa"
                 >
                   Clear
                 </button>
@@ -352,7 +357,7 @@ export default function DraftPage() {
                 <span aria-hidden>→</span>
               </Link>
             ) : (
-              <p className="mt-3 text-[10.5px] leading-relaxed text-cream/30">
+              <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
                 Tap <span className="rounded bg-gold/20 px-1 text-gold-soft">C</span> to make a
                 player captain — his match points double.
                 {paid ? " Entry paid." : " Drafting is free; the card saves once you enter."}
@@ -361,8 +366,8 @@ export default function DraftPage() {
           </div>
 
           <div className="mt-4 hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 lg:block">
-            <p className="eyebrow text-cream/35">Need a steer?</p>
-            <ul className="mt-2 space-y-2 text-[11.5px] leading-relaxed text-cream/45">
+            <p className="eyebrow text-cream/60">Need a steer?</p>
+            <ul className="mt-2 space-y-2 text-[11.5px] leading-relaxed text-cream/70">
               <li>
                 <span className="text-cream/75">Balance the sides.</span> Europe have won three of the
                 last four on home soil; the USA own the top of the rankings.
@@ -388,7 +393,7 @@ export default function DraftPage() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-forest-950/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.16em] text-cream/40">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
               {state.squad.length}/{mode.squadSize} picked · {mode.short}
             </p>
             <p className="tnum text-[13px] text-cream/85">
@@ -407,7 +412,7 @@ export default function DraftPage() {
               disabled={!complete}
               onClick={onSave}
               className={`rounded-full px-4 py-2 text-[12px] font-semibold ${
-                complete ? "bg-gold text-forest-950" : "bg-white/10 text-cream/30"
+                complete ? "bg-gold text-forest-950" : "bg-white/10 text-cream/60"
               }`}
             >
               {saved ? "Saved ✓" : "Save"}

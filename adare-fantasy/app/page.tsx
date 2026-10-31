@@ -70,7 +70,7 @@ export default function HomePage() {
               <span className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-soft">
                 {ACTIVE_EDITION.name} · {ACTIVE_EDITION.editionLabel ?? "46th Ryder Cup"}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/50">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cream/70">
                 {ACTIVE_EDITION.matchesLabel}
               </span>
             </div>
@@ -96,19 +96,19 @@ export default function HomePage() {
               </ButtonLink>
             </div>
 
-            <dl className="mt-12 grid max-w-lg grid-cols-2 gap-x-6 gap-y-6 border-t border-white/10 pt-6 sm:grid-cols-4">
+            <div className="mt-12 grid max-w-lg grid-cols-2 gap-x-6 gap-y-6 border-t border-white/10 pt-6 sm:grid-cols-4">
               <Stat label="Players" value="24" sub="12 per side" />
               <Stat label="Modes" value="2" sub="six or twelve" />
               <Stat label="Matches" value="28" sub="8 · 8 · 12" />
               <Stat label="Entry" value={`€${ENTRY_FEE}`} sub="card + predictor" tone="gold" />
-            </dl>
+            </div>
           </div>
 
           <div className="relative space-y-3">
             <div className="panel grain relative overflow-hidden rounded-2xl p-5 backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <Eyebrow>First tee</Eyebrow>
-                <span className="text-[10px] uppercase tracking-[0.16em] text-cream/40">
+                <span className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
                   {ACTIVE_EDITION.venue} · 1st
                 </span>
               </div>
@@ -164,20 +164,18 @@ export default function HomePage() {
               href={way.href}
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-gold/30 hover:bg-white/[0.04]"
             >
-              <span className="font-display text-[12px] uppercase tracking-[0.18em] text-gold/70">
+              <span className="font-display text-[12px] uppercase tracking-[0.18em] text-gold/85">
                 {way.tag}
               </span>
               <h3 className="mt-3 text-xl text-cream">{way.title}</h3>
-              <p className="mt-2.5 text-[13px] leading-relaxed text-cream/50">{way.body}</p>
+              <p className="mt-2.5 text-[13px] leading-relaxed text-cream/70">{way.body}</p>
               <span className="mt-5 flex items-center gap-1.5 text-[12px] text-gold-soft/80 transition group-hover:text-gold">
                 {way.cta} <span aria-hidden>→</span>
               </span>
               <span
                 aria-hidden
-                className="pointer-events-none absolute -right-4 -top-8 font-display text-[86px] text-white/[0.03] tnum"
-              >
-                {way.tag.slice(0, 2)}
-              </span>
+                className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gold/[0.06] blur-2xl"
+              />
             </Link>
           ))}
         </div>
@@ -189,7 +187,7 @@ export default function HomePage() {
           <div>
             <Eyebrow>Your card</Eyebrow>
             <h2 className="mt-2 text-3xl text-cream sm:text-4xl">Built for the group chat</h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-cream/55">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-cream/70">
               Set up a private league for the lads with a buy-in and a sponsor, or climb the open
               table with a few thousand strangers.
             </p>
@@ -209,22 +207,22 @@ export default function HomePage() {
               </Link>
             </div>
             <LeagueTable members={top} dense />
-            <p className="mt-3 text-[11px] text-cream/35">
+            <p className="mt-3 text-[11px] text-cream/60">
               Projected points before a ball is struck. The table locks at the first tee.
             </p>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="eyebrow text-cream/40">Featured mini-league</p>
+                  <p className="eyebrow text-cream/60">Featured mini-league</p>
                   <p className="mt-1 font-display text-lg text-cream">{LEAGUES[0].name}</p>
-                  <p className="mt-1 max-w-sm text-[12px] text-cream/45">{LEAGUES[0].blurb}</p>
-                  <p className="mt-1 text-[11px] text-cream/35">
+                  <p className="mt-1 max-w-sm text-[12px] text-cream/70">{LEAGUES[0].blurb}</p>
+                  <p className="mt-1 text-[11px] text-cream/60">
                     €{LEAGUES[0].buyIn} buy-in · sponsored by {LEAGUES[0].sponsor}
                   </p>
                 </div>
                 <div className="rounded-xl border border-gold/30 bg-gold/[0.07] px-4 py-3 text-center">
-                  <p className="text-[9px] uppercase tracking-[0.16em] text-cream/40">Join code</p>
+                  <p className="text-[9px] uppercase tracking-[0.16em] text-cream/60">Join code</p>
                   <p className="mt-1 font-display text-xl tracking-[0.18em] text-gold-soft">
                     {LEAGUES[0].code}
                   </p>
@@ -243,7 +241,7 @@ export default function HomePage() {
             <h2 className="mt-2 text-3xl text-cream sm:text-4xl">
               €10 in. Ninety-five per cent out.
             </h2>
-            <p className="mt-3 max-w-lg text-sm leading-relaxed text-cream/55">
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-cream/70">
               One payment covers the card game, the 28-match predictor and every league you join.
               Private leagues can layer their own buy-in and sponsor pot on top.
             </p>
@@ -255,7 +253,7 @@ export default function HomePage() {
                   className="rounded-xl border border-white/10 bg-white/[0.025] p-4"
                 >
                   <p className="text-[12.5px] font-medium text-cream">{mode.name}</p>
-                  <p className="mt-1 text-[11px] text-cream/45">
+                  <p className="mt-1 text-[11px] text-cream/70">
                     {mode.squadSize} picks · {mode.budget}m · max {mode.maxPerSide} per side
                   </p>
                 </div>
@@ -266,7 +264,7 @@ export default function HomePage() {
               {PRIZE_SPLIT.slice(0, 5).map((row) => (
                 <span
                   key={row.label}
-                  className="rounded-full border border-white/12 px-3 py-1.5 text-[11px] text-cream/55"
+                  className="rounded-full border border-white/12 px-3 py-1.5 text-[11px] text-cream/70"
                 >
                   {row.label} · {Math.round(row.share * 100)}%
                 </span>
@@ -282,9 +280,9 @@ export default function HomePage() {
           </div>
 
           <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
-            <p className="eyebrow text-cream/40">Live seasons, one platform</p>
+            <p className="eyebrow text-cream/60">Live seasons, one platform</p>
             <p className="mt-1 font-display text-2xl text-gold-soft">5 editions</p>
-            <p className="text-[11.5px] text-cream/45">
+            <p className="text-[11.5px] text-cream/70">
               Adare 2027 is live. Hazeltine and Camiral are queued; Bethpage and Rome are archived
               for replays.
             </p>
@@ -296,17 +294,17 @@ export default function HomePage() {
                     style={{ background: edition.accent }}
                   />
                   <span className="flex-1 text-cream/75">{edition.name}</span>
-                  <span className="text-[10px] uppercase tracking-[0.1em] text-cream/30">
+                  <span className="text-[10px] uppercase tracking-[0.1em] text-cream/60">
                     {edition.status}
                   </span>
                 </li>
               ))}
             </ul>
             <div className="mt-4 border-t border-white/10 pt-3">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-cream/30">Sponsors</p>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-cream/60">Sponsors</p>
               <ul className="mt-2 space-y-1.5">
                 {SPONSORS.map((s) => (
-                  <li key={s.name} className="text-[11.5px] text-cream/55">
+                  <li key={s.name} className="text-[11.5px] text-cream/70">
                     {s.name}
                   </li>
                 ))}
@@ -351,7 +349,7 @@ export default function HomePage() {
           />
           <div className="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
             <div>
-              <p className="eyebrow text-forest-700/60">The venue</p>
+              <p className="eyebrow text-forest-700/85">The venue</p>
               <h2 className="mt-3 max-w-xl text-balance font-display text-3xl leading-tight text-forest-900 sm:text-[42px]">
                 A 19th-century manor, a Fazio monster, and Ireland&apos;s first Ryder Cup in
                 twenty-one years.
@@ -393,11 +391,11 @@ export default function HomePage() {
                   key={item.k}
                   className="rounded-xl border border-forest-900/12 bg-forest-900/[0.035] p-4"
                 >
-                  <dt className="text-[9.5px] uppercase tracking-[0.16em] text-forest-900/45">
+                  <dt className="text-[9.5px] uppercase tracking-[0.16em] text-forest-900/70">
                     {item.k}
                   </dt>
                   <dd className="mt-1 font-display text-2xl text-forest-900 tnum">{item.v}</dd>
-                  <dd className="text-[11px] text-forest-900/50">{item.s}</dd>
+                  <dd className="text-[11px] text-forest-900/70">{item.s}</dd>
                 </div>
               ))}
             </dl>
@@ -419,7 +417,7 @@ export default function HomePage() {
               <div key={day.day} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
                 <div className="flex items-baseline justify-between">
                   <h3 className="text-lg text-cream">{day.day}</h3>
-                  <span className="text-[10px] uppercase tracking-[0.16em] text-cream/35">
+                  <span className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
                     {day.label}
                   </span>
                 </div>
@@ -428,9 +426,9 @@ export default function HomePage() {
                     <li key={session.name} className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[13px] text-cream/85">{session.name}</p>
-                        <p className="text-[11px] text-cream/40">{session.detail}</p>
+                        <p className="text-[11px] text-cream/60">{session.detail}</p>
                       </div>
-                      <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] text-cream/55 tnum">
+                      <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] text-cream/70 tnum">
                         {session.points} pt
                       </span>
                     </li>
@@ -448,9 +446,9 @@ export default function HomePage() {
               { label: "Armband", value: "×2", sub: "all match points" },
             ].map((chip) => (
               <div key={chip.label} className="flex items-baseline justify-between gap-3 sm:block">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-cream/45">{chip.label}</p>
+                <p className="text-[10px] uppercase tracking-[0.14em] text-cream/70">{chip.label}</p>
                 <p className="font-display text-xl text-gold-soft tnum">{chip.value}</p>
-                <p className="text-[10.5px] text-cream/35">{chip.sub}</p>
+                <p className="text-[10.5px] text-cream/60">{chip.sub}</p>
               </div>
             ))}
           </div>
@@ -470,7 +468,7 @@ export default function HomePage() {
               <h2 className="mt-2 text-balance text-3xl text-cream sm:text-4xl">
                 Your card is waiting. The first tee is not.
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-cream/55">
+              <p className="mt-3 text-sm leading-relaxed text-cream/70">
                 €{ENTRY_FEE} entry · card, predictor and live scoring included · {credits(0)}m left
                 if you do nothing at all.
               </p>
@@ -501,7 +499,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-cream/45">{label}</span>
+      <span className="text-cream/70">{label}</span>
       <span className="flex items-center gap-1.5 text-cream/85">
         {dot ? <TeamDot side={dot} size={7} /> : null}
         {value}
@@ -528,10 +526,10 @@ function FieldPanel({
           <TeamDot side={side} size={9} />
           <div>
             <p className="text-[14px] font-medium text-cream">{title}</p>
-            <p className="text-[11px] text-cream/40">Captain · {captain}</p>
+            <p className="text-[11px] text-cream/60">Captain · {captain}</p>
           </div>
         </div>
-        <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10px] text-cream/50">
+        <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10px] text-cream/70">
           12 players
         </span>
       </div>
@@ -541,7 +539,7 @@ function FieldPanel({
             key={player.id}
             className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 last:border-0"
           >
-            <span className="w-4 text-[10px] text-cream/25 tnum">{index + 1}</span>
+            <span className="w-4 text-[10px] text-cream/60 tnum">{index + 1}</span>
             <CountryChip code={player.countryCode} />
             <Link
               href="/players"
@@ -549,7 +547,7 @@ function FieldPanel({
             >
               {player.name}
             </Link>
-            <span className="hidden text-[11px] text-cream/35 sm:block">{credits(player.price)}m</span>
+            <span className="hidden text-[11px] text-cream/60 sm:block">{credits(player.price)}m</span>
             <span className="tnum rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-gold-soft">
               {player.projected} <span className="text-[9px] text-gold-soft/60">proj</span>
             </span>

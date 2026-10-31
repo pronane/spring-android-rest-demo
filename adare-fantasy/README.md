@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.2
+# Twenty-Eight — fantasy for the Ryder Cup · v0.2.1
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -232,6 +232,23 @@ screen has content on first visit. "Start fresh" clears it.
    the next step is per-edition art, pricing and prize pools rather than a code change.
 
 ---
+
+## Accessibility and polish (v0.2.1)
+
+The first pass was designed for looks; this one is designed to be usable by everyone.
+
+| Area | What changed |
+|---|---|
+| **Contrast** | Every muted text token was re-tuned to clear WCAG AA on the forest background: micro-labels sit at 60% cream (6.0:1), body copy at 70% (8.0:1), and the cream panels use forest at 70% (7.4:1). Blocked player tiles keep their "card full" dimming, but at 85% opacity instead of 55% so the copy inside still passes. |
+| **Keyboard** | A "Skip to content" link is the first tab stop, the `<main>` landmark takes focus, and every interactive element keeps the gold `:focus-visible` ring. Mode cards, plan cards, side filters, session tabs, match picks and playback speeds are real buttons with `aria-pressed`. |
+| **Screen readers** | `aria-current="page"` on the active nav link in both header navs, labelled nav landmarks, `role="group"` with player names on each predictor match ("Match 1: Rory McIlroy and Shane Lowry against Scottie Scheffler and Patrick Cantlay"), `aria-label` on the simulation's play/pause, speed and jump controls, `role="alert"` on checkout errors, and a hidden `<h2>` on the draft and player-pool grids so heading order never skips a level. |
+| **Forms** | Checkout fields have real types and autofill hints — `email`, `cc-number`, `cc-exp`, `cc-csc`, `name`, `organization` — plus numeric input modes, length caps and a busy state on the pay button. League name, buy-in and join code are labelled. |
+| **Motion** | `prefers-reduced-motion` stops the live dot's ping, the smooth scroll and every transition. |
+| **Visual** | The near-invisible 86px numerals behind the "three ways in" cards were replaced with a soft gold wash — they measured 1.06:1, so they were texture rather than information. |
+
+Verified with **axe-core 4.14** across 11 routes at 390px and 1440px: **0 violations** (down from 30
+violation types, mostly contrast). Keyboard, `aria-current`, toggle state, reduced motion and the
+checkout field metadata are asserted in the same scripted pass.
 
 ## Screenshot method
 

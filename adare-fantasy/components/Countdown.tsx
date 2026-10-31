@@ -50,7 +50,7 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
           <p className="font-display text-2xl text-cream tnum">
             {String(part.value).padStart(2, "0")}
           </p>
-          <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-cream/40">
+          <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-cream/60">
             {part.label}
           </p>
         </div>

@@ -61,7 +61,7 @@ export default function PredictPage() {
         <div>
           <Eyebrow>The match predictor</Eyebrow>
           <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Call all twenty-eight</h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
+          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
             Before the captains have even swapped cards, pick a winner for all 28 matches — plus MVP,
             top scorer and rookie of the week. Picks lock with your card at the first tee.
           </p>
@@ -77,7 +77,7 @@ export default function PredictPage() {
           <button
             type="button"
             onClick={clearPredictions}
-            className="rounded-full border border-white/12 px-4 py-2 text-[12.5px] text-cream/45 transition hover:border-usa/40 hover:text-usa"
+            className="rounded-full border border-white/12 px-4 py-2 text-[12.5px] text-cream/70 transition hover:border-usa/40 hover:text-usa"
           >
             Clear
           </button>
@@ -97,10 +97,11 @@ export default function PredictPage() {
                   key={s.id}
                   type="button"
                   onClick={() => setActiveSession(index)}
+                  aria-pressed={activeSession === index}
                   className={`shrink-0 rounded-full border px-3.5 py-2 text-[12px] transition ${
                     activeSession === index
                       ? "border-gold/50 bg-gold/10 text-gold-soft"
-                      : "border-white/10 text-cream/50 hover:border-white/25 hover:text-cream"
+                      : "border-white/10 text-cream/70 hover:border-white/25 hover:text-cream"
                   }`}
                 >
                   {s.day.replace(" 2027", "")} · {s.label}
@@ -114,7 +115,7 @@ export default function PredictPage() {
             <h2 className="text-xl text-cream">
               {session.day} · {session.label}
             </h2>
-            <span className="text-[11px] text-cream/35">
+            <span className="text-[11px] text-cream/60">
               {session.points} cup points · projected pairings
             </span>
           </div>
@@ -129,7 +130,7 @@ export default function PredictPage() {
                     pick ? "border-gold/35 bg-gold/[0.05]" : "border-white/10 bg-white/[0.025]"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-cream/35">
+                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-cream/60">
                     <span>Match {match.no}</span>
                     <span>
                       {match.format === "singles" ? "Singles" : match.format === "fourball" ? "Fourball" : "Foursomes"}
@@ -141,12 +142,17 @@ export default function PredictPage() {
                     <PairLine ids={match.usa} side="usa" active={pick === "usa"} />
                   </div>
 
-                  <div className="mt-3 grid grid-cols-3 gap-1.5">
+                  <div
+                    role="group"
+                    aria-label={`Match ${match.no}: ${match.europe.map((id) => PLAYER_BY_ID[id].name).join(" and ")} against ${match.usa.map((id) => PLAYER_BY_ID[id].name).join(" and ")}`}
+                    className="mt-3 grid grid-cols-3 gap-1.5"
+                  >
                     {PICKS.map((option) => (
                       <button
                         key={option.value}
                         type="button"
                         onClick={() => setPrediction(match.id, option.value)}
+                        aria-pressed={pick === option.value}
                         className={`rounded-lg border py-1.5 text-[11.5px] font-medium transition ${
                           pick === option.value
                             ? option.value === "europe"
@@ -154,7 +160,7 @@ export default function PredictPage() {
                               : option.value === "usa"
                                 ? "border-usa bg-usa/20 text-cream"
                                 : "border-gold bg-gold/20 text-cream"
-                            : "border-white/12 text-cream/55 hover:border-white/30 hover:text-cream"
+                            : "border-white/12 text-cream/70 hover:border-white/30 hover:text-cream"
                         }`}
                       >
                         {option.label}
@@ -169,7 +175,7 @@ export default function PredictPage() {
           {/* awards */}
           <div className="mt-8">
             <h2 className="text-xl text-cream">The awards</h2>
-            <p className="mt-1 text-[12.5px] text-cream/45">
+            <p className="mt-1 text-[12.5px] text-cream/70">
               Five points each if you call it. Picked from the 24 projected players.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -179,7 +185,7 @@ export default function PredictPage() {
                   className="rounded-xl border border-white/10 bg-white/[0.025] p-4"
                 >
                   <span className="text-[12.5px] font-medium text-cream">{award.label}</span>
-                  <span className="mt-0.5 block text-[10.5px] text-cream/35">{award.hint}</span>
+                  <span className="mt-0.5 block text-[10.5px] text-cream/60">{award.hint}</span>
                   <select
                     value={state.awards[award.key] ?? ""}
                     onChange={(e) => setAward(award.key, e.target.value || null)}
@@ -201,7 +207,7 @@ export default function PredictPage() {
             </div>
           </div>
 
-          <p className="mt-6 text-[11px] leading-relaxed text-cream/30">
+          <p className="mt-6 text-[11px] leading-relaxed text-cream/60">
             Pairings are projected from the qualifying model. When Donald and Furyk name their sides
             on 22 August 2027, the predictor re-draws with the real twelve — your picks carry over
             where the match-ups survive, and you get a free transfer for any card pick that drops out.
@@ -212,43 +218,43 @@ export default function PredictPage() {
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl border border-white/12 bg-forest-900/70 p-5">
             <div className="flex items-center justify-between">
-              <p className="eyebrow text-cream/40">Your call</p>
-              <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] text-cream/50 tnum">
+              <p className="eyebrow text-cream/60">Your call</p>
+              <span className="rounded-full border border-white/12 px-2 py-0.5 text-[10px] text-cream/70 tnum">
                 {predicted}/28
               </span>
             </div>
 
             <div className="mt-4 rounded-xl border border-white/10 bg-forest-950/50 p-4">
-              <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/35">Predicted cup</p>
+              <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/60">Predicted cup</p>
               <div className="mt-1 flex items-baseline gap-3">
                 <span className="font-display text-3xl text-europe tnum">
                   {formatScore(tally.europe)}
                 </span>
-                <span className="text-cream/25">–</span>
+                <span className="text-cream/60">–</span>
                 <span className="font-display text-3xl text-usa tnum">
                   {formatScore(tally.usa)}
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-cream/40">
+              <p className="mt-1 text-[11px] text-cream/60">
                 {tally.halves} halves · {28 - predicted} matches left to call
               </p>
             </div>
 
             <div className="mt-4 space-y-2 text-[12px]">
               <div className="flex items-center justify-between">
-                <span className="text-cream/45">Match picks</span>
+                <span className="text-cream/70">Match picks</span>
                 <span className="tnum text-cream/85">{predicted} × 2 pts</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-cream/45">Awards</span>
+                <span className="text-cream/70">Awards</span>
                 <span className="tnum text-cream/85">{awardsPicked} × 5 pts</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-cream/45">Exact scoreline</span>
+                <span className="text-cream/70">Exact scoreline</span>
                 <span className="tnum text-cream/85">+10</span>
               </div>
               <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2">
-                <span className="text-cream/55">Points in play</span>
+                <span className="text-cream/70">Points in play</span>
                 <span className="font-display text-lg text-gold-soft tnum">{potential}</span>
               </div>
             </div>
@@ -260,14 +266,14 @@ export default function PredictPage() {
               Watch the cup live →
             </Link>
 
-            <p className="mt-3 text-[10.5px] leading-relaxed text-cream/30">
+            <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
               Your card and your calls travel together. One payment covers both games.
             </p>
           </div>
 
           <div className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-            <p className="eyebrow text-cream/35">How it scores</p>
-            <ul className="mt-2 space-y-1.5 text-[11.5px] leading-relaxed text-cream/45">
+            <p className="eyebrow text-cream/60">How it scores</p>
+            <ul className="mt-2 space-y-1.5 text-[11.5px] leading-relaxed text-cream/70">
               <li>
                 <span className="text-cream/75">+2</span> for each match you call correctly.
               </li>

@@ -63,7 +63,7 @@ export default function PlayersPage() {
         <div>
           <Eyebrow>The pool · 24 projected players</Eyebrow>
           <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Scout the field</h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/55">
+          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
             Every projected player on both sides, priced by the model. Tap a card to add him to
             your {mode.name} card — draft from here or from the draft room.
           </p>
@@ -80,7 +80,7 @@ export default function PlayersPage() {
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-[180px] flex-1">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/30"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/60"
               width="14"
               height="14"
               viewBox="0 0 16 16"
@@ -94,7 +94,7 @@ export default function PlayersPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search players or nations"
-              className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/30 focus:border-gold/50 focus:outline-none"
+              className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
             />
           </div>
           <div className="flex rounded-full border border-white/12 bg-white/[0.03] p-0.5">
@@ -104,14 +104,14 @@ export default function PlayersPage() {
                 type="button"
                 onClick={() => setSide(option)}
                 className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition ${
-                  side === option ? "bg-cream text-forest-900" : "text-cream/55 hover:text-cream"
+                  side === option ? "bg-cream text-forest-900" : "text-cream/70 hover:text-cream"
                 }`}
               >
                 {option === "all" ? "All" : option === "europe" ? "Europe" : "USA"}
               </button>
             ))}
           </div>
-          <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/55">
+          <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/70">
             <span>Sort</span>
             <select
               value={sort}
@@ -128,6 +128,7 @@ export default function PlayersPage() {
           <button
             type="button"
             onClick={() => setOnlyPicked((v) => !v)}
+            aria-pressed={onlyPicked}
             className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
               onlyPicked
                 ? "border-gold/50 bg-gold/15 text-gold-soft"
@@ -136,10 +137,10 @@ export default function PlayersPage() {
           >
             In my squad
           </button>
-          <div className="ml-auto flex items-center gap-4 text-[12px] text-cream/55">
+          <div className="ml-auto flex items-center gap-4 text-[12px] text-cream/70">
             <span className="flex items-center gap-1.5">
               <TeamDot side="europe" size={6} /> {europeCount}
-              <span className="text-cream/25">/</span>
+              <span className="text-cream/60">/</span>
               <TeamDot side="usa" size={6} /> {state.squad.length - europeCount}
             </span>
             <span className="tnum">
@@ -150,6 +151,7 @@ export default function PlayersPage() {
         </div>
       </div>
 
+      <h2 className="sr-only">The 24-player field</h2>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {visible.map((player) => (
           <PlayerTile
@@ -162,12 +164,12 @@ export default function PlayersPage() {
         ))}
       </div>
       {visible.length === 0 ? (
-        <p className="mt-10 text-center text-[13px] text-cream/40">
+        <p className="mt-10 text-center text-[13px] text-cream/60">
           No players match. Clear the search or tap “In my squad” again.
         </p>
       ) : null}
 
-      <p className="mt-8 text-[11px] text-cream/30">
+      <p className="mt-8 text-[11px] text-cream/60">
         Spend so far {credits(spend)}m of {mode.budget}m. Prices are projections and will re-price
         when the sides are named.
       </p>

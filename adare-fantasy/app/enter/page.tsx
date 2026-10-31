@@ -89,7 +89,7 @@ export default function EnterPage() {
         <h1 className="mt-2 text-4xl text-cream sm:text-5xl">
           One payment. Both games. All three days.
         </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-cream/55">
+        <p className="mt-3 text-[14px] leading-relaxed text-cream/70">
           Entry funds the prize pool. Your card and your match predictions are included — there is
           no upsell, no premium armband and no second charge at the first tee.
         </p>
@@ -106,6 +106,7 @@ export default function EnterPage() {
                   key={option.id}
                   type="button"
                   onClick={() => setPlanId(option.id)}
+                  aria-pressed={active}
                   className={`relative rounded-2xl border p-4 text-left transition ${
                     active
                       ? "border-gold/60 bg-gold/[0.07]"
@@ -121,12 +122,12 @@ export default function EnterPage() {
                   <p className="mt-1 font-display text-2xl text-cream tnum">
                     {eur(option.price)}
                   </p>
-                  <p className="text-[10.5px] text-cream/40">
+                  <p className="text-[10.5px] text-cream/60">
                     {option.entries} {option.entries === 1 ? "entry" : "entries"}
                   </p>
                   <ul className="mt-3 space-y-1">
                     {option.features.map((f) => (
-                      <li key={f} className="flex gap-1.5 text-[10.5px] leading-relaxed text-cream/50">
+                      <li key={f} className="flex gap-1.5 text-[10.5px] leading-relaxed text-cream/70">
                         <span className="text-shamrock">✓</span>
                         {f}
                       </li>
@@ -147,7 +148,7 @@ export default function EnterPage() {
                   </span>
                   <div>
                     <p className="text-[14px] font-medium text-cream">You are in.</p>
-                    <p className="text-[11.5px] text-cream/45">
+                    <p className="text-[11.5px] text-cream/70">
                       Entry {receipt.ref} · {eur(receipt.amount)} paid
                     </p>
                   </div>
@@ -172,27 +173,43 @@ export default function EnterPage() {
                     View receipt
                   </Link>
                 </div>
-                <p className="mt-3 text-[10.5px] text-cream/30">
+                <p className="mt-3 text-[10.5px] text-cream/60">
                   Demo checkout — no card was charged and no card data is stored.
                 </p>
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <p className="eyebrow text-cream/40">Checkout</p>
-                  <span className="text-[11px] text-cream/40 tnum">
+                  <p className="eyebrow text-cream/60">Checkout</p>
+                  <span className="text-[11px] text-cream/60 tnum">
                     {plan.name} · {eur(plan.price)}
                   </span>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Field label="Email" value={email} onChange={setEmail} placeholder="you@example.com" />
-                  <Field label="Manager name" value={manager} onChange={setManager} placeholder="Séamus Ryan" />
+                  <Field
+                    label="Email"
+                    value={email}
+                    onChange={setEmail}
+                    placeholder="you@example.com"
+                    type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    required
+                  />
+                  <Field
+                    label="Manager name"
+                    value={manager}
+                    onChange={setManager}
+                    placeholder="Séamus Ryan"
+                    autoComplete="name"
+                  />
                   <Field
                     label="Team name"
                     value={teamName}
                     onChange={setTeamName}
                     placeholder="Bogey Merchants"
+                    autoComplete="organization"
                     className="sm:col-span-2"
                   />
                   <Field
@@ -200,6 +217,9 @@ export default function EnterPage() {
                     value={card.number}
                     onChange={(v) => setCard({ ...card, number: v })}
                     placeholder="4242 4242 4242 4242"
+                    autoComplete="cc-number"
+                    inputMode="numeric"
+                    maxLength={19}
                     className="sm:col-span-2"
                   />
                   <Field
@@ -207,17 +227,26 @@ export default function EnterPage() {
                     value={card.expiry}
                     onChange={(v) => setCard({ ...card, expiry: v })}
                     placeholder="09 / 27"
+                    autoComplete="cc-exp"
+                    inputMode="numeric"
+                    maxLength={7}
                   />
                   <Field
                     label="CVC"
                     value={card.cvc}
                     onChange={(v) => setCard({ ...card, cvc: v })}
                     placeholder="123"
+                    autoComplete="cc-csc"
+                    inputMode="numeric"
+                    maxLength={4}
                   />
                 </div>
 
                 {error ? (
-                  <p className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                  <p
+                    role="alert"
+                    className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa"
+                  >
                     {error}
                   </p>
                 ) : null}
@@ -226,15 +255,16 @@ export default function EnterPage() {
                   type="button"
                   onClick={pay}
                   disabled={busy}
+                  aria-busy={busy}
                   className={`mt-4 w-full rounded-full py-3 text-[13px] font-semibold transition ${
                     busy
-                      ? "cursor-wait bg-white/10 text-cream/40"
+                      ? "cursor-wait bg-white/10 text-cream/60"
                       : "bg-gold text-forest-950 hover:bg-gold-soft"
                   }`}
                 >
                   {busy ? "Processing…" : `Pay ${eur(plan.price)} & enter`}
                 </button>
-                <p className="mt-2 text-center text-[10.5px] text-cream/30">
+                <p className="mt-2 text-center text-[10.5px] text-cream/60">
                   Demo checkout · no card is charged · entries are refundable until the field is
                   confirmed
                 </p>
@@ -248,9 +278,9 @@ export default function EnterPage() {
                 key={sponsor.name}
                 className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5"
               >
-                <p className="text-[9px] uppercase tracking-[0.14em] text-gold/70">{sponsor.tier}</p>
+                <p className="text-[9px] uppercase tracking-[0.14em] text-gold/85">{sponsor.tier}</p>
                 <p className="mt-1 text-[12.5px] font-medium text-cream/85">{sponsor.name}</p>
-                <p className="text-[10.5px] text-cream/35">{sponsor.tag}</p>
+                <p className="text-[10.5px] text-cream/60">{sponsor.tag}</p>
               </div>
             ))}
           </div>
@@ -259,15 +289,15 @@ export default function EnterPage() {
         {/* prize pool */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
-            <p className="eyebrow text-cream/40">Prize pool</p>
+            <p className="eyebrow text-cream/60">Prize pool</p>
             <p className="mt-1 font-display text-3xl text-gold-soft tnum">{eur(pool)}</p>
-            <p className="text-[11px] text-cream/40">
+            <p className="text-[11px] text-cream/60">
               at {EXAMPLE_ENTRIES.toLocaleString("en-IE")} entries · 95% paid out
             </p>
             <ul className="mt-4 space-y-2">
               {PRIZE_SPLIT.map((row) => (
                 <li key={row.label} className="flex items-center gap-2 text-[11.5px]">
-                  <span className="w-28 shrink-0 text-cream/55">{row.label}</span>
+                  <span className="w-28 shrink-0 text-cream/70">{row.label}</span>
                   <span className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
                     <span
                       className="block h-full rounded-full bg-gold/70"
@@ -280,15 +310,15 @@ export default function EnterPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[10.5px] leading-relaxed text-cream/35">
+            <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
               Prize pool is illustrative and scales with entries. Private leagues can add their own
               buy-in and sponsor pot on top.
             </p>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/40">What the entry covers</p>
-            <ul className="mt-3 space-y-2 text-[12px] text-cream/55">
+            <p className="eyebrow text-cream/60">What the entry covers</p>
+            <ul className="mt-3 space-y-2 text-[12px] text-cream/70">
               {[
                 "Classic Six and Captain's Dozen cards",
                 "The 28-match predictor + awards",
@@ -304,8 +334,8 @@ export default function EnterPage() {
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/40">League sponsor slots</p>
-            <p className="mt-2 text-[12px] leading-relaxed text-cream/50">
+            <p className="eyebrow text-cream/60">League sponsor slots</p>
+            <p className="mt-2 text-[12px] leading-relaxed text-cream/70">
               Commissioners can attach a sponsor to a private league — a bar, a club, a WhatsApp
               group with delusions of grandeur. Sponsor funds sit on top of the main prize pool.
             </p>
@@ -328,21 +358,36 @@ function Field({
   onChange,
   placeholder,
   className = "",
+  type = "text",
+  autoComplete,
+  inputMode,
+  maxLength,
+  required,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  type?: "text" | "email";
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "email";
+  maxLength?: number;
+  required?: boolean;
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="text-[10px] uppercase tracking-[0.14em] text-cream/35">{label}</span>
+      <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">{label}</span>
       <input
+        type={type}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-white/12 bg-forest-950/60 px-3 py-2 text-[13px] text-cream placeholder:text-cream/25 focus:border-gold/50 focus:outline-none"
+        className="mt-1.5 w-full rounded-lg border border-white/12 bg-forest-950/60 px-3 py-2 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
       />
     </label>
   );

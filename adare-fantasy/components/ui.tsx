@@ -59,7 +59,7 @@ export function Stat({
 }) {
   return (
     <div>
-      <p className="eyebrow text-cream/40">{label}</p>
+      <p className="eyebrow text-cream/60">{label}</p>
       <p
         className={`mt-1 font-display text-2xl tnum ${
           tone === "gold" ? "text-gold-soft" : tone === "muted" ? "text-cream/70" : "text-cream"
@@ -67,7 +67,7 @@ export function Stat({
       >
         {value}
       </p>
-      {sub ? <p className="mt-0.5 text-xs text-cream/45">{sub}</p> : null}
+      {sub ? <p className="mt-0.5 text-xs text-cream/70">{sub}</p> : null}
     </div>
   );
 }
@@ -88,7 +88,7 @@ export function SectionHead({
       <div className="max-w-2xl">
         <Eyebrow>{eyebrow}</Eyebrow>
         <h2 className="mt-2 text-balance text-3xl text-cream sm:text-4xl">{title}</h2>
-        {sub ? <p className="mt-3 max-w-xl text-sm leading-relaxed text-cream/55">{sub}</p> : null}
+        {sub ? <p className="mt-3 max-w-xl text-sm leading-relaxed text-cream/70">{sub}</p> : null}
       </div>
       {action ? (
         <Link

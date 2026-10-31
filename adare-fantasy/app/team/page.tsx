@@ -63,7 +63,7 @@ export default function TeamPage() {
       <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
         <Eyebrow>My team</Eyebrow>
         <h1 className="mt-3 text-4xl text-cream">No card on file</h1>
-        <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-cream/55">
+        <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-cream/70">
           You have not drafted a card yet. Six players on {credits(100)}m — or a full dozen on 200m
           — and one captain. It takes about ninety seconds.
         </p>
@@ -92,7 +92,7 @@ export default function TeamPage() {
         <div>
           <Eyebrow>My team · pre-season</Eyebrow>
           <h1 className="mt-2 text-4xl text-cream sm:text-5xl">{state.teamName || "Untitled"}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-cream/50">
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-cream/70">
             <span>{state.manager || "No manager name"}</span>
             <span aria-hidden>·</span>
             <span>{mode.name}</span>
@@ -119,7 +119,7 @@ export default function TeamPage() {
           <button
             type="button"
             onClick={resetTeam}
-            className="rounded-full border border-white/12 px-4 py-2 text-[12.5px] text-cream/45 transition hover:border-usa/40 hover:text-usa"
+            className="rounded-full border border-white/12 px-4 py-2 text-[12.5px] text-cream/70 transition hover:border-usa/40 hover:text-usa"
           >
             Start fresh
           </button>
@@ -159,7 +159,7 @@ export default function TeamPage() {
               index === 4 ? "col-span-2 sm:col-span-2 lg:col-span-1" : ""
             }`}
           >
-            <p className="truncate text-[9.5px] uppercase tracking-[0.14em] text-cream/35">
+            <p className="truncate text-[9.5px] uppercase tracking-[0.14em] text-cream/60">
               {stat.label}
             </p>
             <p
@@ -169,7 +169,7 @@ export default function TeamPage() {
             >
               {stat.value}
             </p>
-            <p className="text-[10.5px] text-cream/35">{stat.sub}</p>
+            <p className="text-[10.5px] text-cream/60">{stat.sub}</p>
           </div>
         ))}
       </div>
@@ -179,12 +179,12 @@ export default function TeamPage() {
         <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="eyebrow text-cream/40">Team sheet</p>
+              <p className="eyebrow text-cream/60">Team sheet</p>
               <h2 className="mt-1 text-xl text-cream">
                 {state.squad.length}/{mode.squadSize} players
               </h2>
             </div>
-            <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10.5px] text-cream/50 tnum">
+            <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10.5px] text-cream/70 tnum">
               {credits(spend)}m
             </span>
           </div>
@@ -236,7 +236,7 @@ export default function TeamPage() {
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
             <div className="flex items-end justify-between">
               <div>
-                <p className="eyebrow text-cream/40">{primary.visibility === "public" ? "Open league" : "Private league"}</p>
+                <p className="eyebrow text-cream/60">{primary.visibility === "public" ? "Open league" : "Private league"}</p>
                 <h2 className="mt-1 text-xl text-cream">{primary.name}</h2>
               </div>
               <span className="rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-1.5 text-[11px] tracking-[0.14em] text-gold-soft">
@@ -255,7 +255,7 @@ export default function TeamPage() {
           </section>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/40">Where the points come from</p>
+            <p className="eyebrow text-cream/60">Where the points come from</p>
             <h2 className="mt-1 text-xl text-cream">Captain&apos;s spread</h2>
             <ul className="mt-4 space-y-3">
               {state.squad.map((id) => {
@@ -281,7 +281,7 @@ export default function TeamPage() {
                           </span>
                         ) : null}
                       </span>
-                      <span className="tnum text-cream/55">{value.toFixed(1)}</span>
+                      <span className="tnum text-cream/70">{value.toFixed(1)}</span>
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
                       <div
@@ -306,7 +306,7 @@ export default function TeamPage() {
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/40">Match predictor</p>
+                <p className="eyebrow text-cream/60">Match predictor</p>
                 <h2 className="mt-1 text-xl text-cream">Your call</h2>
               </div>
               <Link
@@ -318,25 +318,25 @@ export default function TeamPage() {
             </div>
             <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-forest-950/50 px-4 py-3">
               <div>
-                <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/35">Predicted cup</p>
+                <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/60">Predicted cup</p>
                 <p className="font-display text-xl text-cream tnum">
                   <span className="text-europe">{pickEurope % 1 === 0 ? pickEurope : pickEurope.toFixed(1)}</span>
-                  <span className="mx-1.5 text-cream/25">–</span>
+                  <span className="mx-1.5 text-cream/60">–</span>
                   <span className="text-usa">{pickUsa % 1 === 0 ? pickUsa : pickUsa.toFixed(1)}</span>
                 </p>
               </div>
               <div className="text-right">
                 <p className="tnum text-[12px] text-cream/70">{predictedCount}/28 matches</p>
-                <p className="text-[11px] text-cream/35">{awardCount}/3 awards</p>
+                <p className="text-[11px] text-cream/60">{awardCount}/3 awards</p>
               </div>
             </div>
           </section>
 
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/40">Team details</p>
+            <p className="eyebrow text-cream/60">Team details</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/35">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">
                   Team name
                 </span>
                 <input
@@ -346,7 +346,7 @@ export default function TeamPage() {
                 />
               </label>
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/35">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">
                   Manager
                 </span>
                 <input
@@ -356,7 +356,7 @@ export default function TeamPage() {
                 />
               </label>
             </div>
-            <p className="mt-3 text-[10.5px] text-cream/30">
+            <p className="mt-3 text-[10.5px] text-cream/60">
               Names appear on every league table you join. Max 22 characters — the database has
               feelings.
             </p>
