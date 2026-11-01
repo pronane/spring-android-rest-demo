@@ -12,3 +12,6 @@ next-env.d.ts
 # verification harness artefacts
 verification/harness/run
 verification/harness/node_modules
+
+# scratch output from OUT=../run
+verification/run
