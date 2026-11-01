@@ -192,12 +192,45 @@ await goto("/account");
 say("The account page shows the receipt and the working: card points plus prediction points, player by player.");
 await sleep(4200);
 await shot("08-account");
+const entryRef = await page.evaluate(
+  () => (document.body.innerText.match(/TE-[A-Z0-9]{6}-ADRE/) ?? [""])[0],
+);
+
+/* ——— 7b. Transfers and the armband ——— */
+await goto("/team/transfers");
+say("After the lock the card can still change: two free transfers, then four points each, and only in the windows between sessions.");
+await sleep(3800);
+await click(/Swap in · free/, { wait: 1700 });
+say("A swap is re-checked on the server — budget, side limits, the clock — and recorded with its window and its price.");
+await sleep(3400);
+await page.evaluate(() => {
+  const select = document.querySelector("select");
+  const option = select ? [...select.options].find((row) => row.value) : null;
+  if (select && option) {
+    select.value = option.value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    select.classList.add("tour-ring");
+  }
+});
+await sleep(600);
+await page.evaluate(() => document.querySelectorAll(".tour-ring").forEach((el) => el.classList.remove("tour-ring")));
+say("And the armband moves day by day: Friday's captain doubles Friday's match points, not Sunday's.");
+await sleep(3600);
+await shot("09-transfers");
+
+/* ——— 7c. The public card ——— */
+if (entryRef) {
+  await goto(`/t/${entryRef}`);
+  say("Every entry has a public card — team, points, rank and the six players — with a preview image and an invite link.");
+  await sleep(3800);
+  await shot("10-public-card");
+}
 
 /* ——— 8. Table ——— */
 await goto("/leaderboard");
-say("The table is scored on the server from one results snapshot, so a browser cannot invent a score.");
+say("The fantasy leaderboard: every entry ranked from one server-side snapshot, so a browser cannot invent a score.");
 await sleep(4200);
-await shot("09-table");
+await shot("11-table");
 
 /* ——— 9. Leagues ——— */
 await goto("/leagues");
@@ -209,21 +242,21 @@ if (inputs[0]) {
   await inputs[0].click({ clickCount: 3 });
   await inputs[0].type("Sunday Singles", { delay: 30 });
 }
-await shot("10-league-form");
+await shot("12-league-form");
 await click(/Create|Start|Save/, { wait: 1700 });
 say("The league gets a join code and its own table, with the same scoring as the global one.");
 await sleep(3200);
-await shot("11-league");
+await shot("13-league");
 
 /* ——— 10. Live ——— */
 await goto("/live?t=2700", { settle: 1600 });
-say("Live: the cup runs from the first tee on Friday to the last putt on Sunday. Here it is already Sunday singles.");
+say("And the actual Ryder Cup leaderboard: every match, Europe against the United States, from Friday's first tee to Sunday's last putt. Here it is already Sunday singles.");
 await sleep(3200);
 await click(/^4×$/, { wait: 500 });
 await click(/Play/, { wait: 900 });
 say("At 4× the singles finish in seconds; the cup, the table and the fantasy points all move together.");
 await sleep(15_000);
-await shot("12-live-final");
+await shot("14-live-final");
 
 /* ——— 11. Operator console ——— */
 await goto("/admin");
@@ -240,7 +273,7 @@ if (token) {
   await click(/^Connect$/, { wait: 1800 });
   say("Every order, what was taken, the 5% that covers fees, the 95% that funds the prize pool, and what has been paid out.");
   await sleep(4200);
-  await shot("13-admin-payments");
+  await shot("15-admin-payments");
 
   await click(/^Prizes$/, { wait: 900 });
   say("Prizes settle per pot — the global table, or a private league. This entry plays in a league, so its fee funds that league's pot.");
@@ -261,12 +294,12 @@ if (token) {
   await click(/Settle this pot/, { wait: 1600 });
   say("A settled pot can be paid, and then cannot be settled again — the ledger is the record, not a spreadsheet.");
   await sleep(3600);
-  await shot("14-admin-prizes");
+  await shot("16-admin-prizes");
 
   await click(/^Results$/, { wait: 900 });
   say("Operators can correct a match, an event or an award; the table re-scores immediately from the same engine.");
   await sleep(3200);
-  await shot("15-admin-results");
+  await shot("17-admin-results");
 }
 
 /* ——— 12. Close ——— */

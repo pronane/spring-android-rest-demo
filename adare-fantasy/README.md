@@ -455,7 +455,7 @@ build with an empty store:
 
 ## Demo film
 
-[`demo/twenty-eight-start-to-finish.webm`](demo/twenty-eight-start-to-finish.webm) (2:48, 1440×900,
+[`demo/twenty-eight-start-to-finish.webm`](demo/twenty-eight-start-to-finish.webm) (3:07, 1440×900,
 VP9 with an Opus narration track, captions burned in) is the whole product in one sitting, recorded by
 [`demo/record-tour.mjs`](demo/record-tour.mjs) and rendered by
 [`demo/render-tour.mjs`](demo/render-tour.mjs). Pairs of captions and steps are listed in

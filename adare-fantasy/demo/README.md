@@ -2,9 +2,9 @@
 
 | File | Length | What it shows |
 | --- | --- | --- |
-| [`twenty-eight-start-to-finish.webm`](twenty-eight-start-to-finish.webm) | 2:48 | **The whole product, in one sitting, nothing faked.** A player buys a €10 entry, drafts a Captain's Dozen card from a €200m budget, calls all 28 matches, makes their Pinpoint guesses, reads their own points breakdown and the global table, creates a private league, watches Sunday singles finish the cup, and an operator settles that league's prize pot from the admin console. **Narrated**, with burned-in captions |
+| [`twenty-eight-start-to-finish.webm`](twenty-eight-start-to-finish.webm) | 3:07 | **The whole product, in one sitting, nothing faked.** A player buys a €10 entry, drafts a Captain's Dozen card from a €200m budget, calls all 28 matches, makes their Pinpoint guesses, reads their own points breakdown, swaps a player and sets the day-by-day armband, shares the public card, checks the fantasy leaderboard, creates a private league, watches the actual Ryder Cup leaderboard finish the cup, and an operator settles that league's prize pot from the admin console. **Narrated**, with burned-in captions |
 
-1440×900, VP9 video with burned-in captions and an **Opus mono narration track** (7.1 MB, 2:47.8).
+1440×900, VP9 video with burned-in captions and an **Opus mono narration track** (8.1 MB, 3:07.2).
 It plays in every current browser — drag the file into a tab, or
 `open twenty-eight-start-to-finish.webm`. To convert for WhatsApp or social (the audio has to be
 re-encoded, so the MP4 is larger):
@@ -22,17 +22,20 @@ ffmpeg -i twenty-eight-start-to-finish.webm -c:v libx264 -crf 22 -pix_fmt yuv420
 | --- | --- |
 | 0:00 | Landing page: the Adare 2027 hero, the countdown, the live demo ticker |
 | 0:11 | Entry: the three paid plans (€10 / €60 / €24) and the details the receipt carries |
-| 0:23 | Checkout opens a **pending order** — no entry exists yet, the app hands back a payment URL |
+| 0:24 | Checkout opens a **pending order** — no entry exists yet, the app hands back a payment URL |
 | 0:29 | Payment settles the order; the entry reference appears and the header flips to **My card** |
 | 0:36 | Draft: Captain's Dozen, auto-pick fills a legal card, saved to the server |
 | 0:53 | Match predictor: 28 matches plus three awards, saved and locked at the first tee |
 | 1:08 | Pinpoint: nearest-the-pin and longest-drive guesses for each day |
-| 1:20 | Account: receipt, then card points + prediction points, player by player |
-| 1:27 | The table: server-scored global standings with card and predictor points split out |
-| 1:34 | Leagues: create a private league, get a join code, see its own table |
-| 1:47 | Live: Sunday singles at 4×, the cup decided, the fantasy points following it |
-| 2:11 | Operator console: orders, the ledger (5% fees, 95% pool, payouts), prize settlement per pot, result corrections |
-| 2:42 | Close: one brand, a new edition every two years |
+| 1:19 | Account: the receipt, then card points + prediction points, player by player |
+| 1:26 | Transfers: a free swap re-checked on the server, then the armband set for Friday alone |
+| 1:42 | The public card at `/t/<ref>`: points, rank, the players, invite link and preview image |
+| 1:48 | The **fantasy leaderboard**: server-scored standings, card and predictor points split out |
+| 1:55 | Leagues: create a private league, get a join code, see its own table |
+| 2:08 | The **actual Ryder Cup leaderboard**: cup score, match by match, with your live points beside it |
+| 2:14 | Sunday singles at 4×; the cup is decided and the fantasy table follows it |
+| 2:32 | Operator console: orders, the ledger (5% fees, 95% pool, payouts), prize settlement per pot, result corrections |
+| 3:02 | Close: one brand, a new edition every two years |
 
 ## How it was made
 
@@ -52,7 +55,7 @@ twenty-eight-start-to-finish.webm
 ```
 
 Nothing is staged: it is the same build the tests run against, and the stills in [`stills/`](stills)
-are frames from this run, one per step (`01-home` … `15-admin-results`).
+are frames from this run, one per step (`01-home` … `17-admin-results`).
 
 ## Re-recording it
 
@@ -67,7 +70,8 @@ PAYMENTS_PROVIDER=demo npm start          # terminal 1
 cd verification/harness && npm install     # Chromium lives here
 cd ../..
 ADMIN_TOKEN=tour-admin-token-7d2e41 node demo/record-tour.mjs   # ~3 minutes
-FFMPEG=/path/to/ffmpeg node demo/render-tour.mjs                 # ~5 minutes
+FFMPEG=/path/to/ffmpeg NARRATION=demo/narration.json NARRATION_DIR=demo/narration \
+  node demo/render-tour.mjs                                      # ~6 minutes, muxes the narration
 ```
 
 `record-tour.mjs` accepts `BASE` and `OUT`; `render-tour.mjs` accepts `FFMPEG`, `OUT`, `TARGET` and
@@ -75,22 +79,24 @@ FFMPEG=/path/to/ffmpeg node demo/render-tour.mjs                 # ~5 minutes
 
 ### Narration
 
-Ten clips in [`narration/`](narration), scheduled by [`narration.json`](narration.json), spoken from
-[`narration-script.md`](narration-script.md) — 356 words, about 2:20 of speech across 2:47.8 of
-picture. Each clip starts at its beat and finishes before the next caption:
+Eleven files in [`narration/`](narration), scheduled by [`narration.json`](narration.json), spoken from
+[`narration-script.md`](narration-script.md) — 369 words, about 2:20 of speech across 3:07 of
+picture. Each starts at its beat and finishes before the next one; the last clip was cut in two at a
+pause so the closing line lands on the card at the end:
 
 | Clip | Starts | Beat | Length |
 |---|---|---|---|
-| 01 | 0:02.6 | what it is, the editions | 17.6 s |
-| 02 | 0:22.6 | entry plans, the pending order | 13.3 s |
-| 03 | 0:36.2 | paid, then the draft | 17.1 s |
-| 04 | 0:53.6 | the 28-match predictor | 13.7 s |
-| 05 | 1:08.0 | Pinpoint | 10.0 s |
-| 06 | 1:20.0 | the points breakdown | 13.5 s |
-| 07 | 1:33.8 | the table and private leagues | 13.1 s |
-| 08 | 1:47.2 | Sunday singles at 4× | 8.9 s |
-| 09 | 2:07.6 | the operator console | 19.8 s |
-| 10 | 2:34.5 | close | 11.2 s |
+| 01 | 0:02.8 | what it is, the editions | 15.8 s |
+| 02 | 0:20.5 | entry, pending order, payment | 15.8 s |
+| 03 | 0:36.6 | the draft | 14.7 s |
+| 04 | 0:53.5 | the 28-match predictor | 14.4 s |
+| 05 | 1:08.2 | Pinpoint, then the points | 12.5 s |
+| 06 | 1:25.2 | transfers and the armband | 16.7 s |
+| 07 | 1:42.3 | public card, fantasy leaderboard | 14.3 s |
+| 08 | 2:02.6 | leagues, the actual leaderboard | 13.3 s |
+| 09 | 2:23.0 | Sunday singles at 4× | 4.9 s |
+| 10a | 2:38.5 | the operator console | 13.0 s |
+| 10b | 3:01.5 | close | 5.1 s |
 
 The mux is additive: **the picture is never re-encoded**. Every clip is delayed to its start and
 mixed into one Opus stream, and the video is copied packet for packet (the rendered film's video
