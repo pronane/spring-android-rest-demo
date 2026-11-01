@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Eyebrow } from "@/components/ui";
+import { SocialSignIn } from "@/components/SocialSignIn";
 import { useFantasy } from "@/lib/store";
 import { eur } from "@/lib/helpers";
 import { ACTIVE_EDITION, PLANS, PRIZE_SPLIT, SPONSORS } from "@/lib/tournaments";
@@ -46,6 +47,27 @@ export default function EnterPage() {
     setManager(state.manager);
     setTeamName(state.teamName);
   }, [ready, state.manager, state.teamName, state.isDemo]);
+  // A signed-in visitor (magic link or a social provider) should not retype
+  // details we already hold — prefill what the session knows, once.
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (prefilled.current) return;
+    prefilled.current = true;
+    let cancelled = false;
+    fetch("/api/session")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { user?: { email?: string; manager?: string; teamName?: string } } | null) => {
+        if (cancelled || !data?.user) return;
+        if (data.user.email) setEmail((current) => current || data.user!.email!);
+        if (data.user.manager) setManager((current) => current || data.user!.manager!);
+        if (data.user.teamName) setTeamName((current) => current || data.user!.teamName!);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const receipt = paid && state.entry.ref
     ? { ref: state.entry.ref, amount: state.entry.amount, plan: state.entry.plan ?? "single" }
     : null;
@@ -203,6 +225,13 @@ export default function EnterPage() {
                   <span className="text-[11px] text-cream/60 tnum">
                     {plan.name} · {eur(plan.price)}
                   </span>
+                </div>
+
+                <div className="mt-4">
+                  <SocialSignIn
+                    next="/enter"
+                    note="Sign in and we'll fill in your details — one account, one entry."
+                  />
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">

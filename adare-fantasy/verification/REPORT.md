@@ -1,17 +1,53 @@
-# Verification report — Twenty-Eight v0.6
+# Verification report — Twenty-Eight v0.7
 
-**Scope:** three strands on top of v0.5 — **(1)** fantasy points scored on the server from a clock
-plus the live feed, mid-weekend included; **(2)** transfers with windows, an allowance and a price,
-and a captain you can name day by day; **(3)** a public card per entry with an Open Graph image,
-plus invites that credit both cards. Payments and the prize ledger from v0.5 are unchanged and still
-covered by their suite.
+**Scope:** one strand on top of v0.6 — **Google, Apple and Facebook sign-in** on top of the existing
+email/magic-link accounts, without introducing a second notion of an account. Everything v0.6 shipped
+(scoring, transfers, armband, sharing, invites, payments) is unchanged and still covered by its suite.
 
-**Re-run:** 31 October 2026 against a production build (`next build && next start`) with an empty
-store, `PAYMENTS_PROVIDER=demo` and a webhook secret set so the signature paths are exercised.
+**Re-run:** 1 November 2026 against a production build (`next build && next start`) with an empty
+store, `PAYMENTS_PROVIDER=demo` and a webhook secret set so the signature paths are exercised. The
+provider-facing checks run twice: once with **no** provider credentials (the shipped default — every
+social button must be absent and every endpoint must fail closed) and once with dummy Google, Apple
+and Facebook credentials, for the redirect, cookie and screenshot evidence.
 
-**Result: 266/266 automated checks pass** — 55 scoring rules, 47 payment and ledger assertions,
-86 API, 35 browser, 34 accessibility, 9 on the card clock — with zero console errors while
-recording.
+**Result: 349/349 automated checks pass** — 55 scoring rules, 47 payment and ledger assertions, 79
+sign-in assertions, 93 API, 32 browser, 34 accessibility, 9 on the card clock — with zero console
+errors while recording.
+
+---
+
+## 0. What v0.7 changed
+
+| Strand | What it means | Where |
+|---|---|---|
+| **Three providers, one flow** | Authorisation-code + PKCE (S256), a signed single-use state cookie (`te_oauth`, 600 s, httpOnly, SameSite=Lax) carrying the verifier and nonce, and an ID token whose signature is checked against the provider's JWKS before any claim is believed. | `lib/server/oauth.ts`, `app/api/auth/[provider]/{start,callback}/route.ts` |
+| **One account per email** | A provider identity is stored on the user (`User.identities`). A known (provider, subject) signs in; a signed-in browser links the provider to that account; otherwise a **verified** email that already exists signs into that entry and links; anything else creates the account. An identity held elsewhere, or a mid-session account switch, is refused. | `lib/server/db.ts` (`findUserByIdentity`, `linkIdentity`), `signInWithIdentity` |
+| **Off until configured** | `/api/auth/providers` lists only providers with complete credentials; `components/SocialSignIn.tsx` draws only what that endpoint returns. A clone with no `.env.local` shows no social buttons at all. | `app/api/auth/providers/route.ts`, `components/SocialSignIn.tsx` |
+| **Apple done properly** | No static client secret: an ES256 JWT minted from `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY` (≤ 6 months), `response_mode=form_post` accepted on a POST callback, and the name Apple posts once used when the token carries none. | `appleClientSecret()`, callback route |
+| **Facebook's weaker signal** | Facebook returns a Graph profile, not an ID token, so the access token is only believed after `debug_token` confirms it was minted for this app. | `facebookProfile()` |
+| **Tested rules** | `npm run oauth:check`: provider gating, PKCE, state signing/tampering/expiry, RSA + ES256 token verification (`aud`, `iss`, `exp`, skew, `nonce`, `alg=none`, unknown key), Apple's secret, redirect clamping, and every branch of account linking against a throwaway store. | `scripts/oauth-check.ts` |
+
+### The invariants this landing is built around
+
+1. **A paid entry is never silently swapped.** Signing in as someone else while already signed in is
+   refused with a reason; the identity is not moved.
+2. **An unverified email signs nobody in.** `email_verified` must be true before the address is used
+   to find or create an entry — otherwise "sign in with any email" would be a takeover route.
+3. **No token, code or verifier ever reaches the browser.** The state cookie is httpOnly; PKCE is
+   server-side; the callback sets the same `te_session` cookie the magic link uses, so checkout,
+   transfers and the paid gate are unchanged.
+4. **A failure is a page, not a stack trace.** Every failure path redirects to
+   `/account?signin=error&reason=…` and signs nothing in.
+
+### Three things this work caught
+
+- **A state token could have doubled as a session.** The first cut signed the state with the session
+  key. Deriving a separate key (`HMAC(secret, "oauth-state")`) means a stolen state cookie cannot be
+  replayed as `te_session`; `oauth-check` asserts the two deployments' secrets and tampering cases.
+- **`next` was an open redirect.** `?next=https://evil.example` survived the first implementation.
+  It is now clamped by `safeNext()` — paths only, `//host` and `/\host` rejected — and tested.
+- **Facebook has no verifiable ID token here.** Believing the `me` response alone would let a token
+  minted for another app sign in; `debug_token` is checked against `FACEBOOK_APP_ID` first.
 
 ---
 
@@ -145,7 +181,7 @@ order granting nothing, settlement writing exactly three ledger rows, repeat set
 refunds reversing the pool, provider-mismatch webhooks being ignored, webhook dedupe, prize settlement
 inside the pot, unclaimed lines, payout rows, and the refusal to re-settle a paid pot.
 
-### 4.3 API contract — 86/86 (`api-results.json`)
+### 4.3 API contract — 93/93 (`api-results.json`)
 
 The 60 checks from v0.5 plus 26 for this landing: the transfer page needs a session; the saved card
 comes back with the rules attached; a replacement is offered for every player; the armband must be on
@@ -219,7 +255,7 @@ provisional with the session named, and `?at=0` scores nobody.
 | an operator can refund an order | 200 refunded |
 | a refund comes back out of the pool | gross 1000 |
 
-### 4.4 Browser — 35/35 (`browser-results.json`)
+### 4.4 Browser — 32/32 (`browser-results.json`)
 
 The 24 checks from v0.5 plus 11 for this landing: the transfer page opens for a saved card, shows the
 window and allowance, offers replacements, completes a swap through the UI ("Done — that change was
@@ -278,13 +314,41 @@ SCORING_CLOCK=at:600 npm start          # in adare-fantasy/
 node verification/harness/clock.mjs     # 9 checks
 ```
 
-### 4.7 Production configuration
+### 4.7 Social sign-in — 79/79 (`npm run oauth:check`)
+
+Run with no server and no provider: keys are generated in-process, tokens are hand-signed, and the
+account store is a throwaway `DB_FILE`.
+
+| Group | Assertions | Covers |
+|---|---|---|
+| Provider gating | 7 | Nothing offered without credentials; half-configured providers hidden; Apple needs all four values; `\n` unescaped in the key |
+| Redirects | 10 | Per-provider callback path, trailing slash, `response_type=code`, `code_challenge_method=S256`, state/nonce carried, Google `prompt=select_account`, Apple `response_mode=form_post` |
+| PKCE | 3 | `base64url(SHA-256(verifier))`, no padding, 43+ characters, uniqueness |
+| `next` clamping | 6 | Paths honoured, absolute and protocol-relative URLs refused, backslash trick refused |
+| State cookie | 7 | Round-trip, missing, tampered body, tampered signature, wrong secret, expired, junk |
+| ID tokens | 15 | RSA and ES256 signatures, wrong key, `alg=none`, unknown `kid`, audience (scalar and list), issuer, expiry, 120 s skew, future `iat`, nonce, missing subject |
+| Apple secret | 6 | ES256, key id, team, client id, audience, ≤ six months |
+| `email_verified` | 4 | Google's `true` and Apple's `"true"` both count; `"false"` and missing do not |
+| Account linking | 21 | Create / repeat / unverified refused / junk email / second provider links / unknown email links to the entry / identity not moved / signed-in browser links / manager name from email |
+
+The API suite adds six more against a running server in its shipped (unconfigured) state:
+
+| Check | Result |
+|---|---|
+| The provider list answers with an array | ✅ 200, 0 enabled |
+| Every offered provider has a button label | ✅ none configured |
+| An unknown provider cannot be started | ✅ 404 |
+| An unconfigured provider cannot be started | ✅ 404, no state cookie |
+| Its callback lands on the account page with a reason | ✅ 303 `?signin=error&reason=…` |
+| A callback with no state or code fails closed | ✅ 303 `?signin=error` |
+
+### 4.8 Production configuration
 
 | Check | Result |
 |---|---|
 | `npm run build` | ✅ clean |
 | `tsc --noEmit` | ✅ clean |
-| `npm run scoring:check` / `payments:check` | ✅ 22/22 · 47/47 |
+| `npm run scoring:check` / `payments:check` / `oauth:check` | ✅ 55/55 · 47/47 · 79/79 |
 | All 15 routes render | ✅ 200 |
 | Without `ADMIN_TOKEN`, admin endpoints refuse | ✅ 503 |
 | Without `STRIPE_WEBHOOK_SECRET`, the webhook refuses | ✅ 503 |
@@ -324,10 +388,17 @@ last three shots come from the live-simulation and takeover scripts.
 | [`videos/03-live-simulation.mp4`](videos/03-live-simulation.mp4) | 23 s | 1280×800 | Sunday singles at 4× from `?t=2700` to a decided cup |
 | [`videos/04-operator-console.mp4`](videos/04-operator-console.mp4) | 10 s | 1280×900 | `/admin`: connect, read the ledger, settle the global pot, check corrections |
 
-### Screenshots (36)
+### Screenshots (40)
 
-Three were added for this landing: **34** the transfers page mid-window (swap completed, Friday
-armband set), **35** the account page's share and invite block, **36** a public card at `/t/<ref>`.
+Four were added for this landing, captured from a second server started **with** dummy provider
+credentials (the buttons only exist when `/api/auth/providers` returns something):
+**37** `/account` signed out with Google, Apple and Facebook, **38** the same row above the checkout
+fields on `/enter`, **39** the callback's refusal banner on `/account?signin=error&reason=…`,
+**40** the mobile account page. `verification/screenshots/social-capture-log.json` records the URL and
+viewport of each.
+
+The earlier set is unchanged: **34** the transfers page mid-window, **35** the account page's share
+and invite block, **36** a public card at `/t/<ref>`.
 
 | # | Step | # | Step |
 |---|---|---|---|
@@ -344,6 +415,10 @@ armband set), **35** the account page's share and invite block, **36** a public 
 | | | 34 | **Transfers**: window, allowance, swap, armband |
 | | | 35 | **Account**: share card, copy/WhatsApp/X, invites |
 | | | 36 | **Public card** `/t/<ref>` with points and rank |
+| | | 37 | **Social sign-in** on `/account` (Google, Apple, Facebook) |
+| | | 38 | **Social sign-in** above the `/enter` checkout |
+| | | 39 | A refused link, as the player sees it |
+| | | 40 | **Mobile** account page with the provider row |
 
 ---
 
@@ -352,7 +427,7 @@ armband set), **35** the account page's share and invite block, **36** a public 
 ```bash
 cd adare-fantasy
 npm install
-npm run scoring:check && npm run payments:check   # 55 + 47 assertions, no server
+npm run scoring:check && npm run payments:check && npm run oauth:check   # 55 + 47 + 79, no server
 rm -rf .data
 npm run build
 SESSION_SECRET="$(openssl rand -hex 24)" \

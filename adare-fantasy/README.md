@@ -42,6 +42,33 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 
 ---
 
+## What's new in v0.7
+
+- **Sign in with Google, Apple or Facebook.** A player who entered with a card can come back on a
+  new phone and tap one button instead of waiting for an email. The flow is the authorisation-code
+  flow with **PKCE (S256)**, a signed single-use state cookie (`te_oauth`, 600 s) and a **nonce**
+  echoed in the ID token; the token's signature is verified against the provider's JWKS before a
+  single claim is believed.
+- **One account, whichever door you came in by.** A provider identity is stored on the user
+  (`User.identities`), so a verified email that already has an entry — bought by card or created by
+  a magic link — *signs into that entry* rather than starting a second one, and the provider is
+  linked to it. An identity already attached to another entry is refused rather than moved, and
+  switching accounts from a signed-in browser is refused too: a paid entry is never silently
+  swapped.
+- **Nothing is enabled until you configure it.** `/api/auth/providers` lists only the providers with
+  complete credentials, and `components/SocialSignIn.tsx` draws only what that endpoint returns — so
+  a clone with no `.env.local` shows no social buttons at all, and the demo cannot be mistaken for a
+  configured one. Fill in all of Google's, Apple's or Facebook's variables and that button appears.
+- **Apple is done properly.** Apple has no static client secret: `appleClientSecret()` mints the
+  ES256 JWT from `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY` (six months at most), the
+  callback accepts Apple's `form_post` as well as a query string, and the name Apple posts once is
+  used when the token carries none.
+- **The rules are under test.** `npm run oauth:check` asserts **79** things — provider gating, PKCE,
+  state signing/tampering/expiry, RSA and ES256 ID-token verification (audience, issuer, expiry,
+  skew, nonce, `alg=none`), Apple's secret, and every branch of `signInWithIdentity` against a
+  throwaway store. The API suite adds the provider endpoint, the start endpoint's failure mode and
+  the open-redirect guard.
+
 ## What's new in v0.6
 
 - **The server scores the weekend, not the browser.** `lib/server/clock.ts` is the one clock: a
@@ -131,6 +158,10 @@ client at a stub), `PAYMENTS_PROVIDER` (`demo` or `stripe`; defaults to `stripe`
 and the scoring clock: `SCORING_CLOCK` (`live`, or `at:<minute>` to replay a moment; unset scores the
 finished weekend) and `FIRST_TEE_AT` (defaults to `2027-09-17T07:35:00+01:00`).
 
+Social sign-in (all optional, see [Signing in](#signing-in)): `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`,
+`APPLE_CLIENT_ID` / `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY`, and
+`FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET`.
+
 ---
 
 ## The two games
@@ -213,6 +244,53 @@ settlement function a webhook would, and writes the same three ledger rows. Noth
 **With keys** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`), checkout creates a real hosted Checkout
 Session, `success_url` returns you to `/pay/ORD-…`, and the page polls until the webhook settles it.
 Sales tax, receipts and disputes stay Stripe's problem; the app only stores the order reference.
+
+---
+
+## Signing in
+
+Three ways in, one account.
+
+| | How | Notes |
+|---|---|---|
+| Buy an entry | `/enter` — email, manager, team, pay | Creates the account if the email is new; a duplicate email is refused unless you are already signed in as it |
+| One-time link | `/account` → "Email me a link" | 15-minute single-use token; the link is printed on screen in development, emailed with `RESEND_API_KEY` |
+| Google / Apple / Facebook | `/account` or `/enter` → "Continue with …" | Only shown for providers with complete credentials |
+
+The social flow (`lib/server/oauth.ts`, `app/api/auth/[provider]/{start,callback}`) never trusts the
+browser with anything:
+
+1. `/api/auth/<provider>/start` mints a PKCE verifier, a state and a nonce, then stores them in a
+   **signed, httpOnly cookie** (`te_oauth`, 600 s, `SameSite=Lax`) and redirects to the provider with
+   `code_challenge_method=S256`. `?next=` is accepted but only as a path on this site.
+2. The provider returns to `/api/auth/<provider>/callback` (Apple posts a form; the route is GET and
+   POST). The state cookie must be intact, unexpired and for this provider, and `state` must match.
+3. The code is exchanged with the verifier (`client_secret` for Google and Facebook, a freshly minted
+   ES256 JWT for Apple). The ID token's RS256/ES256 signature is checked against the provider's JWKS,
+   then `iss`, `aud`, `exp` (±120 s), `iat` and the nonce.
+4. **`email_verified` must be true** before the email is used. Then: a known (provider, subject) signs
+   its own account in; a signed-in browser links the provider to that account; otherwise a verified
+   email that already exists signs into that entry and links the provider; anything else creates the
+   account (`manager` from the provider's name, `teamName: "My card"` — they can change both at
+   checkout). An identity held by another account, or a mid-session account switch, is refused.
+5. The session cookie (`te_session`, the same HMAC token the magic link uses) is set and the state
+   cookie cleared; you land back on `?signin=ok&via=<provider>`. Every failure returns
+   `/account?signin=error&reason=…` instead of a stack trace, and nothing is signed in on a partial run.
+
+Facebook is the exception that proves the rule: it returns a Graph profile rather than an ID token, so
+`/me` is only believed after `debug_token` confirms the token was minted for *this* app.
+
+Register these redirect URIs with each provider:
+
+```
+https://<your-host>/api/auth/google/callback
+https://<your-host>/api/auth/apple/callback
+https://<your-host>/api/auth/facebook/callback
+```
+
+Apple's key comes from developer.apple.com as a `.p8`; paste it into `APPLE_PRIVATE_KEY` with `\n` for
+newlines (the loader unescapes them). `npm run oauth:check` covers the token rules and the account
+linking without needing any provider at all.
 
 ---
 
@@ -371,7 +449,8 @@ adare-fantasy/
 ├─ app/                  # /, /draft, /predict, /live, /leaderboard, /enter, /pay/[ref],
 │                        # /admin, /editions, /leagues, /team, /account, /players, /rules
 │                        # + /api/{session,checkout,orders,entry,leaderboard,score,
-│                        #        webhooks/stripe,admin/{results,orders,prizes}}
+│                        #        webhooks/stripe,admin/{results,orders,prizes},
+│                        #        auth/{providers,[provider]/{start,callback}}}
 ├─ components/           # brand, header/footer, tiles, squad board, league table,
 │                        # conditions card, countdown
 ├─ data/snapshots/       # committed free-data snapshots (Wikipedia + Wikidata + Open-Meteo)
@@ -383,8 +462,8 @@ adare-fantasy/
 │  ├─ providers.ts       # snapshot reader (staleness, compass, conditions summary)
 │  ├─ store.tsx          # card state + localStorage (key `twentyeight:v2`)
 │  └─ server/            # JSON store, cookie session, results snapshot, standings,
-│                        # orders + ledger, money maths, Stripe client
-├─ scripts/refresh-data.mjs
+│                        # orders + ledger, money maths, Stripe client, OAuth
+├─ scripts/              # refresh-data.mjs, scoring-check.ts, payments-check.ts, oauth-check.ts
 ├─ public/               # hero art, self-hosted fonts
 └─ screenshots/          # the captures in this doc
 ```
@@ -431,7 +510,7 @@ Verified with **axe-core 4.14** across 13 routes at 390px and 1440px: **0 violat
 violation types, mostly contrast). Keyboard, `aria-current`, toggle state, reduced motion and the
 checkout field metadata are asserted in the same scripted pass.
 
-## Verification (v0.3)
+## Verification
 
 `verification/` holds the review and end-to-end evidence, re-recorded on this branch from a production
 build with an empty store:
@@ -442,16 +521,17 @@ build with an empty store:
   draft → predictor → account → table → Pinpoint → league → live journey (50 s), the mobile pass
   including payment (17 s), Sunday singles at 4× to a decided cup (23 s), and the operator console
   settling the prize pot (10 s)
-- [`verification/screenshots/`](verification/screenshots) — 33 step-by-step captures, one per action
-  in the videos, including the payment page, the console's prize settlement and a blocked
-  account-takeover attempt
-- `api-results.json`, `browser-results.json`, `axe-results.json`, `capture-log.json` —
-  machine-readable results (60 API checks, 24 browser checks, 30 accessibility checks; all passing,
-  plus 22 scoring-rule and 47 payment assertions from `npm run scoring:check` / `payments:check` —
-  183 in total)
+- [`verification/screenshots/`](verification/screenshots) — 40 step-by-step captures, one per action
+  in the videos, including the payment page, the console's prize settlement, a blocked
+  account-takeover attempt and the social sign-in row in all three of its states
+- `api-results.json`, `browser-results.json`, `axe-results.json`, `clock-results.json`,
+  `capture-log.json`, `social-capture-log.json` — machine-readable results (**349 checks: 93 API, 32
+  browser, 34 accessibility, 9 card-clock, plus 55 scoring, 47 payment and 79 sign-in assertions**
+  from `npm run scoring:check` / `payments:check` / `oauth:check`; all passing)
 - [`verification/harness/`](verification/harness) — the scripts that produced all of it
-  (`api.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`, `encode.mjs`), with `BASE`, `OUT`,
-  `CHROME_PATH` and `FFMPEG` overridable; see its README
+  (`api.mjs`, `checks.mjs`, `audit.mjs`, `clock.mjs`, `record.mjs`, `record-live.mjs`, `takeover.mjs`,
+  `social-shots.mjs`, `encode.mjs`), with `BASE`, `OUT`, `CHROME_PATH` and `FFMPEG` overridable; see
+  its README
 
 ## Demo film
 

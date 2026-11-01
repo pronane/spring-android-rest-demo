@@ -399,6 +399,64 @@ if (process.env.ADMIN_TOKEN) {
     `gross ${grossBefore} → ${grossAfter}`);
 }
 
+
+// Social sign-in: the provider list is the single source of truth for the
+// buttons, and an unconfigured provider must fail closed rather than 500.
+// Redirects are not followed here — the Location is the thing under test.
+const redirect = async (route) => {
+  const res = await fetch(BASE + route, { redirect: "manual" });
+  return { status: res.status, location: res.headers.get("location") ?? "", cookie: (res.headers.getSetCookie?.() ?? [])[0]?.split(";")[0] ?? "" };
+};
+
+r = await call("/api/auth/providers");
+const offered = r.json?.providers ?? null;
+check(
+  "the provider list answers with what it can offer",
+  r.status === 200 && Array.isArray(offered),
+  `${r.status} ${Array.isArray(offered) ? offered.length + " enabled" : "no list"}`,
+);
+check(
+  "every offered provider has a label for its button",
+  Array.isArray(offered) && offered.every((p) => ["google", "apple", "facebook"].includes(p.id) && Boolean(p.label)),
+  (offered ?? []).map((p) => p.id).join(", ") || "none configured",
+);
+
+r = await call("/api/auth/nope/start");
+check("an unknown provider cannot be started", r.status === 404, `status ${r.status}`);
+
+const unconfigured = ["google", "apple", "facebook"].filter((id) => !(offered ?? []).some((p) => p.id === id));
+if (unconfigured.length > 0) {
+  r = await call(`/api/auth/${unconfigured[0]}/start`);
+  check("an unconfigured provider cannot be started", r.status === 404, `status ${r.status}`);
+  check("and hands out no state cookie", r.cookie === "", r.cookie || "no cookie");
+  const back = await redirect(`/api/auth/${unconfigured[0]}/callback?code=x&state=y`);
+  check(
+    "its callback lands on the account page with a reason",
+    back.status === 303 && back.location.includes("/account?signin=error&reason="),
+    `${back.status} ${back.location}`,
+  );
+} else {
+  // Everything is configured: start must set the state cookie and go to the
+  // provider, and must never honour a host the caller names as `next`.
+  const started = await redirect("/api/auth/google/start?next=//evil.example");
+  const target = new URL(started.location || "http://invalid");
+  check(
+    "start sets a state cookie and redirects to the provider",
+    started.status === 303 && started.cookie.startsWith("te_oauth=") && target.host === "accounts.google.com",
+    `${started.status} ${target.host}`,
+  );
+  const payload = JSON.parse(Buffer.from(started.cookie.split("=")[1].split(".")[0], "base64url").toString("utf8"));
+  check("an absolute next is clamped to the account page", payload.next === "/account", payload.next);
+  check("the state cookie carries PKCE and a nonce", Boolean(payload.verifier) && Boolean(payload.nonce), "verifier + nonce");
+}
+
+const empty = await redirect("/api/auth/google/callback");
+check(
+  "a callback with no state or code fails closed",
+  empty.status === 303 ? empty.location.includes("signin=error") : empty.status === 404,
+  `${empty.status} ${empty.location}`,
+);
+
 const passed = results.filter((x) => x.pass).length;
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "api-results.json"), JSON.stringify({ base: BASE, passed, total: results.length, results }, null, 2));

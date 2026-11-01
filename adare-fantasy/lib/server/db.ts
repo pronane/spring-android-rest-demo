@@ -12,6 +12,14 @@ import path from "node:path";
 import type { ResultsOverride } from "@/lib/scoring";
 import { allocate } from "@/lib/server/money";
 
+/** A provider account that can sign this user in (Google, Facebook, Apple). */
+export type Identity = {
+  provider: string;
+  subject: string;
+  email: string;
+  linkedAt: string;
+};
+
 export type User = {
   id: string;
   email: string;
@@ -19,6 +27,8 @@ export type User = {
   teamName: string;
   createdAt: string;
   entry?: Entry;
+  /** Social sign-ins attached to this account, one per provider. */
+  identities?: Identity[];
 };
 
 export type Entry = {
@@ -203,6 +213,48 @@ export async function findUserByEmail(email: string): Promise<User | null> {
 export async function findUser(id: string): Promise<User | null> {
   const db = await readDb();
   return db.users.find((u) => u.id === id) ?? null;
+}
+
+/** A provider account (`google` + subject) → the user it signs in. */
+export async function findUserByIdentity(provider: string, subject: string): Promise<User | null> {
+  const db = await readDb();
+  return (
+    db.users.find((u) =>
+      (u.identities ?? []).some((identity) => identity.provider === provider && identity.subject === subject),
+    ) ?? null
+  );
+}
+
+/**
+ * Attaches a provider account to a user. An identity belongs to exactly one
+ * account, so a (provider, subject) already held by someone else is refused
+ * rather than moved.
+ */
+export async function linkIdentity(
+  userId: string,
+  identity: { provider: string; subject: string; email: string },
+): Promise<User | null> {
+  return mutate((db) => {
+    const holder = db.users.find((u) =>
+      (u.identities ?? []).some(
+        (existing) => existing.provider === identity.provider && existing.subject === identity.subject,
+      ),
+    );
+    if (holder && holder.id !== userId) return null;
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) return null;
+    const others = (user.identities ?? []).filter((existing) => existing.provider !== identity.provider);
+    user.identities = [
+      ...others,
+      {
+        provider: identity.provider,
+        subject: identity.subject,
+        email: identity.email,
+        linkedAt: new Date().toISOString(),
+      },
+    ];
+    return user;
+  });
 }
 
 /** A public entry ref (`TE-ABC123-ADRE`) → the account behind it. */

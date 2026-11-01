@@ -9,6 +9,7 @@ import type { User } from "@/lib/server/db";
 import type { EntryScore, Results } from "@/lib/scoring";
 import { PLAYER_BY_ID } from "@/lib/data";
 import { ShareButtons } from "@/components/ShareButtons";
+import { SocialSignIn } from "@/components/SocialSignIn";
 
 type Breakdown = {
   entry: { ref: string; team: string; manager: string; prizeEligible: boolean };
@@ -38,14 +39,27 @@ export default function AccountPage() {
   const [linkMsg, setLinkMsg] = useState<string | null>(null);
   const [devLink, setDevLink] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeIsError, setNoticeIsError] = useState(false);
   const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
   const [invite, setInvite] = useState<Invite | null>(null);
 
   useEffect(() => {
     // Read ?signin= without useSearchParams (which would need a Suspense boundary).
-    const signin = new URLSearchParams(window.location.search).get("signin");
-    if (signin === "ok") setNotice("You're signed in on this device.");
+    const params = new URLSearchParams(window.location.search);
+    const signin = params.get("signin");
+    const via = params.get("via");
+    if (signin === "ok") {
+      setNotice(
+        via
+          ? `Signed in with ${via[0].toUpperCase()}${via.slice(1)} — this device stays signed in.`
+          : "You're signed in on this device.",
+      );
+    }
     if (signin === "expired") setNotice("That sign-in link has expired or was already used. Ask for a new one.");
+    if (signin === "error") {
+      setNotice(params.get("reason") ?? "That sign-in did not complete. Try again.");
+      setNoticeIsError(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -137,12 +151,19 @@ export default function AccountPage() {
       <Eyebrow>Account</Eyebrow>
       <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Your entry</h1>
       <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-cream/70">
-        Your entry is stored on the server, so you can sign in on any device with a one-time email
-        link.
+        Your entry is stored on the server, so you can sign in on any device with Google, Apple,
+        Facebook or a one-time email link.
       </p>
 
       {notice ? (
-        <p role="status" className="mt-6 rounded-lg border border-gold/30 bg-gold/[0.08] px-4 py-2.5 text-[12.5px] text-gold-soft">
+        <p
+          role={noticeIsError ? "alert" : "status"}
+          className={`mt-6 rounded-lg border px-4 py-2.5 text-[12.5px] ${
+            noticeIsError
+              ? "border-usa/40 bg-usa/10 text-usa"
+              : "border-gold/30 bg-gold/[0.08] text-gold-soft"
+          }`}
+        >
           {notice}
         </p>
       ) : null}
@@ -159,6 +180,20 @@ export default function AccountPage() {
               <p className="mt-3 text-[11px] text-cream/60">
                 Account created {new Date(user.createdAt).toLocaleDateString("en-IE")}
               </p>
+              {user.identities && user.identities.length > 0 ? (
+                <p className="mt-1 text-[11px] text-cream/60">
+                  Sign-in:{" "}
+                  {user.identities
+                    .map((identity) => `${identity.provider[0].toUpperCase()}${identity.provider.slice(1)}`)
+                    .join(", ")}
+                </p>
+              ) : null}
+              <div className="mt-3">
+                <SocialSignIn
+                  next="/account"
+                  note="Add another provider to this account — it signs in to the same entry."
+                />
+              </div>
               <button
                 type="button"
                 onClick={signOut}
@@ -170,8 +205,10 @@ export default function AccountPage() {
           ) : (
             <>
               <p className="mt-2 text-[13px] text-cream/70">
-                Entered on another phone or laptop? We&apos;ll email you a one-time sign-in link.
+                Entered on another phone or laptop? Sign in with a provider, or we&apos;ll email you a
+                one-time link.
               </p>
+              <SocialSignIn next="/account" />
               <div className="mt-3 flex gap-2">
                 <input
                   type="email"

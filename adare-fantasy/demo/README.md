@@ -14,6 +14,11 @@ ffmpeg -i twenty-eight-start-to-finish.webm -c:v libx264 -crf 22 -pix_fmt yuv420
   -c:a aac -b:a 128k -movflags +faststart twenty-eight-start-to-finish.mp4
 ```
 
+> **v0.7 note.** The film was recorded before social sign-in landed. Those buttons only exist when a
+> deployment has provider credentials, so the account page in the film shows the magic-link route
+> only — see [`../verification/screenshots/37–40`](../verification/screenshots) for the sign-in row,
+> its place above the checkout and the callback's refusal banner.
+
 ![The opening frame](poster.jpg)
 
 ## What happens, minute by minute
