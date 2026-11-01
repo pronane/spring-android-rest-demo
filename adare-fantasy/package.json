@@ -21,7 +21,9 @@
     "seed": "tsx scripts/seed.ts",
     "snapshot": "node scripts/snapshot.mjs",
     "docs:check": "node scripts/check-docs.mjs",
-    "db:check:sqlite": "tsx scripts/db-check-sqlite.ts"
+    "db:check:sqlite": "tsx scripts/db-check-sqlite.ts",
+    "go-live": "node scripts/go-live.mjs",
+    "devcontainer:check": "node scripts/check-devcontainer.mjs"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

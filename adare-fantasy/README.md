@@ -502,9 +502,10 @@ troubleshooting table.
 
 ### Showing it to other people
 
-**[DEPLOY.md](DEPLOY.md)** is the free-hosting walkthrough: Vercel's Hobby plan for the app plus
-Neon's free Postgres for the database (about ten minutes, no card), Render, a GitHub Codespace, or a
-five-second tunnel from your own machine.
+**[GO-LIVE.md](GO-LIVE.md)** is the one-pager — one click for a Codespace, or Vercel plus a free
+database for a permanent URL. **[DEPLOY.md](DEPLOY.md)** is the detail: Vercel's Hobby plan with
+Neon's free Postgres or Turso's free SQLite, Render, a VPS with a SQLite file, or a five-second tunnel
+from your own machine.
 
 GitHub Pages cannot host the app — no Node runtime, so no accounts, no saved cards, no live table —
 but it can host [`docs/`](docs): a one-page gallery with the screenshots and the leaderboard read
