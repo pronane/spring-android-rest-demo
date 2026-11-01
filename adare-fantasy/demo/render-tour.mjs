@@ -106,8 +106,10 @@ fs.writeFileSync(assFile, `${ass}${brand}\n${captions}\n`);
 /* ——— narration ——— */
 
 const narrationFile = process.env.NARRATION ?? path.join(RUN, "narration.json");
+// The clips can live next to the script (demo/narration) rather than in run/.
+const narrationDir = process.env.NARRATION_DIR ?? path.join(RUN, "narration");
 const narration = fs.existsSync(narrationFile) ? JSON.parse(fs.readFileSync(narrationFile, "utf8")) : [];
-const clips = narration.filter((clip) => fs.existsSync(path.join(RUN, "narration", clip.file)));
+const clips = narration.filter((clip) => fs.existsSync(path.join(narrationDir, clip.file)));
 const hasNarration = clips.length > 0;
 
 /* ——— render ——— */
@@ -122,7 +124,7 @@ const filters = [
 const args = ["-y", "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list];
 
 if (hasNarration) {
-  for (const clip of clips) args.push("-i", path.join(RUN, "narration", clip.file));
+  for (const clip of clips) args.push("-i", path.join(narrationDir, clip.file));
   const delays = clips
     .map((clip, index) => `[${index + 1}:a]adelay=${Math.round(clip.start * 1000)}|${Math.round(clip.start * 1000)}[a${index}]`)
     .join(";");
