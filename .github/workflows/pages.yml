@@ -3,9 +3,10 @@
 # The app itself cannot run on Pages — no Node, no cookies, no database — so this
 # deploys screenshots and a frozen JSON snapshot (see adare-fantasy/DEPLOY.md).
 #
-# One-time setup: Settings → Pages → Source: "GitHub Actions". Until that switch
-# is flipped, this workflow still validates the gallery and skips the deploy
-# rather than failing the branch.
+# Pages is switched on automatically where the workflow token is allowed to do it
+# (`enablement: true` below). Where it is not, the run stays green, the gallery is
+# still validated, and the summary says which one setting to change:
+# Settings → Pages → Source: "GitHub Actions".
 
 name: Twenty-Eight static gallery
 
@@ -30,7 +31,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      pages: ${{ steps.pages.outputs.state }}
+      pages: ${{ steps.pages.outcome }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,30 +45,27 @@ jobs:
         run: node scripts/check-docs.mjs
         working-directory: adare-fantasy
 
-      - name: Is Pages enabled for this repository?
-        id: pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Turns Pages on when the repository allows it; harmless when it is already
+      # on. `continue-on-error` keeps a permissions refusal from failing the branch.
+      - id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+        continue-on-error: true
+
+      - name: Pages is not available to this workflow
+        if: steps.pages.outcome != 'success'
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pages")
-          if [ "$code" = "200" ]; then
-            echo "state=enabled" >> "$GITHUB_OUTPUT"
-          else
-            echo "state=disabled" >> "$GITHUB_OUTPUT"
-            {
-              echo "### GitHub Pages is not enabled"
-              echo
-              echo "The gallery passed its checks but was not published. Enable it once:"
-              echo "**Settings → Pages → Source: “GitHub Actions”**, then re-run this workflow."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            echo "### GitHub Pages is not available"
+            echo
+            echo "The gallery passed its checks but was not published. Enable it once:"
+            echo "**Settings → Pages → Source: “GitHub Actions”**, then re-run this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     needs: check
-    if: needs.check.outputs.pages == 'enabled'
+    if: needs.check.outputs.pages == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
