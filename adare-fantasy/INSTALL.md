@@ -29,8 +29,8 @@ downloaded that is already there.
 |---|---|---|
 | **1. Node.js 20+** | `node -v` | `install.sh` / `install.ps1` download the current release from nodejs.org, **verify its published SHA-256**, and unpack it into `~/.twenty-eight/node` (macOS/Linux) or `%LOCALAPPDATA%\TwentyEight\node` (Windows). No `sudo`, no PATH changes, no system install. |
 | **2. Dependencies** | `node_modules/next` | `npm install` (about a minute). This is also what brings the Postgres binaries — they are ordinary npm packages, so no database installer and no admin. |
-| **3. Postgres** | `.data/pg` exists and `pg_ctl status` | `initdb` a cluster in `.data/pg`, start it on **port 54329**, create the `twentyeight` database, apply [`db/schema.sql`](db/schema.sql) — eight tables plus a migrations table. Skip with `--no-postgres`. |
-| **4. Configuration** | `.env.local` | Adds only the keys that are missing: `SESSION_SECRET`, `ADMIN_TOKEN`, `APP_URL`, `PAYMENTS_PROVIDER=demo`, `MAIL_OUTBOX=.data/outbox`, `DATABASE_URL`. Your edits are never overwritten. |
+| **3. Database** | `.data/pg` exists and `pg_ctl status` | `initdb` a cluster in `.data/pg`, start it on **port 54329**, create the `twentyeight` database, apply [`db/schema.sql`](db/schema.sql) — eight tables plus a migrations table. `--sqlite` applies [`db/schema.sqlite.sql`](db/schema.sqlite.sql) to one file instead; `--no-postgres` keeps the JSON store. |
+| **4. Configuration** | `.env.local` | Adds only the keys that are missing: `SESSION_SECRET`, `ADMIN_TOKEN`, `APP_URL`, `PAYMENTS_PROVIDER=demo`, `MAIL_OUTBOX=.data/outbox`, and `DATABASE_URL` or `LIBSQL_URL` for the store you chose. Your edits are never overwritten. |
 | **5. Browser** | Chrome / Edge / Chromium / Brave, or one puppeteer already cached | Downloads Chrome for Testing into `~/.cache/puppeteer` (skipped if any browser is present; tests are skipped, not failed, if none can be found). |
 | **6. Build and smoke test** | `.next/BUILD_ID` | `next build`, then starts the app for a few seconds and checks that `/`, `/enter`, `/leaderboard`, `/api/auth/providers` and `/api/session` answer. |
 
@@ -74,19 +74,39 @@ Twenty-Eight — local installer
 
 ---
 
-## Postgres: optional, and yours if you have one
+## Where the data goes: Postgres, SQLite, Turso, or a file
 
-The app talks to whatever `DATABASE_URL` points at, and to a JSON file when it
-is unset. Both backends pass the same tests — the 93-check API suite and the
-15-step browser test run green against each.
+The app talks to whatever `DATABASE_URL` (Postgres) or `LIBSQL_URL` (SQLite, or
+Turso over libSQL) points at, and to a JSON file when neither is set. Every SQL
+backend passes the same 27-assertion store contract (`db:check`, `db:check:sqlite`)
+and the same 15-step browser test, so the choice is about hosting, not features.
+[DEPLOY.md](DEPLOY.md#where-the-data-can-live) has the comparison table.
+
+```bash
+./install.sh --sqlite          # one file: .data/twenty-eight.sqlite, no cluster
+./install.sh --no-postgres     # the JSON file, no database at all
+./install.sh                   # the default: a private Postgres cluster
+```
+
+Or by hand, for SQLite:
+
+```bash
+npm run db:migrate -- --url=file:.data/twenty-eight.sqlite
+LIBSQL_URL=file:.data/twenty-eight.sqlite npm run start:local
+```
+
+For Turso, set `LIBSQL_URL=libsql://…` and `TURSO_AUTH_TOKEN=…` and run
+`npm run db:migrate` — the schema is the same `db/schema.sqlite.sql`.
 
 ```bash
 npm run db:local -- start     # start the cluster in .data/pg (initdb on first run)
 npm run db:local -- status    # is it up? prints DATABASE_URL
 npm run db:migrate            # apply db/schema.sql (idempotent)
 npm run db:migrate -- --check # report, change nothing
+npm run db:migrate -- --url=file:.data/twenty-eight.sqlite   # the SQLite schema
 npm run db:local -- reset     # stop, wipe .data/pg, start clean (then db:migrate)
-npm run db:check              # 27 assertions against a throwaway cluster
+npm run db:check              # 27 assertions against a throwaway Postgres cluster
+npm run db:check:sqlite       # the same 27 against a throwaway SQLite file
 ```
 
 ### Using your own Postgres
@@ -104,7 +124,9 @@ additional migrations dropped into `db/migrations/*.sql` are applied in order by
 `db:migrate`, each recorded in `schema_migrations` with its checksum.
 
 To keep the file store instead, install with `--no-postgres` (or remove
-`DATABASE_URL` from `.env.local`) — nothing else changes.
+`DATABASE_URL` from `.env.local`) — nothing else changes. `--sqlite` is the
+middle ground: a real database with a schema, in a single file, and nothing to
+keep running.
 
 ---
 

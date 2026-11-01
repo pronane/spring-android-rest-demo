@@ -96,9 +96,46 @@ async function waitForServer(port, host, timeout = 120_000) {
 
 /* ——— the pieces ——— */
 
+/** The SQLite backend's URL, wherever it was configured (see lib/server/store-sqlite.ts). */
+function sqliteUrl() {
+  const explicit = env.LIBSQL_URL ?? env.TURSO_DATABASE_URL;
+  if (explicit) return explicit;
+  const databaseUrl = env.DATABASE_URL ?? "";
+  return /^(libsql|file|sqlite):/i.test(databaseUrl) ? databaseUrl : null;
+}
+
+/** One file, or Turso: nothing to start here, but the schema has to be there. */
+function ensureSqlite() {
+  const url = sqliteUrl();
+  if (!url) return null;
+  if (/^libsql:/i.test(url)) {
+    let host = "Turso";
+    try {
+      host = new URL(url).host;
+    } catch {
+      /* keep the label */
+    }
+    console.log(`·  Store: Turso at ${host} (hosted — nothing to start here)`);
+    return true;
+  }
+  const file = url.replace(/^(file|sqlite):(\/\/)?/, "");
+  const full = path.isAbsolute(file) ? file : path.join(ROOT, file);
+  if (!fs.existsSync(full)) {
+    console.log(`·  Creating the SQLite database at ${path.relative(ROOT, full)}…`);
+    const migrated = spawnSync(process.execPath, ["scripts/db-migrate.mjs", `--url=${url}`], { cwd: ROOT, stdio: "inherit" });
+    if (migrated.status !== 0) {
+      console.error("!  The schema could not be applied. Run: npm run db:migrate");
+      return false;
+    }
+  }
+  console.log(`·  Store: SQLite at ${path.relative(ROOT, full)}`);
+  return true;
+}
+
 function ensurePostgres() {
+  if (sqliteUrl()) return ensureSqlite();
   if (!env.DATABASE_URL) {
-    console.log("·  Store: the JSON file in .data/ (set DATABASE_URL for Postgres)");
+    console.log("·  Store: the JSON file in .data/ (set DATABASE_URL for Postgres, or LIBSQL_URL for SQLite/Turso)");
     return true;
   }
   if (!usesLocalCluster(env.DATABASE_URL)) {
@@ -177,7 +214,11 @@ console.log(`\n${DEV ? "Development server" : "Twenty-Eight"} is up: ${target}`)
 console.log(`  Account:  ${target}/account`);
 console.log(`  Entry:    ${target}/enter`);
 console.log(`  Table:    ${target}/leaderboard`);
-console.log("\n  Ctrl-C stops it. Postgres keeps running: npm run db:local -- stop\n");
+console.log(
+  sqliteUrl()
+    ? "\n  Ctrl-C stops it.\n"
+    : "\n  Ctrl-C stops it. Postgres keeps running: npm run db:local -- stop\n",
+);
 
 if (RUN_E2E) {
   console.log("Running the end-to-end test against this server…\n");

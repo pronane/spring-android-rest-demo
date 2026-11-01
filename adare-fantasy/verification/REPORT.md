@@ -562,3 +562,31 @@ the steps were written from the app's own requirements and the providers' curren
 the GitHub Pages workflow has not run on GitHub yet (the first run needs Pages switched to "GitHub
 Actions"). The seed script was exercised against both stores (Postgres twice + reset, and a throwaway
 JSON file twice + reset); `snapshot` talks only HTTP, so it is store-agnostic.
+
+---
+
+## v0.10 — SQLite, Turso, and other free Postgres (1 November 2026)
+
+The app used to have two backends. It now has three SQL ones and the file store,
+picked by the URL alone, with the same rules and the same assertions on each.
+
+| Strand | What it means | Where |
+|---|---|---|
+| **SQLite** | `LIBSQL_URL=file:.data/twenty-eight.sqlite` — a real database with a real schema in a single file, for a small server or a container with a volume. Nothing to keep running. | `lib/server/store-sqlite.ts`, `db/schema.sqlite.sql` |
+| **Turso** | The same schema over HTTPS (`LIBSQL_URL=libsql://…` + `TURSO_AUTH_TOKEN`), so a serverless host no longer needs Postgres to keep its data. Free tier: 5 GB, 100 databases, no card. | `lib/server/store-sqlite.ts` |
+| **One shape, three backends** | Column names, select lists and row mapping moved into `lib/server/store-shape.ts`. Postgres writes JSON through `jsonb_to_recordset`; SQLite writes TEXT and 0/1 integers — the normalisation happens in one place, so the payment and prize rules never learn which database is underneath. | `lib/server/store-shape.ts` |
+| **One contract** | The 27 store assertions now live in `scripts/store-contract.ts` and are run against Postgres (`npm run db:check`, throwaway cluster) *and* SQLite (`npm run db:check:sqlite`, throwaway file, or a real Turso database via `LIBSQL_URL`). | `scripts/store-contract.ts`, `scripts/db-check{,-sqlite}.ts` |
+| **Everywhere else** | `db:migrate` detects the dialect; `install.sh --sqlite` sets up the file instead of a cluster; `start.sh` creates the file if it is missing and reports which store it is using; `e2e` empties and drives SQLite as well; `/api/health` reports `postgres`, `turso`, `sqlite` or `json` and flags a SQLite *file* on a host that throws its filesystem away. | `scripts/{db-migrate,install,start,e2e}.mjs`, `app/api/health/route.ts` |
+
+**Checks after the change:** typecheck clean; build clean; 55/55 scoring, 47/47 payments, 79/79
+sign-in; **27/27 Postgres** and **27/27 SQLite** on the shared contract; `db:migrate` twice on both
+dialects (idempotent, 9 tables each); seed run against SQLite (7 entries, one league, ~0.9 s);
+`start.sh` on a fresh SQLite path creating and migrating the file, `/api/health` →
+`{"ok":true,"store":"sqlite","storeDetail":"8/8 tables"}` and the seeded leaderboard served from it;
+`install.mjs --sqlite --check` reporting the SQLite store; `docs:check` still green.
+
+**Not verified, and worth saying:** there is no network access to Turso from this environment, so
+the `libsql://` path was exercised only as far as connection setup — the SQL and the mapping are the
+same code the local file uses, but "works against a real Turso database" is untested here. CI runs
+SQLite natively (contract + the full 15-step browser test); the browser test has not been run against
+Turso. macOS and Windows were not touched by this change.

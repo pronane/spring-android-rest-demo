@@ -20,11 +20,13 @@
     "install:local": "node scripts/install.mjs",
     "seed": "tsx scripts/seed.ts",
     "snapshot": "node scripts/snapshot.mjs",
-    "docs:check": "node scripts/check-docs.mjs"
+    "docs:check": "node scripts/check-docs.mjs",
+    "db:check:sqlite": "tsx scripts/db-check-sqlite.ts"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",
     "@fontsource/inter": "^5.2.8",
+    "@libsql/client": "^0.18.0",
     "next": "^15.5.7",
     "pg": "^8.23.1",
     "react": "^19.2.0",

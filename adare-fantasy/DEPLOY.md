@@ -7,6 +7,7 @@ Short answers first.
 | **Can this run on GitHub Pages?** | **No.** Pages serves static files only; Twenty-Eight needs a server (accounts, cookies, a paid entry, saved cards, a live table) and a database. A static build would show the pages and break the moment anyone clicked "pay" or "save". What Pages *can* host is the preview gallery in [`docs/`](docs) — screenshots and an explanation, one page, no server. |
 | **Is there a free place to run the whole thing, database included?** | **Yes — Vercel + Neon.** Vercel's Hobby plan runs the app and Neon's free tier is a real Postgres. No card for either. Ten minutes, and every feature works. |
 | **I just want to show someone today** | Run it locally (`./start.sh`) and open a tunnel: `cloudflared tunnel --url http://localhost:3000`. No account, no deploy, dies when your laptop sleeps. |
+| **Can it use SQLite or Turso instead of Postgres?** | **Yes.** `LIBSQL_URL=file:.data/twenty-eight.sqlite` for one file on a server you own, `LIBSQL_URL=libsql://…` + `TURSO_AUTH_TOKEN` for Turso (free: 5 GB). Same tables, same tests — see [Where the data can live](#where-the-data-can-live). |
 
 The rest of this file is the Vercel + Neon walkthrough, the alternatives, and the things
 that will bite you.
@@ -86,7 +87,7 @@ DATABASE_URL="postgresql://…-pooler…/neondb?sslmode=require" npm run seed
 
 | Variable | Value | Why |
 |---|---|---|
-| `DATABASE_URL` | the Neon **pooled** string | without it the app falls back to a file, and a serverless file is thrown away — entries vanish |
+| `DATABASE_URL` | the Neon **pooled** string (or use `LIBSQL_URL` for Turso) | without it the app falls back to a file, and a serverless file is thrown away — entries vanish |
 | `SESSION_SECRET` | `openssl rand -hex 24` | signs the session cookie; the app refuses to sign with the public dev secret in production |
 | `ADMIN_TOKEN` | `openssl rand -hex 24` | unlocks `/admin`; without it the admin endpoints fail closed (503) |
 | `APP_URL` | `https://<your-project>.vercel.app` | absolute links in emails and Open Graph images. You can set it after the first deploy when you know the URL |
@@ -171,6 +172,116 @@ should be set to it if you want sign-in links to point at the public address.
 
 ---
 
+## Where the data can live
+
+There are three real answers and one that is fine for a demo. The app picks
+between them at boot, and the same suite of 27 assertions runs against each SQL
+backend (`npm run db:check` for Postgres, `npm run db:check:sqlite` for SQLite).
+
+| | `LIBSQL_URL=file:…` | `LIBSQL_URL=libsql://…` (Turso) | `DATABASE_URL=postgres://…` | *(nothing set)* |
+|---|---|---|---|---|
+| **What it is** | one SQLite file on the machine running the app | hosted libSQL/SQLite over HTTPS | a Postgres server anywhere | a JSON file in `.data/` |
+| **Good for** | a €5 VPS, a Docker container, a Fly machine with a volume, a Raspberry Pi | serverless hosts (Vercel, Netlify, Cloudflare) and anywhere you don't want to run a database | anything bigger, and the only option that takes real money safely | a clone on a laptop |
+| **Schema** | `db/schema.sqlite.sql` | `db/schema.sqlite.sql` | `db/schema.sql` | none |
+| **Migrate with** | `npm run db:migrate -- --url=file:.data/twenty-eight.sqlite` | `npm run db:migrate` (with `LIBSQL_URL`/`TURSO_AUTH_TOKEN` set) | `npm run db:migrate` | nothing |
+| **Survives a redeploy?** | only with a volume / a real disk | yes | yes | no |
+| **Backup** | copy the file (it is one file) | `turso db shell … .dump` | `pg_dump` | copy the file |
+
+SQLite is genuinely enough here. The whole store is one document held in memory:
+for a hobby league — hundreds of entries, not millions — a single writer is not a
+bottleneck, and WAL mode plus the transaction in `store-sqlite.ts` means two
+requests cannot interleave a write. What you give up is concurrent processes
+sharing one database over a network, which is exactly what Postgres is for.
+
+### A server with SQLite (the cheap way to run all of it)
+
+Any VPS or container with a persistent disk. About two minutes:
+
+```bash
+git clone https://github.com/pronane/spring-android-rest-demo
+cd spring-android-rest-demo/adare-fantasy
+npm ci
+npm run db:migrate -- --url=file:.data/twenty-eight.sqlite
+cat >> .env.local <<'EOF'
+LIBSQL_URL=file:.data/twenty-eight.sqlite
+SESSION_SECRET=replace-me-with-openssl-rand-hex-24
+ADMIN_TOKEN=replace-me-too
+APP_URL=https://your-domain.example
+PAYMENTS_PROVIDER=demo
+EOF
+npm run build
+npm start            # or: ./start.sh --port 80
+```
+
+`./install.sh --sqlite` does the same thing in one command (it writes
+`.env.local`, applies the schema and builds). Keep `.data/` on the persistent
+part of the disk — that one file *is* the database — and back it up by copying it
+while the app is stopped, or with `sqlite3 .data/twenty-eight.sqlite ".backup out.sqlite"`
+if `sqlite3` is installed.
+
+Notes that save an afternoon:
+
+- **Do not** put `LIBSQL_URL=file:…` on Vercel, Netlify or Cloudflare: the
+  filesystem is thrown away between requests, so entries vanish. `/api/health`
+  reports that combination as `"ephemeral": true`, and the app says so in the
+  logs at boot rather than letting you find out from a user.
+- The directory is created if it is missing, but the *file* is only created by
+  `db:migrate`; without it the app answers 200 and every write fails.
+- One process per file. Two `next start`s pointing at the same file on a network
+  share will corrupt it; two processes on the same machine are fine (SQLite locks).
+
+### Turso (free hosted SQLite — 5 GB, no card)
+
+Turso is libSQL, the SQLite fork the driver already speaks, served over HTTPS.
+That makes it the only "SQLite" that works on a serverless host.
+
+```bash
+# once, with the Turso CLI (brew install tursodatabase/tap/turso)
+turso auth signup
+turso db create twenty-eight --location lhr        # London; pick your region
+turso db show twenty-eight --url                    # libsql://twenty-eight-….turso.io
+turso db tokens create twenty-eight                 # the auth token
+
+export LIBSQL_URL="libsql://…"
+export TURSO_AUTH_TOKEN="…"
+npm run db:migrate
+npm run seed          # optional: seven demo entries
+```
+
+Then set `LIBSQL_URL` and `TURSO_AUTH_TOKEN` on the host (Vercel: Settings →
+Environment Variables) and redeploy. `DATABASE_URL` may stay unset.
+
+The free plan (as of late 2026) is **5 GB of storage, 100 databases, 500 million
+rows read and 10 million rows written per month, no credit card**. Writes are the
+limit you would hit first, and this store rewrites the document on every mutation
+— for a league of hundreds that is thousands of rows a month, three orders of
+magnitude inside the free plan. A hosted Postgres is still the better answer once
+real money is involved; Turso's advantage is that it needs nothing running.
+
+### Free Postgres elsewhere
+
+The app only needs a `postgres://` URL, so any of these work — `npm run db:migrate`
+then `npm run seed` against it, as in [Option 1](#option-1--vercel--neon-recommended-free):
+
+| Provider | Free tier (late 2026) | The catch |
+|---|---|---|
+| **Neon** | 0.5 GB per project, 100 CU-hours/month, commercial use allowed, no card | scales to zero; first query after idle is slower |
+| **Aiven** | 1 GB on a dedicated 1 CPU / 1 GB node, no card, no expiry | powered off after long inactivity; one backup |
+| **Supabase** | 500 MB | pauses after a week idle; free tier has no backups |
+| **Render** | 1 GB | the free database **expires** (and is deleted) after ~30 days — demos only |
+| **Railway** | a small monthly trial credit | not a free tier; the credit does not accumulate |
+| **Xata / CockroachDB Basic** | generous storage | Postgres-compatible rather than Postgres; check the wire protocol before relying on it |
+
+Anything that gives you a standard `postgresql://` connection string works
+unchanged, including a Postgres you run yourself in Docker:
+
+```bash
+docker run -d --name t28-db -e POSTGRES_PASSWORD=twentyeight -p 5432:5432 postgres:16
+DATABASE_URL=postgresql://postgres:twentyeight@127.0.0.1:5432/postgres npm run db:migrate
+```
+
+---
+
 ## What stays free, and what does not
 
 | Thing | Free tier | The catch |
@@ -212,14 +323,16 @@ git push            # Vercel redeploys on push to the connected branch
 ```
 
 Schema changes: add a file to `db/migrations/` (e.g. `001-add-something.sql`), then run
-`npm run db:migrate` against the production `DATABASE_URL` **before** the new code deploys. The
-migration runner applies `db/schema.sql` first and then every `db/migrations/*.sql` in order, recording
-checksums in `schema_migrations`.
+`npm run db:migrate` against the production database **before** the new code deploys. The migration
+runner applies the base schema (`db/schema.sql` for Postgres, `db/schema.sqlite.sql` for SQLite/Turso)
+first and then every `db/migrations/*.sql` in order, recording checksums in `schema_migrations`.
+A column added to one schema needs adding to the other in the same commit — `npm run db:check` and
+`npm run db:check:sqlite` run the same contract, so a missed column fails the build.
 
 ## Checking on it
 
-- `GET /api/health` — store, table count, whether the filesystem is ephemeral, payments mode, social
-  providers, and the commit hash Vercel deployed.
+- `GET /api/health` — store (`postgres`, `turso`, `sqlite` or `json`), table count, whether the
+  filesystem is ephemeral, payments mode, social providers, and the commit hash Vercel deployed.
 - `GET /api/leaderboard` — the table as JSON; if this is empty and `/api/health` is fine, the database
   is connected but not seeded.
 - `/admin` with `ADMIN_TOKEN` — orders, the ledger, prizes and results corrections.
@@ -231,6 +344,10 @@ checksums in `schema_migrations`.
 | Entries disappear after a while | `DATABASE_URL` missing → the file store on a serverless filesystem. `/api/health` will say `ephemeral: true`. |
 | "Could not create the account" on checkout | `SESSION_SECRET` missing → cookie signing throws in production. |
 | Sign-in link never arrives | no mail provider (see step 5) — `MAIL_OUTBOX` writes to disk and cannot work on Vercel. |
+| `"store": "sqlite"` and entries vanish on a host | you pointed `LIBSQL_URL` at a *file* on a serverless platform. Use a `libsql://` (Turso) URL there, or Postgres. |
+| SQLite writes fail with `no such table` | the file was never migrated: `npm run db:migrate -- --url=file:…` |
+| `SQLITE_BUSY` / "database is locked" | two *machines* sharing one file over a network share. SQLite locks a file, not a hostname: run the app where the file is. |
+| Turso queries fail with a 401 | `TURSO_AUTH_TOKEN` missing or not for that database. |
 | Social buttons missing | the provider's credentials are incomplete; `/api/auth/providers` returns only fully configured providers. |
 | 503 from `/admin` | `ADMIN_TOKEN` not set, or not sent as `Authorization: Bearer …`. |
 | Everything 500s after a deploy | check the build log — most often `pg` missing from `dependencies`, or the root directory set to the repo root instead of `adare-fantasy`. |

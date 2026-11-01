@@ -33,5 +33,11 @@ jobs:
         run: npm run build
       - name: Postgres backend (throwaway cluster, 27 assertions)
         run: npm run db:check
+      - name: SQLite backend (throwaway file, the same 27 assertions)
+        run: npm run db:check:sqlite
       - name: End-to-end in a browser (15 steps)
         run: npm run e2e
+      - name: End-to-end on SQLite (15 steps, same product, one file)
+        run: |
+          npm run db:migrate -- --url=file:.data/ci.sqlite
+          LIBSQL_URL=file:.data/ci.sqlite npm run e2e
