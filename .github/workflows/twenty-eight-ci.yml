@@ -29,6 +29,8 @@ jobs:
         run: npm run oauth:check
       - name: Static gallery (docs/) is self-contained
         run: npm run docs:check
+      - name: The Codespace one-click still works
+        run: npm run devcontainer:check
       - name: Build
         run: npm run build
       - name: Postgres backend (throwaway cluster, 27 assertions)

@@ -9,6 +9,10 @@ Short answers first.
 | **I just want to show someone today** | Run it locally (`./start.sh`) and open a tunnel: `cloudflared tunnel --url http://localhost:3000`. No account, no deploy, dies when your laptop sleeps. |
 | **Can it use SQLite or Turso instead of Postgres?** | **Yes.** `LIBSQL_URL=file:.data/twenty-eight.sqlite` for one file on a server you own, `LIBSQL_URL=libsql://…` + `TURSO_AUTH_TOKEN` for Turso (free: 5 GB). Same tables, same tests — see [Where the data can live](#where-the-data-can-live). |
 
+**In a hurry?** [GO-LIVE.md](GO-LIVE.md) is the one-page version: a Codespace (about four minutes,
+nothing to sign up for beyond the GitHub account you already have), or Vercel plus a free database,
+with the exact clicks.
+
 The rest of this file is the Vercel + Neon walkthrough, the alternatives, and the things
 that will bite you.
 
@@ -65,6 +69,13 @@ serverless: no cron jobs, no long-lived processes, no local files when a databas
 ```bash
 cd adare-fantasy
 DATABASE_URL="postgresql://…-pooler…/neondb?sslmode=require" npm run db:migrate
+```
+
+Or let `go-live` do the schema, the demo entries and the environment block in one go — it works for
+Turso as well, and it tells you what to paste into the host:
+
+```bash
+npm run go-live -- --url=postgresql://…-pooler…/neondb?sslmode=require
 ```
 
 You should see eight tables and a `schema_migrations` row. `npm run db:migrate -- --check` confirms it

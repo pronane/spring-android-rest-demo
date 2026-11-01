@@ -166,7 +166,12 @@ async function migratePostgres() {
     await client.connect();
   } catch (error) {
     console.error(`Could not connect to Postgres: ${error.message}\n`);
-    console.error("Is it running?  npm run db:local -- status");
+    const local = /^(127\.0\.0\.1|localhost|::1)/.test(url.replace(/^postgres(ql)?:\/\/[^@]*@/, ""));
+    console.error(
+      local
+        ? "Is it running?  npm run db:local -- status"
+        : "Check the host, the password and any ?sslmode=require — a hosted database usually needs SSL.",
+    );
     process.exit(1);
   }
 

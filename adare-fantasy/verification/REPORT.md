@@ -590,3 +590,26 @@ the `libsql://` path was exercised only as far as connection setup — the SQL a
 same code the local file uses, but "works against a real Turso database" is untested here. CI runs
 SQLite natively (contract + the full 15-step browser test); the browser test has not been run against
 Turso. macOS and Windows were not touched by this change.
+
+---
+
+## v0.11 — "what do I click to see it live" (1 November 2026)
+
+Three routes to a URL, in order of how much of the day they cost.
+
+| Strand | What it means | Where |
+|---|---|---|
+| **A Codespace** | `.devcontainer/devcontainer.json`: on create it installs, applies the SQLite schema, seeds seven entries and builds; on start it launches the app on port 3000, forwarded and **public**. One click, ~4 minutes, nothing to sign up for. | `.devcontainer/devcontainer.json`, `scripts/check-devcontainer.mjs` |
+| **`npm run go-live`** | Give it a Postgres or Turso URL: it applies the right schema, seeds the demo table, checks an existing deployment's `/api/health` with `--app=`, and prints the environment variables to paste into the host (password redacted). | `scripts/go-live.mjs` |
+| **`GO-LIVE.md`** | The one-page version: three rows, the exact clicks, the `.app.github.dev` / `.vercel.app` URL shapes, and what still needs the owner's account. | `GO-LIVE.md` |
+| **A front page** | The repository had no root README; it has one now, pointing at the live routes, the gallery and `adare-fantasy/`. The gallery page links the Codespace too. | `README.md`, `docs/index.html` |
+
+**Checks after the change:** `go-live` run against a fresh SQLite file (schema + 7 entries + env block),
+then `--check` (writes nothing) and `--app=` against a running instance (`ok — store sqlite, 8/8 tables`);
+a deliberately wrong Postgres URL exits non-zero with an SSL/credentials hint rather than the local-cluster
+one; `devcontainer:check` validates the JSONC, the create/start commands, the public port and the store
+env; `docs:check`, typecheck and build clean. The live preview for this session runs the app on SQLite
+with the seeded table.
+
+**Not verified, and worth saying:** the codespace itself was never created from this environment, so the
+devcontainer is validated by inspection only — the first real test is the first person to click it.

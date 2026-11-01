@@ -1,0 +1,43 @@
+{
+  // One-click demo: open this repository in a GitHub Codespace and Twenty-Eight
+  // comes up already installed, migrated, seeded and built, on a public URL.
+  //
+  //   https://codespaces.new/pronane/spring-android-rest-demo?quickstart=1
+  //
+  // The store is SQLite in the workspace (`adare-fantasy/.data/`), which needs no
+  // service and survives until the codespace is deleted. Port 3000 is public, so
+  // the forwarded URL can be opened on a phone or sent to somebody.
+  "name": "Twenty-Eight — Adare 2027",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "hostRequirements": {
+    "cpus": 2
+  },
+  "features": {},
+  "containerEnv": {
+    "LIBSQL_URL": "file:.data/twenty-eight.sqlite",
+    "SESSION_SECRET": "codespace-demo-secret-please-change-0123456789",
+    "ADMIN_TOKEN": "codespace-admin-please-change-0123456789",
+    "APP_URL": "http://localhost:3000",
+    "PAYMENTS_PROVIDER": "demo",
+    "MAIL_OUTBOX": ".data/outbox",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  // Once, at creation: dependencies, the SQLite schema, the demo entries, the build.
+  "postCreateCommand": "cd adare-fantasy && npm ci --no-audit --no-fund && npm run db:migrate -- --url=file:.data/twenty-eight.sqlite && npm run seed && npm run build",
+  // Every time the container starts: leave the app running in the background.
+  "postStartCommand": "cd adare-fantasy && mkdir -p .data && (nohup npm run start:local -- --port 3000 > .data/codespace.log 2>&1 &) && sleep 2 && echo 'Twenty-Eight starting — port 3000, see adare-fantasy/.data/codespace.log'",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Twenty-Eight",
+      "onAutoForward": "openPreview",
+      "visibility": "public"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["bradlc.vscode-tailwindcss", "esbenp.prettier-vscode"]
+    }
+  },
+  "remoteUser": "node"
+}
