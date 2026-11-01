@@ -1,0 +1,37 @@
+{
+  "base": "http://127.0.0.1:3100",
+  "shots": [
+    {
+      "file": "37-social-signin-account.png",
+      "url": "/account",
+      "width": 1440,
+      "height": 1100,
+      "scale": 1.5,
+      "heading": "Your entry"
+    },
+    {
+      "file": "38-social-signin-enter.png",
+      "url": "/enter",
+      "width": 1440,
+      "height": 1100,
+      "scale": 1.5,
+      "heading": "One payment. Both games. All three days."
+    },
+    {
+      "file": "39-social-signin-error.png",
+      "url": "/account?signin=error&reason=That%20Apple%20account%20is%20already%20attached%20to%20another%20entry.%20Sign%20out%20first%20if%20you%20meant%20to%20switch.",
+      "width": 1440,
+      "height": 1100,
+      "scale": 1.5,
+      "heading": "Your entry"
+    },
+    {
+      "file": "40-social-signin-mobile.png",
+      "url": "/account",
+      "width": 390,
+      "height": 844,
+      "scale": 2,
+      "heading": "Your entry"
+    }
+  ]
+}

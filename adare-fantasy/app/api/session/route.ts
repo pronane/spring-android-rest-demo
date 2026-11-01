@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "That email already has an entry. Use \"Email me a sign-in link\" on the Account page to sign in here.",
+          "That email already has an entry. Sign in with Google, Apple or Facebook on the Account page, or ask for a one-time link.",
       },
       { status: 409 },
     );

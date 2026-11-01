@@ -68,7 +68,7 @@ export function SiteFooter() {
       <div className="border-t border-white/[0.07]">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-[11px] text-cream/60 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
           <p>
-            v0.5 · Fan project. Not affiliated with the Ryder Cup, DP World Tour, PGA of America or
+            v0.7 · Fan project. Not affiliated with the Ryder Cup, DP World Tour, PGA of America or
             Adare Manor. Demo checkout — no card is ever charged unless Stripe keys are set.
           </p>
           <p>Tournament facts via Wikipedia / Wikidata · conditions via Open-Meteo</p>

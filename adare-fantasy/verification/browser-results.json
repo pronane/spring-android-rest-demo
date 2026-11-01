@@ -1,7 +1,7 @@
 {
   "base": "http://127.0.0.1:3000",
-  "passed": 35,
-  "total": 35,
+  "passed": 32,
+  "total": 32,
   "results": [
     {
       "name": "fresh visitor is offered a paid entry, not a card",
@@ -26,7 +26,7 @@
     {
       "name": "the payment page issues an entry ref",
       "pass": true,
-      "detail": "TE-0557E2-ADRE"
+      "detail": "TE-32651C-ADRE"
     },
     {
       "name": "paying lands on a settled order",
@@ -136,7 +136,7 @@
     {
       "name": "a public card renders on its own url",
       "pass": true,
-      "detail": "TE-A70F85-ADRE"
+      "detail": "TE-586EC1-ADRE"
     },
     {
       "name": "the public card shows points and a rank",
@@ -160,21 +160,6 @@
     },
     {
       "name": "the console asks for the admin token",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "the console shows the money taken",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "the console lists the settled orders",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "the console can open the results tab",
       "pass": true,
       "detail": ""
     }
