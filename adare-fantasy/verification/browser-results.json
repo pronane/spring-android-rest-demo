@@ -1,5 +1,5 @@
 {
-  "base": "http://127.0.0.1:3000",
+  "base": "http://127.0.0.1:3300",
   "passed": 32,
   "total": 32,
   "results": [
@@ -26,7 +26,7 @@
     {
       "name": "the payment page issues an entry ref",
       "pass": true,
-      "detail": "TE-32651C-ADRE"
+      "detail": "TE-1B3F18-ADRE"
     },
     {
       "name": "paying lands on a settled order",
@@ -136,7 +136,7 @@
     {
       "name": "a public card renders on its own url",
       "pass": true,
-      "detail": "TE-586EC1-ADRE"
+      "detail": "TE-E5EC65-ADRE"
     },
     {
       "name": "the public card shows points and a rank",
@@ -156,7 +156,7 @@
     {
       "name": "a blocked takeover never reaches the payment page",
       "pass": true,
-      "detail": "http://127.0.0.1:3000/enter"
+      "detail": "http://127.0.0.1:3300/enter"
     },
     {
       "name": "the console asks for the admin token",

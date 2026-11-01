@@ -1,5 +1,5 @@
 {
-  "base": "http://127.0.0.1:3000",
+  "base": "http://127.0.0.1:3300",
   "passed": 93,
   "total": 93,
   "results": [
@@ -36,12 +36,12 @@
     {
       "name": "checkout opens a pending order",
       "pass": true,
-      "detail": "200 ORD-4713B7"
+      "detail": "200 ORD-ACA22A"
     },
     {
       "name": "checkout returns a payment url",
       "pass": true,
-      "detail": "/pay/ORD-4713B7"
+      "detail": "/pay/ORD-ACA22A"
     },
     {
       "name": "checkout takes no entry of its own",
@@ -56,7 +56,7 @@
     {
       "name": "demo payment settles the order",
       "pass": true,
-      "detail": "200 TE-AE897C-ADRE"
+      "detail": "200 TE-E2FE20-ADRE"
     },
     {
       "name": "re-confirming a paid order is idempotent",
@@ -81,7 +81,7 @@
     {
       "name": "session cookie is httpOnly + SameSite",
       "pass": true,
-      "detail": "Path=/; Expires=Mon, 01 Mar 2027 13:01:22 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
+      "detail": "Path=/; Expires=Mon, 01 Mar 2027 13:31:55 GMT; Max-Age=10368000; Secure; HttpOnly; SameSite=lax"
     },
     {
       "name": "valid twelve-player card saves",
@@ -136,7 +136,7 @@
     {
       "name": "league is created with a join code",
       "pass": true,
-      "detail": "201 HAR3DK"
+      "detail": "201 HARWGG"
     },
     {
       "name": "league list includes the new league",
@@ -306,7 +306,7 @@
     {
       "name": "the transfer is recorded with its window",
       "pass": true,
-      "detail": "{\"out\":\"rory\",\"in\":\"fleetwood\",\"at\":\"2026-11-01T13:01:22.343Z\",\"window\":\"pre\",\"penalty\":0}"
+      "detail": "{\"at\":\"2026-11-01T13:31:55.497Z\",\"in\":\"fleetwood\",\"out\":\"rory\",\"window\":\"pre\",\"penalty\":0}"
     },
     {
       "name": "the same player cannot be swapped out twice",
@@ -316,17 +316,17 @@
     {
       "name": "an entry has an invite code",
       "pass": true,
-      "detail": "TE-AE897C-ADRE"
+      "detail": "TE-E2FE20-ADRE"
     },
     {
       "name": "the invite link points at the entry page",
       "pass": true,
-      "detail": "/enter?ref=TE-AE897C-ADRE"
+      "detail": "/enter?ref=TE-E2FE20-ADRE"
     },
     {
       "name": "the invited player is credited a free transfer on top of the two",
       "pass": true,
-      "detail": "1 bonus, by TE-AE897C-ADRE"
+      "detail": "1 bonus, by TE-E2FE20-ADRE"
     },
     {
       "name": "the inviter is credited too",
@@ -461,12 +461,12 @@
     {
       "name": "its callback lands on the account page with a reason",
       "pass": true,
-      "detail": "303 http://0.0.0.0:3000/account?signin=error&reason=That%20sign-in%20provider%20is%20not%20configured."
+      "detail": "303 http://0.0.0.0:3300/account?signin=error&reason=That%20sign-in%20provider%20is%20not%20configured."
     },
     {
       "name": "a callback with no state or code fails closed",
       "pass": true,
-      "detail": "303 http://0.0.0.0:3000/account?signin=error&reason=That%20sign-in%20provider%20is%20not%20configured."
+      "detail": "303 http://0.0.0.0:3300/account?signin=error&reason=That%20sign-in%20provider%20is%20not%20configured."
     }
   ]
 }

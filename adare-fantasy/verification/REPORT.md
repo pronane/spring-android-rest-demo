@@ -1,6 +1,8 @@
-# Verification report — Twenty-Eight v0.7
+# Verification report — Twenty-Eight v0.8
 
-**Scope:** one strand on top of v0.6 — **Google, Apple and Facebook sign-in** on top of the existing
+**Scope (v0.8):** installers for macOS/Linux and Windows, a Postgres backend with a schema and
+migrations, one command that starts everything, and a browser test that clicks through the whole
+product. The v0.7 sign-in work — **Google, Apple and Facebook sign-in** on top of the existing
 email/magic-link accounts, without introducing a second notion of an account. Everything v0.6 shipped
 (scoring, transfers, armband, sharing, invites, payments) is unchanged and still covered by its suite.
 
@@ -10,12 +12,44 @@ provider-facing checks run twice: once with **no** provider credentials (the shi
 social button must be absent and every endpoint must fail closed) and once with dummy Google, Apple
 and Facebook credentials, for the redirect, cookie and screenshot evidence.
 
-**Result: 349/349 automated checks pass** — 55 scoring rules, 47 payment and ledger assertions, 79
-sign-in assertions, 93 API, 32 browser, 34 accessibility, 9 on the card clock — with zero console
-errors while recording.
+**Result: 391/391 automated checks pass** — 55 scoring rules, 47 payment and ledger assertions, 79
+sign-in assertions, 27 Postgres assertions, 93 API, 32 browser, 34 accessibility, 9 on the card
+clock, and 15 end-to-end browser steps — with zero console errors while recording.
 
 ---
 
+## 0a. What v0.8 changed
+
+| Strand | What it means | Where |
+|---|---|---|
+| **Installers** | `install.sh` (macOS/Linux) and `install.ps1` (Windows) check for Node 20+, download a verified private copy if it is missing, then hand over to one shared installer: dependencies, database, `.env.local`, browser, build, smoke test. No sudo, no UAC, nothing system-wide. | `install.sh`, `install.ps1`, `scripts/install.mjs` |
+| **Postgres, optionally** | `DATABASE_URL` selects the tables in `db/schema.sql`; unset keeps the JSON file. `db:migrate` applies the schema (and `db/migrations/*.sql`) and records checksums. The bundled binaries are npm packages, so `db:local` can create a cluster in `.data/pg` with no admin rights on macOS, Linux and Windows. | `db/schema.sql`, `lib/server/store-pg.ts`, `scripts/{db-migrate,local-db}.mjs` |
+| **One start command** | `start.sh` / `start.cmd` read `.env.local`, start the local cluster if it is the configured store, build if there is no build, wait for a real answer, print the URLs, and can run the end-to-end test before handing over. | `scripts/start.mjs`, `start.sh`, `start.cmd` |
+| **End-to-end in a browser** | `npm run e2e`: 15 steps from a paid entry to signing back in with a one-time link, including drafting by hand and calling all 28 matches. Starts its own server on a clean store; `--headed` to watch, `--shots` for a picture per step. | `scripts/e2e.mjs`, `scripts/browser.mjs` |
+| **A local inbox** | `MAIL_OUTBOX` writes every email to a folder as JSON, so a production build can run the sign-in flow without a mail provider — and the e2e test can read the link it "sent". | `lib/server/mail.ts` |
+
+### The invariants this landing is built around
+
+1. **The two backends cannot drift.** `db.ts` still owns every rule and reads one document;
+   `store-pg.ts` only moves that document in and out of eight tables, in one transaction under an
+   advisory lock. The API suite (93 checks) and the browser suite (32) run green against both, and
+   `db:check` drives the store functions directly against a real cluster.
+2. **Installing changes nothing outside the project and the user's own directories**, and every step
+   is idempotent — `--check` reports without writing, and running the installer twice is a no-op.
+3. **The download is verified.** Node tarballs are checked against the published `SHASUMS256.txt`
+   before they are unpacked; a mismatch aborts.
+4. **The end-to-end test is the installer's proof, not a demo.** It runs in CI on every push, on a
+   clean store, and fails with the step name, the reason and a screenshot of the screen it was on.
+
+### Verified here, and not
+
+- Linux x64 (Ubuntu 22.04, Node 22): the installer from an empty `.data`/`.next`/`.env.local`, then
+  `start.sh --e2e` — 15/15 against Postgres and 15/15 against the JSON file; `db:check` 27/27.
+- macOS and Windows: the same code paths and the same scripts, with the platform's own Postgres
+  binaries and browser discovery. **Not executed on those operating systems in this environment** —
+  `INSTALL.md` says so in the table at the bottom rather than implying otherwise.
+
+---
 ## 0. What v0.7 changed
 
 | Strand | What it means | Where |
@@ -342,13 +376,38 @@ The API suite adds six more against a running server in its shipped (unconfigure
 | Its callback lands on the account page with a reason | ✅ 303 `?signin=error&reason=…` |
 | A callback with no state or code fails closed | ✅ 303 `?signin=error` |
 
-### 4.8 Production configuration
+### 4.8 The Postgres backend — 27/27 (`npm run db:check`)
+
+Builds a throwaway cluster from the bundled binaries, applies `db/schema.sql`, points the app at it,
+and drives `lib/server/db.ts` the way the API routes do. Then it reads the tables themselves.
+
+| Group | Assertions | Covers |
+|---|---|---|
+| Schema | 3 | eight tables created, named as expected, selected by `DATABASE_URL`, visible to the pool |
+| Accounts | 4 | create, read by email, identity by (provider, subject), update round-trip |
+| Money | 6 | order → entry, entry by public ref, three ledger rows with the 5% split, bigint cents as numbers, settling twice is a no-op |
+| Card | 2 | the jsonb card round-trips; a day's armband drops a player who is not on the card |
+| Leagues | 3 | create, join by code, both members listed |
+| Tokens | 3 | issue, spend once, spend again refused |
+| Prizes and corrections | 5 | award stored, marked paid (and the payout ledger row), results override round-trip, webhook id remembered |
+| The tables | 2 | every collection reached its table, `users` has real columns and the identity is jsonb |
+
+### 4.9 End to end in a browser — 15/15 (`npm run e2e`)
+
+The full journey is listed in [INSTALL.md](../INSTALL.md#the-end-to-end-test). It runs headless in
+about 40 seconds, on a clean store, with a screenshot per step in
+[`screenshots/e2e/`](screenshots/e2e). Against Postgres it empties the tables first, so the run never
+depends on old data.
+
+### 4.10 Production configuration
 
 | Check | Result |
 |---|---|
 | `npm run build` | ✅ clean |
 | `tsc --noEmit` | ✅ clean |
 | `npm run scoring:check` / `payments:check` / `oauth:check` | ✅ 55/55 · 47/47 · 79/79 |
+| `npm run db:check` / `db:migrate` (Postgres) | ✅ 27/27 · schema applied |
+| `npm run e2e` | ✅ 15/15 (Postgres and the JSON file) |
 | All 15 routes render | ✅ 200 |
 | Without `ADMIN_TOKEN`, admin endpoints refuse | ✅ 503 |
 | Without `STRIPE_WEBHOOK_SECRET`, the webhook refuses | ✅ 503 |
@@ -428,6 +487,8 @@ and invite block, **36** a public card at `/t/<ref>`.
 cd adare-fantasy
 npm install
 npm run scoring:check && npm run payments:check && npm run oauth:check   # 55 + 47 + 79, no server
+npm run db:check                                                       # 27, throwaway Postgres
+npm run e2e                                                            # 15, browser, own server
 rm -rf .data
 npm run build
 SESSION_SECRET="$(openssl rand -hex 24)" \

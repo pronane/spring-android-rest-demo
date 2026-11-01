@@ -29,3 +29,7 @@ jobs:
         run: npm run oauth:check
       - name: Build
         run: npm run build
+      - name: Postgres backend (throwaway cluster, 27 assertions)
+        run: npm run db:check
+      - name: End-to-end in a browser (15 steps)
+        run: npm run e2e

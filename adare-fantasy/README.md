@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.5
+# Twenty-Eight — fantasy for the Ryder Cup · v0.8
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -41,6 +41,30 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 [`screenshots/`](screenshots).
 
 ---
+
+## What's new in v0.8
+
+- **One command to run it on any machine.** `./install.sh` (macOS/Linux) or `.\install.ps1`
+  (Windows) checks what is installed, downloads what is missing, sets up the database, writes
+  `.env.local`, builds, and smoke-tests the result — without `sudo`, `UAC`, Docker or a system
+  Postgres. Then `./start.sh` / `start.cmd` runs it. See **[INSTALL.md](INSTALL.md)**.
+- **A real Postgres backend.** `DATABASE_URL` now selects the tables in [`db/schema.sql`](db/schema.sql)
+  — users, identities, leagues, orders, the ledger, prizes, sign-in tokens, webhook ids and the
+  operator's results override — with `npm run db:migrate` applying the schema (and any
+  `db/migrations/*.sql` after it) and recording a checksum. Unset, the app still runs on the JSON
+  file, so a clone needs no database at all. Both backends pass the same 93 API checks and the same
+  15-step browser test.
+- **Postgres without an installer.** The server binaries ship as npm packages
+  (`@embedded-postgres/<platform>-<arch>`), so `npm run db:local -- start` creates a cluster inside
+  `.data/pg` on 127.0.0.1:54329 — macOS arm64/x64, Linux x64/arm64, Windows x64. `db:local stop`,
+  `status` and `reset` are the rest of it.
+- **`npm run e2e` — a browser, a real entry, every page.** It buys an entry with the demo card,
+  drafts six players by hand and names a captain, calls all 28 matches session by session, reads its
+  own points, checks the fantasy table and the public card, makes a transfer, and signs out and back
+  in through a one-time email link (the "email" lands in `.data/outbox`). 15 steps, ~40 s, headless by
+  default, `--headed` to watch, `--shots` for a screenshot per step.
+- **`npm run db:check`** builds a throwaway Postgres, applies `db/schema.sql`, and drives every
+  store function — 27 assertions, no server of your own.
 
 ## What's new in v0.7
 
@@ -157,6 +181,10 @@ closed when unset), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_BA
 client at a stub), `PAYMENTS_PROVIDER` (`demo` or `stripe`; defaults to `stripe` when a key is set),
 and the scoring clock: `SCORING_CLOCK` (`live`, or `at:<minute>` to replay a moment; unset scores the
 finished weekend) and `FIRST_TEE_AT` (defaults to `2027-09-17T07:35:00+01:00`).
+
+Data and mail (see [INSTALL.md](INSTALL.md)): `DATABASE_URL` (Postgres; unset means the JSON file),
+`DB_FILE`, `MAIL_OUTBOX` (write emails to a folder instead of sending), and for the bundled cluster
+`PGPORT`, `PGDATA_DIR`, `PGCREDENTIALS_FILE`.
 
 Social sign-in (all optional, see [Signing in](#signing-in)): `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`,
 `APPLE_CLIENT_ID` / `APPLE_TEAM_ID` / `APPLE_KEY_ID` / `APPLE_PRIVATE_KEY`, and
@@ -423,14 +451,32 @@ imported by server components).
 
 ## Running it
 
+The short version — the installer does everything, including Postgres:
+
 ```bash
 cd adare-fantasy
+./install.sh            # macOS / Linux      (Windows: .\install.ps1)
+./start.sh              # http://localhost:3000   (Windows: start.cmd)
+./start.sh --e2e        # start it *and* click through the whole product
+```
+
+**[INSTALL.md](INSTALL.md)** has the details: what the installer checks and downloads, where
+everything is written, how to point the app at a Postgres you already run, how to uninstall, and a
+troubleshooting table.
+
+By hand, if you prefer:
+
+```bash
 npm install
 npm run dev        # http://localhost:3000 — no configuration needed
 npm run build
 SESSION_SECRET="$(openssl rand -hex 24)" npm start   # production
 npm run typecheck
 npm run data:refresh
+
+npm run db:local -- start && npm run db:migrate   # optional: Postgres instead of the file
+npm run db:check                                 # 27 Postgres assertions, throwaway cluster
+npm run e2e                                      # 15 browser steps against a fresh store
 ```
 
 **One environment variable is required in production:** `SESSION_SECRET` (16+ characters). The
@@ -440,7 +486,9 @@ variable, pages still render but every cookie-signing route (`/api/session`, `/a
 `/api/entry`) returns 500 and checkout shows "Could not create the account." Copy `.env.example` to
 `.env.local` for local production builds; `npm run dev` falls back to the dev secret.
 
-The entry store lives in `.data/twenty-eight.json` (created on first write; delete it to reset).
+The store is Postgres when `DATABASE_URL` is set and `.data/twenty-eight.json` otherwise — created on
+first write, delete it to reset. Emails are written to `MAIL_OUTBOX` (`.data/outbox`) as JSON when
+that variable is set, so the sign-in link is testable without a mail provider.
 
 ### Structure
 
@@ -454,6 +502,7 @@ adare-fantasy/
 ├─ components/           # brand, header/footer, tiles, squad board, league table,
 │                        # conditions card, countdown
 ├─ data/snapshots/       # committed free-data snapshots (Wikipedia + Wikidata + Open-Meteo)
+├─ db/schema.sql         # the Postgres tables (applied by npm run db:migrate)
 ├─ lib/
 │  ├─ tournaments.ts     # platform brand, editions, modes, plans, prize split, sponsors
 │  ├─ helpers.ts         # budget, validation, projections, auto-pick
@@ -461,9 +510,11 @@ adare-fantasy/
 │  ├─ scoring.ts         # pure points engine: cards, predictions, ranking
 │  ├─ providers.ts       # snapshot reader (staleness, compass, conditions summary)
 │  ├─ store.tsx          # card state + localStorage (key `twentyeight:v2`)
-│  └─ server/            # JSON store, cookie session, results snapshot, standings,
-│                        # orders + ledger, money maths, Stripe client, OAuth
-├─ scripts/              # refresh-data.mjs, scoring-check.ts, payments-check.ts, oauth-check.ts
+│  └─ server/            # store (JSON file or Postgres), cookie session, results
+│                        # snapshot, standings, orders + ledger, money maths,
+│                        # Stripe client, OAuth, mail
+├─ scripts/              # install.mjs, start.mjs, e2e.mjs, local-db.mjs, db-migrate.mjs,
+│                        # db-check.ts, scoring-check.ts, payments-check.ts, oauth-check.ts
 ├─ public/               # hero art, self-hosted fonts
 └─ screenshots/          # the captures in this doc
 ```
@@ -524,6 +575,8 @@ build with an empty store:
 - [`verification/screenshots/`](verification/screenshots) — 40 step-by-step captures, one per action
   in the videos, including the payment page, the console's prize settlement, a blocked
   account-takeover attempt and the social sign-in row in all three of its states
+- `npm run e2e` — the installer's own test: 15 browser steps from a paid entry to a one-time
+  sign-in, with a screenshot per step in [`verification/screenshots/e2e/`](verification/screenshots/e2e)
 - `api-results.json`, `browser-results.json`, `axe-results.json`, `clock-results.json`,
   `capture-log.json`, `social-capture-log.json` — machine-readable results (**349 checks: 93 API, 32
   browser, 34 accessibility, 9 card-clock, plus 55 scoring, 47 payment and 79 sign-in assertions**

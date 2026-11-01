@@ -1,16 +1,24 @@
 /**
- * Tiny JSON-file store so the demo has a real backend (accounts, paid entries,
- * saved cards) without needing Postgres. Swap the four functions below for
- * Prisma/Postgres in production — nothing else in the app touches storage.
+ * The store: accounts, paid entries, leagues, the ledger, prizes.
  *
- * Note: serverless filesystems are ephemeral; deploy the v1 API against a
- * managed database. See README → "Roadmap to v1".
+ * Two backends, one set of rules:
+ *
+ *  - **Postgres** when `DATABASE_URL` is set — the tables in `db/schema.sql`,
+ *    moved in and out by `store-pg.ts`. This is what `install.sh --postgres`
+ *    gives you: a real database, a schema, and migrations.
+ *  - **A JSON file** otherwise (`.data/twenty-eight.json`), so a clone runs with
+ *    no database at all and the demo needs nothing installed.
+ *
+ * Everything below this line is backend-agnostic: it reads the document, applies
+ * a rule, writes it back. Note that serverless filesystems are ephemeral — on
+ * Vercel use Postgres, not the file backend.
  */
 import { createHash, randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { ResultsOverride } from "@/lib/scoring";
 import { allocate } from "@/lib/server/money";
+import { readDocument, usingPostgres, writeDocument } from "@/lib/server/store-pg";
 
 /** A provider account that can sign this user in (Google, Facebook, Apple). */
 export type Identity = {
@@ -134,7 +142,12 @@ export type PrizeAward = {
 /** One-time email sign-in link. Only the SHA-256 of the token is stored. */
 type LoginToken = { hash: string; userId: string; expiresAt: string; used: boolean };
 
-type Db = {
+/**
+ * The whole store, as one document. It is either a JSON file (`.data/`) or the
+ * tables in `db/schema.sql` — `store-pg.ts` moves it in and out, this file owns
+ * every rule that touches it.
+ */
+export type Db = {
   users: User[];
   leagues: ServerLeague[];
   loginTokens: LoginToken[];
@@ -150,7 +163,11 @@ type Db = {
 
 const FILE = process.env.DB_FILE ?? path.join(process.cwd(), ".data", "twenty-eight.json");
 
+/** `DATABASE_URL` set → Postgres; unset → the JSON file. */
+export const backend = (): "postgres" | "json" => (usingPostgres() ? "postgres" : "json");
+
 async function readDb(): Promise<Db> {
+  if (usingPostgres()) return readDocument() as Promise<Db>;
   try {
     const raw = await fs.readFile(FILE, "utf8");
     const parsed = JSON.parse(raw) as Partial<Db>;
@@ -180,6 +197,7 @@ async function readDb(): Promise<Db> {
 }
 
 async function writeDb(db: Db): Promise<void> {
+  if (usingPostgres()) return writeDocument(db);
   await fs.mkdir(path.dirname(FILE), { recursive: true });
   // Write to a temp file then rename, so a crash mid-write can't truncate the store.
   const tmp = `${FILE}.${process.pid}.tmp`;
