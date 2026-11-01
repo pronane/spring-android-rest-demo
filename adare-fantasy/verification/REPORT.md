@@ -298,11 +298,12 @@ node verification/harness/clock.mjs     # 9 checks
 
 ### The film
 
-[`demo/twenty-eight-start-to-finish.webm`](../demo/twenty-eight-start-to-finish.webm) — **2:48,
-1440×900 VP9, captions burned in, narrated** (ten clips, Opus mono; the video stream is copied, so the
-picture is bit-identical to the silent render) — is the whole product in one sitting: a paid entry, a drafted
-Captain's Dozen, 28 predictions, Pinpoint guesses, the points breakdown, the global table, a private
-league, Sunday singles finishing the cup, and an operator settling that league's prize pot. Recorded
+[`demo/twenty-eight-start-to-finish.webm`](../demo/twenty-eight-start-to-finish.webm) — **3:07,
+1440×900 VP9, captions burned in, narrated** (eleven clips, Opus mono) — is the whole product in one
+sitting: a paid entry, a drafted Captain's Dozen, 28 predictions, Pinpoint guesses, the points
+breakdown, a transfer and a day-by-day armband, the public share card, the fantasy leaderboard, a
+private league, the actual Ryder Cup leaderboard finishing the cup, and an operator settling that
+league's prize pot. Recorded
 by [`demo/record-tour.mjs`](../demo/record-tour.mjs) against this build and rendered by
 [`demo/render-tour.mjs`](../demo/render-tour.mjs); [`demo/stills/`](../demo/stills) holds one frame per
 step from the same run. The console's pot picker was added because the film exposed a real gap: the
