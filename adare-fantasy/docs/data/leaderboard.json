@@ -1,0 +1,90 @@
+{
+  "capturedAt": "2026-11-01T18:04:24.073Z",
+  "source": "http://127.0.0.1:3000",
+  "edition": {
+    "name": "Adare 2027",
+    "course": "Adare Manor",
+    "dates": [
+      "2027-09-17",
+      "2027-09-19"
+    ]
+  },
+  "cup": {
+    "europe": 16.5,
+    "usa": 11.5
+  },
+  "results": {
+    "source": "simulation",
+    "finals": 28,
+    "total": 28,
+    "phase": "done",
+    "clock": "All 28 matches in the books",
+    "provisional": false
+  },
+  "entries": 7,
+  "leaderboard": [
+    {
+      "rank": 1,
+      "team": "Captain's Picks",
+      "manager": "Tomás Ryan",
+      "card": 188.5,
+      "predictions": 18,
+      "penalty": 0,
+      "total": 206.5
+    },
+    {
+      "rank": 2,
+      "team": "The 19th Hole",
+      "manager": "Ciarán Walsh",
+      "card": 174.5,
+      "predictions": 18,
+      "penalty": 0,
+      "total": 192.5
+    },
+    {
+      "rank": 3,
+      "team": "Wentworth Wanderers",
+      "manager": "Lucy Hale",
+      "card": 165.5,
+      "predictions": 12,
+      "penalty": 0,
+      "total": 177.5
+    },
+    {
+      "rank": 4,
+      "team": "Bogey Merchants",
+      "manager": "Darragh O'Sullivan",
+      "card": 159.5,
+      "predictions": 14,
+      "penalty": 0,
+      "total": 173.5
+    },
+    {
+      "rank": 5,
+      "team": "Adare Abú",
+      "manager": "Aoife Byrne",
+      "card": 160.5,
+      "predictions": 10,
+      "penalty": 0,
+      "total": 170.5
+    },
+    {
+      "rank": 6,
+      "team": "Limerick Lilies",
+      "manager": "Niamh Kelly",
+      "card": 141,
+      "predictions": 23,
+      "penalty": 0,
+      "total": 164
+    },
+    {
+      "rank": 7,
+      "team": "Sunday Singles",
+      "manager": "Sinéad Murphy",
+      "card": 140.5,
+      "predictions": 8,
+      "penalty": 0,
+      "total": 148.5
+    }
+  ]
+}

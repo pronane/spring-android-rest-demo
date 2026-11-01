@@ -1,0 +1,56 @@
+# Publishes the static gallery in adare-fantasy/docs to GitHub Pages.
+#
+# The app itself cannot run on Pages — no Node, no cookies, no database — so this
+# deploys screenshots and a frozen JSON snapshot (see adare-fantasy/DEPLOY.md).
+# One-time setup: Settings → Pages → Source: "GitHub Actions".
+
+name: Twenty-Eight static gallery
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "adare-fantasy/docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No dependencies to install: the gallery has no build step, so the check is
+      # the same script CI runs (`npm run docs:check`).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the gallery is self-contained
+        run: node scripts/check-docs.mjs
+        working-directory: adare-fantasy
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: adare-fantasy/docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

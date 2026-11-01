@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Twenty-Eight — fantasy for the Ryder Cup · static preview</title>
+    <meta
+      name="description"
+      content="A static preview of Twenty-Eight, a Ryder Cup fantasy platform: draft a card, call all 28 matches, follow the cup live. Adare 2027."
+    />
+    <meta property="og:title" content="Twenty-Eight — fantasy for the Ryder Cup" />
+    <meta property="og:description" content="Draft a card, call the 28 matches, follow the cup live. Adare 2027." />
+    <meta property="og:image" content="img/home.jpg" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1f17'/><text x='16' y='22' font-size='14' font-family='Georgia' fill='%23c9a227' text-anchor='middle'>28</text></svg>" />
+    <style>
+      :root {
+        --forest: #08130f;
+        --forest-800: #0d1f17;
+        --gold: #c9a227;
+        --gold-soft: #e6c65c;
+        --cream: #f3efe4;
+        --ink: #0a1410;
+        --muted: rgba(243, 239, 228, 0.62);
+        --line: rgba(243, 239, 228, 0.14);
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: radial-gradient(120% 80% at 50% 0%, #12301f 0%, var(--forest) 55%) fixed;
+        color: var(--cream);
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--gold-soft); }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+      header.hero { padding: 72px 0 40px; }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .monogram {
+        width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--gold);
+        display: grid; place-items: center; color: var(--gold-soft); font-family: Georgia, "Times New Roman", serif;
+        font-size: 17px; letter-spacing: 0.02em;
+      }
+      .brand h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; font-size: 20px; margin: 0; letter-spacing: 0.01em; }
+      .brand p { margin: 0; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+      .eyebrow { margin: 56px 0 0; font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold-soft); }
+      h2.headline { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(38px, 6vw, 64px); line-height: 1.05; margin: 10px 0 0; letter-spacing: -0.01em; }
+      .lede { max-width: 620px; color: var(--muted); font-size: 16px; margin: 18px 0 0; }
+      .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+      .button {
+        display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 999px;
+        background: var(--gold); color: var(--ink); font-weight: 600; font-size: 13.5px; text-decoration: none;
+      }
+      .button.ghost { background: transparent; color: var(--cream); border: 1px solid var(--line); font-weight: 500; }
+      .note {
+        margin-top: 26px; padding: 14px 18px; border: 1px solid rgba(201, 162, 39, 0.35);
+        border-radius: 14px; background: rgba(201, 162, 39, 0.07); font-size: 13px; color: var(--cream);
+      }
+      .note strong { color: var(--gold-soft); }
+      section { padding: 48px 0; border-top: 1px solid var(--line); }
+      section h3 { font-family: Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 6px; }
+      section > p.sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; max-width: 640px; }
+      .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+      figure { margin: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.02); }
+      figure img { display: block; width: 100%; height: auto; }
+      figcaption { padding: 12px 16px 14px; font-size: 12.5px; color: var(--muted); }
+      figcaption b { color: var(--cream); font-weight: 500; }
+      .cols { display: grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .card { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: rgba(255,255,255,0.02); }
+      .card h4 { margin: 0 0 8px; font-size: 14px; letter-spacing: 0.02em; }
+      .card p, .card li { color: var(--muted); font-size: 13.5px; }
+      .card ul { margin: 0; padding-left: 18px; }
+      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+      pre { background: rgba(0,0,0,0.42); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; color: #dfe9e0; }
+      footer { padding: 40px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+      footer p { margin: 6px 0; }
+      .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="brand">
+          <div class="monogram">28</div>
+          <div>
+            <h1>Twenty-Eight</h1>
+            <p>Cup fantasy · Adare 2027</p>
+          </div>
+        </div>
+
+        <p class="eyebrow">Static preview · no server needed</p>
+        <h2 class="headline">Draft a card. Call all 28 matches. Follow the cup live.</h2>
+        <p class="lede">
+          Twenty-Eight is a fantasy platform for the Ryder Cup: one brand and one scoring engine, with a
+          new edition for every cup. The first is <strong>Adare 2027</strong> — Adare Manor, Co. Limerick,
+          17–19 September 2027, the 46th Ryder Cup and the 100th anniversary of the matches.
+        </p>
+
+        <div class="cta">
+          <a class="button" href="#try">Where to try the real thing</a>
+          <a class="button ghost" href="https://github.com/pronane/spring-android-rest-demo">Source on GitHub</a>
+        </div>
+
+        <div class="note" id="try">
+          <strong>What this page is.</strong> GitHub Pages can only serve static files, and Twenty-Eight is
+          an application: accounts, a paid entry, a draft that has to be saved, a predictor, transfers and a
+          live table — all of which need a server and a database. So this page is the gallery, and
+          <a href="#run">the app itself runs on a free host</a> (or on your machine in one command).
+          <a href="https://github.com/pronane/spring-android-rest-demo/blob/master/adare-fantasy/DEPLOY.md">DEPLOY.md</a>
+          has the ten-minute version with a free Postgres.
+        </div>
+      </header>
+
+      <section>
+        <h3>The product, screen by screen</h3>
+        <p class="sub">
+          Captured from a production build with seven demo entries in the table — the same screens a
+          visitor gets, not a mock-up.
+        </p>
+        <div class="grid">
+          <figure>
+            <img src="img/home.jpg" alt="The Twenty-Eight home page" loading="lazy" />
+            <figcaption><b>Home</b> — the edition, the countdown, the cup and the prize pool.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/enter.jpg" alt="The entry and checkout page" loading="lazy" />
+            <figcaption><b>Entry</b> — one payment, both games, three days. Demo checkout, no card charged.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/draft.jpg" alt="Drafting a card from the player pool" loading="lazy" />
+            <figcaption><b>My card</b> — Classic Six or Captain's Dozen, on a budget, four a side.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/predict.jpg" alt="The 28-match predictor" loading="lazy" />
+            <figcaption><b>Call the 28</b> — every match, session by session, plus MVP, top scorer and rookie.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/team.jpg" alt="A saved team with points breakdown" loading="lazy" />
+            <figcaption><b>Points</b> — every point traceable to a match, the captaincy and any transfer cost.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/live.jpg" alt="Live Sunday singles scoring" loading="lazy" />
+            <figcaption><b>Live</b> — the cup as it finishes, from a free data feed or the simulation.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/leagues.jpg" alt="Private leagues" loading="lazy" />
+            <figcaption><b>Leagues</b> — private tables with a join code and their own buy-in.</figcaption>
+          </figure>
+          <figure>
+            <img src="img/scoring.jpg" alt="The rules and scoring page" loading="lazy" />
+            <figcaption><b>Rules</b> — the scoring engine, written out and tested (55 assertions).</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="json">
+        <h3>The table, as a JSON file</h3>
+        <p class="sub">
+          A JSON database is possible — this page is reading a real
+          <a href="data/leaderboard.json"><code>leaderboard.json</code></a> exported from a running
+          instance (<code>node scripts/snapshot.mjs</code>). Seven entries, the finished cup, nothing
+          invented for the page. What a file cannot do is take an entry, save a draft or email you a
+          sign-in link, so the file sits beside the gallery rather than behind it.
+        </p>
+        <div class="cols">
+          <div class="card" style="overflow-x: auto">
+            <h4 id="table-title">The Adare Invitational · as of <span id="captured">—</span></h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px">
+              <thead>
+                <tr style="text-align: left; color: var(--muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase">
+                  <th style="padding: 6px 4px">#</th>
+                  <th style="padding: 6px 4px">Team</th>
+                  <th style="padding: 6px 4px">Manager</th>
+                  <th style="padding: 6px 4px; text-align: right">Card</th>
+                  <th style="padding: 6px 4px; text-align: right">Calls</th>
+                  <th style="padding: 6px 4px; text-align: right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="board">
+                <tr><td colspan="6" style="padding: 10px 4px; color: var(--muted)">Loading the JSON…</td></tr>
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 1px solid var(--line); color: var(--muted); font-size: 12px">
+                  <td colspan="6" style="padding: 8px 4px" id="cup">—</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="card">
+            <h4>The same rows, as served</h4>
+            <pre id="raw" style="max-height: 330px">Loading…</pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="run">
+        <h3>Three free ways to try it for real</h3>
+        <p class="sub">All of them keep the accounts, the database and the live table working.</p>
+        <div class="cols">
+          <div class="card">
+            <h4>1 · On your own machine</h4>
+            <p>One command installs Node, Postgres, the schema and the build — no admin rights.</p>
+            <pre>git clone https://github.com/pronane/spring-android-rest-demo
+cd spring-android-rest-demo/adare-fantasy
+./install.sh          # Windows: .\install.ps1
+./start.sh            # then open localhost:3000
+npm run seed          # seven demo entries in the table</pre>
+          </div>
+          <div class="card">
+            <h4>2 · A public link, free</h4>
+            <p>
+              Vercel's free tier runs the app and <a href="https://neon.tech">Neon</a>'s free Postgres holds
+              it. Both are no-card sign-ups; the whole thing takes about ten minutes and the steps are in
+              <a href="https://github.com/pronane/spring-android-rest-demo/blob/master/adare-fantasy/DEPLOY.md">DEPLOY.md</a>.
+            </p>
+            <p>GitHub Codespaces is the other free option: open the repo in a codespace and forward port 3000 — no account anywhere else, and it sleeps when you close the tab.</p>
+          </div>
+          <div class="card">
+            <h4>3 · Share it from your laptop right now</h4>
+            <p>No deployment at all — a tunnel gives the machine in front of you a public URL in seconds:</p>
+            <pre>./start.sh
+# in another terminal:
+cloudflared tunnel --url http://localhost:3000</pre>
+            <p>Good for showing a few people today; it stops when your laptop does.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3>What is actually in the box</h3>
+        <div class="cols">
+          <div class="card">
+            <h4>Games</h4>
+            <ul>
+              <li>Classic Six (6 players, 100m) and Captain's Dozen (12, 200m)</li>
+              <li>All 28 matches predicted, plus MVP / top scorer / rookie</li>
+              <li>Pinpoint: nearest the pin and longest drive</li>
+              <li>Transfers with windows, a free allowance and a −4 penalty</li>
+              <li>An armband you can give day by day</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Money</h4>
+            <ul>
+              <li>Paid entry, prize pool and a sponsor-friendly private league</li>
+              <li>A ledger that adds up: cash in, platform share, pool</li>
+              <li>Refunds, prize settlement and payouts from the console</li>
+              <li>Demo checkout by default; Stripe when keys are set</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Sign-in</h4>
+            <ul>
+              <li>Email one-time links</li>
+              <li>Google, Apple and Facebook — one account per verified email</li>
+              <li>Off until you add credentials, so nothing fails silently</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Underneath</h4>
+            <ul>
+              <li>Next.js + TypeScript, Postgres or a JSON file</li>
+              <li>391 automated checks, including a 15-step browser test</li>
+              <li>Installers and a schema for macOS, Linux and Windows</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p><span class="pill">Fan project</span></p>
+        <p>
+          Twenty-Eight is an independent fan project. Not affiliated with the Ryder Cup, DP World Tour,
+          PGA of America or Adare Manor. Checkout is a demo unless Stripe keys are configured — no card is
+          ever charged and no card data is stored.
+        </p>
+        <p>Tournament facts from Wikipedia and Wikidata; conditions from Open-Meteo. Both free, both credited.</p>
+      </footer>
+    </div>
+
+    <script>
+      // Progressive: the page reads the frozen JSON the snapshot script wrote.
+      // No framework, no build step, nothing to keep alive — that is the point.
+      (async () => {
+        const $ = (id) => document.getElementById(id);
+        try {
+          const data = await fetch("data/leaderboard.json", { cache: "no-store" }).then((r) => r.json());
+          const rows = data.leaderboard ?? [];
+          $("board").innerHTML = rows.length
+            ? rows
+                .map(
+                  (row) =>
+                    `<tr style="border-top: 1px solid var(--line)">
+                       <td style="padding: 7px 4px; color: var(--gold-soft)">${row.rank}</td>
+                       <td style="padding: 7px 4px">${row.team}</td>
+                       <td style="padding: 7px 4px; color: var(--muted)">${row.manager}</td>
+                       <td style="padding: 7px 4px; text-align: right">${row.card}</td>
+                       <td style="padding: 7px 4px; text-align: right; color: var(--muted)">${row.predictions}</td>
+                       <td style="padding: 7px 4px; text-align: right; color: var(--gold-soft)">${row.total}</td>
+                     </tr>`,
+                )
+                .join("")
+            : '<tr><td colspan="6" style="padding: 10px 4px; color: var(--muted)">No entries in this snapshot.</td></tr>';
+          $("captured").textContent = new Date(data.capturedAt).toLocaleString("en-GB", {
+            dateStyle: "medium",
+            timeStyle: "short",
+            timeZone: "Europe/London",
+          });
+          $("cup").textContent = data.cup
+            ? `Cup ${data.cup.europe}–${data.cup.usa} · ${data.results.finals}/${data.results.total} matches final · ${data.results.source}`
+            : "";
+          $("raw").textContent = JSON.stringify({ cup: data.cup, entries: data.entries, leaderboard: rows.slice(0, 3) }, null, 2);
+        } catch (error) {
+          $("board").innerHTML =
+            '<tr><td colspan="6" style="padding: 10px 4px; color: var(--muted)">The snapshot did not load — open <a href="data/leaderboard.json">data/leaderboard.json</a> directly.</td></tr>';
+          $("raw").textContent = String(error);
+        }
+      })();
+    </script>
+  </body>
+</html>

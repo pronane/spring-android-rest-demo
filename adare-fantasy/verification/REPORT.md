@@ -534,3 +534,31 @@ Stripe and the payment page waits for the webhook.
 - **The public card is a share page, not a feed.** It re-scores on each request; there is no cache or
   CDN invalidation to think about until the real feed lands.
 - Accessibility is automated (axe) plus scripted keyboard checks — no screen-reader session.
+
+---
+
+## v0.9 — putting it online (1 November 2026)
+
+Nothing in the product changed for v0.9; what changed is other people being able to see it.
+
+| Strand | What it means | Where |
+|---|---|---|
+| **A free public path** | `DEPLOY.md`: Vercel Hobby + Neon free Postgres (the recommended pair, ~10 minutes, no card), Render, a GitHub Codespace, or a tunnel from a laptop — with the free-tier catches, the five environment variables and a symptom/cause table. | `DEPLOY.md` |
+| **A static gallery for GitHub Pages** | Pages cannot run this app (no Node runtime, so no sessions, no checkout, no database). `docs/` is a one-page gallery instead — eight screenshots plus the leaderboard read from a real JSON export — published by `.github/workflows/pages.yml`. | `docs/index.html`, `.github/workflows/pages.yml` |
+| **`npm run snapshot`** | Freezes a running instance (`docs/data/leaderboard.json`, `health.json`), so the static page shows real numbers rather than mock-ups. | `scripts/snapshot.mjs` |
+| **`npm run seed`** | Seven demo managers, each a real paid entry settled through the same `createOrder`/`settleOrder` path the app uses, plus a league — so a fresh deployment is not an empty table. `--reset --force` removes only what it created. | `scripts/seed.ts` |
+| **`/api/health`** | Reports store, table count, whether the filesystem is ephemeral, payments mode and which social providers are live; the app also warns at boot when a hosted build has no `DATABASE_URL` or `SESSION_SECRET`. Silently losing entries on a serverless host is the failure this exists to prevent. | `app/api/health/route.ts`, `instrumentation.ts` |
+| **`npm run docs:check`** | The gallery's build step, since Pages does none: every referenced image must exist, the snapshot JSON must parse, the page must stay under 64KB and `docs/img` under 3MB. Added to CI. | `scripts/check-docs.mjs` |
+
+**Checks re-run after the changes:** `npm run typecheck` clean, `npm run build` clean, `npm run
+docs:check` passed (8 screenshots, 1.1MB), `npm run seed` twice against Postgres (second run reports
+"already exists" and creates nothing — a first draft did create a second league each run, caught here
+and fixed), `npm run seed -- --reset --force` then a fresh seed (7 entries, one league),
+`/api/health` → `{ok: true, store: "postgres", storeDetail: "8/8 tables", ephemeral: false}`. The
+391 assertions of the v0.8 suite are untouched and unchanged by this release.
+
+**Not verified, and worth saying:** nothing was deployed to Vercel or Neon from this environment —
+the steps were written from the app's own requirements and the providers' current free tiers, and
+the GitHub Pages workflow has not run on GitHub yet (the first run needs Pages switched to "GitHub
+Actions"). The seed script was exercised against both stores (Postgres twice + reset, and a throwaway
+JSON file twice + reset); `snapshot` talks only HTTP, so it is store-agnostic.
