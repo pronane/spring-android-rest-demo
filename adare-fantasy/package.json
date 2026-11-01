@@ -17,7 +17,10 @@
     "db:local": "node scripts/local-db.mjs",
     "e2e": "node scripts/e2e.mjs",
     "start:local": "node scripts/start.mjs",
-    "install:local": "node scripts/install.mjs"
+    "install:local": "node scripts/install.mjs",
+    "seed": "tsx scripts/seed.ts",
+    "snapshot": "node scripts/snapshot.mjs",
+    "docs:check": "node scripts/check-docs.mjs"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

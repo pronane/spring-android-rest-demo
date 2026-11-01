@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.8
+# Twenty-Eight — fantasy for the Ryder Cup · v0.9
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -41,6 +41,20 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 [`screenshots/`](screenshots).
 
 ---
+
+## What's new in v0.9
+
+- **A public demo you can put up for free.** **[DEPLOY.md](DEPLOY.md)** is the ten-minute path to a
+  real URL — Vercel Hobby for the app, Neon's free Postgres for the data — plus Render, GitHub
+  Codespaces and a tunnel-from-your-laptop option, with the free-tier catches spelled out.
+- **GitHub Pages, honestly labelled.** Pages cannot run this app (no Node, no sessions, no database),
+  so [`docs/`](docs) is a static gallery instead: the screenshots, the feature list, and the
+  leaderboard read from a real JSON export. Published by `.github/workflows/pages.yml`.
+- **`npm run snapshot`** freezes a running instance into `docs/data/*.json`; **`npm run seed`** fills
+  a hosted database with seven demo entries and a league, so a fresh deployment is not an empty table.
+- **`/api/health`** reports how a deployment is actually configured — store, table count, whether the
+  filesystem is ephemeral, payments mode, which social sign-ins are live — and the app warns at boot
+  when a hosted build has no `DATABASE_URL` or `SESSION_SECRET` instead of quietly losing entries.
 
 ## What's new in v0.8
 
@@ -433,14 +447,18 @@ match result and every league table. All of it is labelled as projected in the U
 | **TypeScript + Next.js 15 (App Router)** | One language for UI, route handlers and the scoring pipeline; server rendering gives real shareable links for "join my league" invites. |
 | **Tailwind v4** | Bespoke design system (forest / cream / gold, Fraunces + Inter, self-hosted `.woff2`) with no runtime CSS-in-JS. |
 | **React context + `localStorage`** | The card, picks and mode live client-side for speed; the entry and account live server-side. `lib/store.tsx` is the only persistence boundary. |
-| **JSON file server store + HMAC cookie session** | `lib/server/db.ts` + `lib/server/auth.ts` back `/api/entry`, `/api/session` and `/api/checkout`. Zero external services, and the interface is narrow enough to swap for Postgres. |
+| **Postgres, or a JSON file when there isn't one** | `lib/server/db.ts` picks `store-pg.ts` when `DATABASE_URL` is set and `.data/twenty-eight.json` when it is not — same interface, so the tests run against both. `db/schema.sql` (eight tables) is applied by `npm run db:migrate`. |
+| **HMAC cookie session** | `lib/server/auth.ts`; stateless, signed with `SESSION_SECRET`, and one account per verified email across the email and social sign-ins. |
 
-**The Postgres caveat, stated plainly:** entries are written to `.data/twenty-eight.json` and
-sessions are stateless HMAC cookies. That is fine for a demo and for a single Node host, but it is
-not durable on a serverless platform with an ephemeral filesystem (Vercel), it does not survive
-concurrent writes, and it has no audit trail. Before taking real money the store needs to become
-Postgres + Prisma with an `entries` / `payments` / `leagues` schema, idempotent payment webhooks,
-and the session moved to a signed, rotating cookie with server-side revocation.
+**The storage caveat, stated plainly:** with `DATABASE_URL` set, entries, orders, the ledger,
+prizes and results live in Postgres with a real schema and a `schema_migrations` history; without it
+they are written to `.data/twenty-eight.json`, which is a demo store — single writer, no audit trail,
+and gone the moment the filesystem is (a serverless function, a redeploy). Running on a host without
+a disk is a configuration mistake, so `/api/health` reports it (`ephemeral: true`) and the app warns
+at boot. What a real launch still needs is not the store but the edges: rate limiting and abuse
+control on sign-up and checkout, a terms/privacy page, and independent security review of the
+Stripe webhook path. Sessions stay stateless HMAC cookies — fine at this size, but server-side
+revocation is the honest next step before anyone can be locked out.
 
 Pure helpers (`lib/helpers.ts`), the simulation (`lib/sim.ts`), the edition registry
 (`lib/tournaments.ts`) and the providers (`lib/providers.ts`) are framework-free and keep server
@@ -463,6 +481,26 @@ cd adare-fantasy
 **[INSTALL.md](INSTALL.md)** has the details: what the installer checks and downloads, where
 everything is written, how to point the app at a Postgres you already run, how to uninstall, and a
 troubleshooting table.
+
+### Showing it to other people
+
+**[DEPLOY.md](DEPLOY.md)** is the free-hosting walkthrough: Vercel's Hobby plan for the app plus
+Neon's free Postgres for the database (about ten minutes, no card), Render, a GitHub Codespace, or a
+five-second tunnel from your own machine.
+
+GitHub Pages cannot host the app — no Node runtime, so no accounts, no saved cards, no live table —
+but it can host [`docs/`](docs): a one-page gallery with the screenshots and the leaderboard read
+from a real JSON export. Enable it once under **Settings → Pages → Source: GitHub Actions**; `.github/workflows/pages.yml`
+publishes `adare-fantasy/docs` on every push that touches it, and skips the deploy (instead of
+failing) while Pages is still switched off.
+
+```bash
+./start.sh                 # then, in another shell:
+npm run seed               # seven demo entries, so the table isn't empty
+npm run snapshot           # freezes leaderboard + health into docs/data/*.json
+```
+
+The snapshot script also takes a deployed instance: `BASE=https://your-app.vercel.app npm run snapshot`.
 
 By hand, if you prefer:
 

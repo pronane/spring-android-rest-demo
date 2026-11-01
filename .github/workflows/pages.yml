@@ -1,0 +1,82 @@
+# Publishes the static gallery in adare-fantasy/docs to GitHub Pages.
+#
+# The app itself cannot run on Pages — no Node, no cookies, no database — so this
+# deploys screenshots and a frozen JSON snapshot (see adare-fantasy/DEPLOY.md).
+#
+# One-time setup: Settings → Pages → Source: "GitHub Actions". Until that switch
+# is flipped, this workflow still validates the gallery and skips the deploy
+# rather than failing the branch.
+
+name: Twenty-Eight static gallery
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "adare-fantasy/docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      pages: ${{ steps.pages.outputs.state }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # No dependencies to install: the gallery has no build step, so the check is
+      # the same script CI runs (`npm run docs:check`).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the gallery is self-contained
+        run: node scripts/check-docs.mjs
+        working-directory: adare-fantasy
+
+      - name: Is Pages enabled for this repository?
+        id: pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages")
+          if [ "$code" = "200" ]; then
+            echo "state=enabled" >> "$GITHUB_OUTPUT"
+          else
+            echo "state=disabled" >> "$GITHUB_OUTPUT"
+            {
+              echo "### GitHub Pages is not enabled"
+              echo
+              echo "The gallery passed its checks but was not published. Enable it once:"
+              echo "**Settings → Pages → Source: “GitHub Actions”**, then re-run this workflow."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  deploy:
+    needs: check
+    if: needs.check.outputs.pages == 'enabled'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: adare-fantasy/docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

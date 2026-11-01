@@ -1,0 +1,8 @@
+{
+  "capturedAt": "2026-11-01T18:04:24.073Z",
+  "ok": true,
+  "store": "postgres",
+  "tables": "8/8 tables",
+  "ephemeral": false,
+  "payments": "demo"
+}
