@@ -490,9 +490,9 @@ five-second tunnel from your own machine.
 
 GitHub Pages cannot host the app — no Node runtime, so no accounts, no saved cards, no live table —
 but it can host [`docs/`](docs): a one-page gallery with the screenshots and the leaderboard read
-from a real JSON export. Enable it once under **Settings → Pages → Source: GitHub Actions**, or run
-the “Twenty-Eight static gallery” workflow by hand; `.github/workflows/pages.yml` publishes
-`adare-fantasy/docs` on every push that touches it.
+from a real JSON export. Enable it once under **Settings → Pages → Source: GitHub Actions**; `.github/workflows/pages.yml`
+publishes `adare-fantasy/docs` on every push that touches it, and skips the deploy (instead of
+failing) while Pages is still switched off.
 
 ```bash
 ./start.sh                 # then, in another shell:

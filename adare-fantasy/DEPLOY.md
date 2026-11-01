@@ -21,10 +21,13 @@ No build, no dependencies, no server — it can live on Pages forever.
 
 To publish it, once:
 
-1. **Actions → Twenty-Eight static gallery → Run workflow** (it also runs on any push that touches
+1. **Settings → Pages → Source: “GitHub Actions”.** Do this first — the workflow checks for it.
+2. **Actions → Twenty-Eight static gallery → Run workflow** (it also runs on any push that touches
    `docs/`).
-2. If GitHub asks, **Settings → Pages → Source: “GitHub Actions”**.
 3. The site appears at `https://<user>.github.io/spring-android-rest-demo/`.
+
+Until step 1 is done the workflow still runs its checks and then skips the deploy, with a note on the
+run summary — it will not turn the branch red while Pages is off.
 
 To refresh the numbers after running the app locally:
 
