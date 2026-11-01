@@ -1,24 +1,28 @@
 /**
  * The store: accounts, paid entries, leagues, the ledger, prizes.
  *
- * Two backends, one set of rules:
+ * Three backends, one set of rules:
  *
- *  - **Postgres** when `DATABASE_URL` is set — the tables in `db/schema.sql`,
- *    moved in and out by `store-pg.ts`. This is what `install.sh --postgres`
- *    gives you: a real database, a schema, and migrations.
+ *  - **Postgres** when `DATABASE_URL` is a `postgres://` URL — the tables in
+ *    `db/schema.sql`, moved in and out by `store-pg.ts`.
+ *  - **SQLite or Turso** when `LIBSQL_URL` / `TURSO_DATABASE_URL` is set, or
+ *    when `DATABASE_URL` is a `file:` / `libsql:` URL — the tables in
+ *    `db/schema.sqlite.sql`, moved in and out by `store-sqlite.ts`. A file on
+ *    disk for a small server; `libsql://` for a hosted, serverless one.
  *  - **A JSON file** otherwise (`.data/twenty-eight.json`), so a clone runs with
  *    no database at all and the demo needs nothing installed.
  *
  * Everything below this line is backend-agnostic: it reads the document, applies
  * a rule, writes it back. Note that serverless filesystems are ephemeral — on
- * Vercel use Postgres, not the file backend.
+ * Vercel or Netlify use Postgres or Turso, not a local file.
  */
 import { createHash, randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { ResultsOverride } from "@/lib/scoring";
 import { allocate } from "@/lib/server/money";
-import { readDocument, usingPostgres, writeDocument } from "@/lib/server/store-pg";
+import { readDocument as readPostgres, usingPostgres, writeDocument as writePostgres } from "@/lib/server/store-pg";
+import { readDocument as readSqlite, sqliteIsRemote, usingSqlite, writeDocument as writeSqlite } from "@/lib/server/store-sqlite";
 
 /** A provider account that can sign this user in (Google, Facebook, Apple). */
 export type Identity = {
@@ -163,11 +167,28 @@ export type Db = {
 
 const FILE = process.env.DB_FILE ?? path.join(process.cwd(), ".data", "twenty-eight.json");
 
-/** `DATABASE_URL` set → Postgres; unset → the JSON file. */
-export const backend = (): "postgres" | "json" => (usingPostgres() ? "postgres" : "json");
+export type Backend = "postgres" | "sqlite" | "turso" | "json";
+
+/**
+ * Which store this process is using. `sqlite` is a file on this machine,
+ * `turso` is a hosted libSQL database over HTTPS — the difference matters,
+ * because only the first one lives and dies with the process.
+ */
+export const backend = (): Backend => {
+  if (usingPostgres()) return "postgres";
+  if (usingSqlite()) return sqliteIsRemote() ? "turso" : "sqlite";
+  return "json";
+};
+
+/** True when the store is on this machine's filesystem, which a serverless host throws away. */
+export const storedOnDisk = (): boolean => backend() === "json" || backend() === "sqlite";
 
 async function readDb(): Promise<Db> {
-  if (usingPostgres()) return readDocument() as Promise<Db>;
+  if (usingPostgres()) return readPostgres() as Promise<Db>;
+  if (usingSqlite()) {
+    const document = await readSqlite();
+    return { ...document, version: 4 };
+  }
   try {
     const raw = await fs.readFile(FILE, "utf8");
     const parsed = JSON.parse(raw) as Partial<Db>;
@@ -197,7 +218,8 @@ async function readDb(): Promise<Db> {
 }
 
 async function writeDb(db: Db): Promise<void> {
-  if (usingPostgres()) return writeDocument(db);
+  if (usingPostgres()) return writePostgres(db);
+  if (usingSqlite()) return writeSqlite(db);
   await fs.mkdir(path.dirname(FILE), { recursive: true });
   // Write to a temp file then rename, so a crash mid-write can't truncate the store.
   const tmp = `${FILE}.${process.pid}.tmp`;

@@ -6,6 +6,7 @@
  *   .\install.ps1                Windows         (same, in PowerShell)
  *   npm run install:local -- --check          report only, change nothing
  *   npm run install:local -- --no-postgres    keep the file store instead
+ *   npm run install:local -- --sqlite         one SQLite file instead of a cluster
  *
  * What it does, in order — each step checks before it acts, so running it twice
  * is harmless:
@@ -32,7 +33,8 @@ const ROOT = process.cwd();
 const args = new Set(process.argv.slice(2));
 const has = (flag) => args.has(flag);
 const CHECK_ONLY = has("--check");
-const WANT_POSTGRES = !has("--no-postgres");
+const WANT_SQLITE = has("--sqlite");
+const WANT_POSTGRES = !has("--no-postgres") && !WANT_SQLITE;
 const SKIP_DEPS = has("--skip-deps");
 const SKIP_BUILD = has("--no-build");
 const PORT = Number(process.env.PORT ?? 3000);
@@ -157,7 +159,39 @@ function localPostgres() {
   return { url, started: true };
 }
 
-function environment({ databaseUrl }) {
+/**
+ * One file, no server: the store for a small VPS, a container, or a laptop that
+ * would rather not run a cluster. Turso is the same schema over HTTP — set
+ * LIBSQL_URL to a `libsql://` URL instead and this step is unnecessary.
+ */
+function localSqlite() {
+  const url = "file:.data/twenty-eight.sqlite";
+  if (CHECK_ONLY) {
+    const present = fs.existsSync(path.join(ROOT, ".data", "twenty-eight.sqlite"));
+    present ? ok("SQLite", ".data/twenty-eight.sqlite present") : todo("SQLite", "no database file yet");
+    return { url, ok: present };
+  }
+  fs.mkdirSync(path.join(ROOT, ".data"), { recursive: true });
+  const migrate = run(process.execPath, ["scripts/db-migrate.mjs", `--url=${url}`]);
+  if (migrate.status !== 0) {
+    fail("The schema could not be applied", "Run: npm run db:migrate -- --url=file:.data/twenty-eight.sqlite");
+    return { url, ok: false };
+  }
+  ok("SQLite", "schema applied to .data/twenty-eight.sqlite (db/schema.sqlite.sql)");
+  return { url, ok: true };
+}
+
+/** Comments a key out rather than deleting it, so the old value is still readable. */
+function retireEnv(key) {
+  if (!fs.existsSync(ENV_FILE)) return;
+  const lines = fs.readFileSync(ENV_FILE, "utf8").split(/\r?\n/);
+  const index = lines.findIndex((line) => line.startsWith(`${key}=`));
+  if (index < 0) return;
+  lines[index] = `# ${lines[index]}   (retired by --sqlite)`;
+  fs.writeFileSync(ENV_FILE, `${lines.join("\n").trimEnd()}\n`, "utf8");
+}
+
+function environment({ databaseUrl, sqliteUrl = null }) {
   const additions = {
     SESSION_SECRET: crypto.randomBytes(24).toString("hex"),
     ADMIN_TOKEN: crypto.randomBytes(18).toString("hex"),
@@ -168,11 +202,17 @@ function environment({ databaseUrl }) {
     MAIL_OUTBOX: ".data/outbox",
   };
   if (databaseUrl) additions.DATABASE_URL = databaseUrl;
+  if (sqliteUrl) additions.LIBSQL_URL = sqliteUrl;
 
   if (CHECK_ONLY) {
     const present = readEnvFile();
     present.SESSION_SECRET ? ok("Configuration", ".env.local has a session secret") : todo("Configuration", ".env.local is missing SESSION_SECRET");
     return present;
+  }
+  if (sqliteUrl) {
+    // Both set would be a silent contradiction; Postgres wins in the app, so
+    // retire the old URL instead of letting it shadow the file store.
+    retireEnv("DATABASE_URL");
   }
   const added = writeEnv(additions, { force: false });
   ok("Configuration", added.length > 0 ? `.env.local: added ${added.join(", ")}` : ".env.local already complete");
@@ -279,7 +319,14 @@ const depsReady = dependencies();
 if (!depsReady && !CHECK_ONLY) process.exit(1);
 
 let databaseUrl = null;
-if (WANT_POSTGRES) {
+let sqliteUrl = null;
+if (WANT_SQLITE) {
+  const lite = localSqlite();
+  // Even in --check, or after a failed migration, the intent is SQLite: report
+  // and configure it as such so the summary does not say "JSON file".
+  sqliteUrl = lite.url;
+  if (lite.ok) done.push("SQLite database at .data/twenty-eight.sqlite with the schema applied");
+} else if (WANT_POSTGRES) {
   const postgres = localPostgres();
   databaseUrl = postgres.url;
   if (databaseUrl) done.push("Postgres cluster in .data/pg with the schema applied");
@@ -287,7 +334,7 @@ if (WANT_POSTGRES) {
   notes.push("Postgres skipped (--no-postgres): the app stores everything in .data/twenty-eight.json.");
 }
 
-const env = environment({ databaseUrl });
+const env = environment({ databaseUrl, sqliteUrl });
 const browserReady = await browserStep();
 const built = build();
 if (built) await smokeTest(env);
@@ -301,7 +348,7 @@ if (!CHECK_ONLY) {
         installedAt: new Date().toISOString(),
         node: process.versions.node,
         platform: `${process.platform}/${process.arch}`,
-        database: databaseUrl ? "postgres (.data/pg)" : "json (.data/twenty-eight.json)",
+        database: sqliteUrl ? "sqlite (.data/twenty-eight.sqlite)" : databaseUrl ? "postgres (.data/pg)" : "json (.data/twenty-eight.json)",
         browser: browserReady,
         built: fs.existsSync(path.join(ROOT, ".next", "BUILD_ID")),
       },
@@ -311,7 +358,11 @@ if (!CHECK_ONLY) {
   );
 }
 
-const store = databaseUrl ? "Postgres (db/schema.sql)" : "the JSON file in .data/";
+const store = sqliteUrl
+  ? "SQLite (.data/twenty-eight.sqlite)"
+  : databaseUrl
+    ? "Postgres (db/schema.sql)"
+    : "the JSON file in .data/";
 console.log(`\n${problems === 0 ? green("Ready.") : red("Finished with problems.")}  Store: ${store}\n`);
 console.log(`  Start it:        ${IS_WINDOWS ? "start.cmd" : "./start.sh"}          ${dim("(or: npm run start:local)")}`);
 console.log(`  Watch the test:  npm run e2e -- --headed`);

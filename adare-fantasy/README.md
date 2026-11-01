@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.9
+# Twenty-Eight — fantasy for the Ryder Cup · v0.10
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -41,6 +41,24 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 [`screenshots/`](screenshots).
 
 ---
+
+## What's new in v0.10
+
+- **SQLite, with one environment variable.** `LIBSQL_URL=file:.data/twenty-eight.sqlite` gives you a
+  real database — the same eight tables and the same rules — in a single file, with nothing to keep
+  running. `./install.sh --sqlite` sets it up. This is the store for a small server or a container.
+- **Turso, for serverless.** `LIBSQL_URL=libsql://…` + `TURSO_AUTH_TOKEN` is the same schema, hosted
+  over HTTPS — so a Vercel or Netlify deployment no longer needs Postgres just to keep its data.
+  Free tier: 5 GB, 100 databases, no card.
+- **One contract, three backends.** The 27 store assertions now live in
+  `scripts/store-contract.ts` and run against Postgres (`db:check`) *and* SQLite
+  (`db:check:sqlite`); both green. The row mapping moved to `lib/server/store-shape.ts`, so a new
+  column is one edit rather than three edits that quietly drift.
+- **`db/schema.sqlite.sql`** — the same tables in SQLite's own types: ISO timestamps, INTEGER cents,
+  0/1 booleans, JSON in TEXT, and the same checks and indexes.
+- **Other free Postgres.** [DEPLOY.md](DEPLOY.md#where-the-data-can-live) now compares Neon, Aiven,
+  Supabase, Render, Railway and a Docker container, says what each one does when it is idle, and
+  documents the SQLite-on-a-VPS and Turso paths end to end.
 
 ## What's new in v0.9
 
@@ -447,11 +465,11 @@ match result and every league table. All of it is labelled as projected in the U
 | **TypeScript + Next.js 15 (App Router)** | One language for UI, route handlers and the scoring pipeline; server rendering gives real shareable links for "join my league" invites. |
 | **Tailwind v4** | Bespoke design system (forest / cream / gold, Fraunces + Inter, self-hosted `.woff2`) with no runtime CSS-in-JS. |
 | **React context + `localStorage`** | The card, picks and mode live client-side for speed; the entry and account live server-side. `lib/store.tsx` is the only persistence boundary. |
-| **Postgres, or a JSON file when there isn't one** | `lib/server/db.ts` picks `store-pg.ts` when `DATABASE_URL` is set and `.data/twenty-eight.json` when it is not — same interface, so the tests run against both. `db/schema.sql` (eight tables) is applied by `npm run db:migrate`. |
+| **Postgres, SQLite/Turso, or a JSON file when there's neither** | `lib/server/db.ts` picks an adapter from the URL: `store-pg.ts` for `postgres://`, `store-sqlite.ts` for `file:`/`libsql://`, and the JSON file in `.data/` for nothing at all. Same interface, same document, so one test suite covers all three. `db/schema.sql` (Postgres) and `db/schema.sqlite.sql` (SQLite) are applied by `npm run db:migrate`. |
 | **HMAC cookie session** | `lib/server/auth.ts`; stateless, signed with `SESSION_SECRET`, and one account per verified email across the email and social sign-ins. |
 
-**The storage caveat, stated plainly:** with `DATABASE_URL` set, entries, orders, the ledger,
-prizes and results live in Postgres with a real schema and a `schema_migrations` history; without it
+**The storage caveat, stated plainly:** with a database configured, entries, orders, the ledger,
+prizes and results live in real tables with a schema and a `schema_migrations` history; without one
 they are written to `.data/twenty-eight.json`, which is a demo store — single writer, no audit trail,
 and gone the moment the filesystem is (a serverless function, a redeploy). Running on a host without
 a disk is a configuration mistake, so `/api/health` reports it (`ephemeral: true`) and the app warns

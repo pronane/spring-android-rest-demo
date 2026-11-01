@@ -215,6 +215,7 @@ npm run seed          # seven demo entries in the table</pre>
               <a href="https://github.com/pronane/spring-android-rest-demo/blob/master/adare-fantasy/DEPLOY.md">DEPLOY.md</a>.
             </p>
             <p>GitHub Codespaces is the other free option: open the repo in a codespace and forward port 3000 — no account anywhere else, and it sleeps when you close the tab.</p>
+            <p><b>No Postgres?</b> It also runs on SQLite — one file, <code>LIBSQL_URL=file:.data/twenty-eight.sqlite</code> — or on Turso's free hosted SQLite. Same tables, same tests.</p>
           </div>
           <div class="card">
             <h4>3 · Share it from your laptop right now</h4>
@@ -260,7 +261,7 @@ cloudflared tunnel --url http://localhost:3000</pre>
           <div class="card">
             <h4>Underneath</h4>
             <ul>
-              <li>Next.js + TypeScript, Postgres or a JSON file</li>
+              <li>Next.js + TypeScript; Postgres, SQLite/Turso or a JSON file</li>
               <li>391 automated checks, including a 15-step browser test</li>
               <li>Installers and a schema for macOS, Linux and Windows</li>
             </ul>

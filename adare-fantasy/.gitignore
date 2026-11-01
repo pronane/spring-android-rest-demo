@@ -9,6 +9,11 @@ next-env.d.ts
 .env
 !.env.example
 
+# SQLite files, in case one lands outside .data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
 # verification harness artefacts
 verification/harness/run
 verification/harness/node_modules

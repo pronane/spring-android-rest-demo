@@ -5,6 +5,8 @@
  *   npm run e2e              # headless, starts its own server on a clean store
  *   npm run e2e -- --headed  # same, with a window you can watch
  *   BASE=http://localhost:3000 npm run e2e    # against a server already running
+ *   LIBSQL_URL=file:.data/e2e.sqlite npm run e2e   # on the SQLite backend
+ *   npm run db:migrate -- --url=file:.data/e2e.sqlite first, for a fresh file
  *
  * It buys an entry with the demo card, drafts a six by hand (clicking six
  * players, naming a captain), calls all 28 matches session by session, reads
@@ -84,8 +86,29 @@ async function freePort(start = 3311) {
   throw new Error("No free port found for the test server.");
 }
 
+/** A `file:`/`libsql:`/`sqlite:` URL is the SQLite backend's, wherever it was set. */
+function sqliteUrl() {
+  const explicit = process.env.LIBSQL_URL ?? process.env.TURSO_DATABASE_URL;
+  if (explicit) return explicit;
+  const databaseUrl = process.env.DATABASE_URL ?? "";
+  return /^(libsql|file|sqlite):/i.test(databaseUrl) ? databaseUrl : null;
+}
+
 /** Empties the store so the run starts from zero — whichever backend is in use. */
 async function resetStore() {
+  const lite = sqliteUrl();
+  if (lite) {
+    const { createClient } = require("@libsql/client");
+    const client = createClient({
+      url: lite,
+      ...(process.env.TURSO_AUTH_TOKEN ? { authToken: process.env.TURSO_AUTH_TOKEN } : {}),
+    });
+    for (const table of ["login_tokens", "prizes", "ledger", "orders", "leagues", "webhook_events", "results", "users"]) {
+      await client.execute(`delete from ${table}`);
+    }
+    client.close();
+    return `sqlite (${lite.startsWith("file:") ? path.relative(ROOT, lite.slice(5)) : new URL(lite).host})`;
+  }
   if (process.env.DATABASE_URL) {
     const { Client } = require("pg");
     const client = new Client({ connectionString: process.env.DATABASE_URL });
@@ -119,7 +142,7 @@ async function ensureServer() {
       // A local inbox: the sign-in link is a real email, written to disk.
       MAIL_OUTBOX: OUTBOX,
       APP_URL: `http://127.0.0.1:${port}`,
-      ...(process.env.DATABASE_URL ? {} : { DB_FILE: process.env.DB_FILE ?? ".data/twentyeight-e2e.json" }),
+      ...(process.env.DATABASE_URL || sqliteUrl() ? {} : { DB_FILE: process.env.DB_FILE ?? ".data/twentyeight-e2e.json" }),
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
