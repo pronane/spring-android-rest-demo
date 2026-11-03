@@ -62,22 +62,22 @@ export default function TeamPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
         <Eyebrow>My team</Eyebrow>
-        <h1 className="mt-3 text-4xl text-cream">No card on file</h1>
-        <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-cream/70">
+        <h1 className="mt-3 text-4xl text-ink">No card on file</h1>
+        <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-ink-soft">
           You have not drafted a card yet. Six players on {credits(100)}m — or a full dozen on 200m
           — and one captain. It takes about ninety seconds.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Link
             href="/draft"
-            className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+            className="rounded-full bg-butter px-5 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
           >
             Draft your card
           </Link>
           <button
             type="button"
             onClick={loadDemo}
-            className="rounded-full border border-white/20 px-5 py-2.5 text-[13px] font-medium text-cream/75 transition hover:border-gold/50 hover:text-gold-soft"
+            className="rounded-full border border-ink/20 px-5 py-2.5 text-[13px] font-medium text-ink-soft transition hover:border-accent/50 hover:text-accent"
           >
             Load the demo card
           </button>
@@ -91,8 +91,8 @@ export default function TeamPage() {
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <Eyebrow>My team · pre-season</Eyebrow>
-          <h1 className="mt-2 text-4xl text-cream sm:text-5xl">{state.teamName || "Untitled"}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-cream/70">
+          <h1 className="mt-2 text-4xl text-ink sm:text-5xl">{state.teamName || "Untitled"}</h1>
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-soft">
             <span>{state.manager || "No manager name"}</span>
             <span aria-hidden>·</span>
             <span>{mode.name}</span>
@@ -102,24 +102,24 @@ export default function TeamPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {state.isDemo ? (
-            <span className="rounded-full border border-gold/35 bg-gold/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold-soft">
+            <span className="rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
               Demo card
             </span>
           ) : (
-            <span className="rounded-full border border-shamrock/35 bg-shamrock/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-shamrock">
+            <span className="rounded-full border border-sage/35 bg-sage/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-sage">
               Saved
             </span>
           )}
           <Link
             href="/team/transfers"
-            className="rounded-full border border-white/20 px-4 py-2 text-[12.5px] font-medium text-cream/80 transition hover:border-gold/50 hover:text-gold-soft"
+            className="rounded-full border border-ink/20 px-4 py-2 text-[12.5px] font-medium text-ink/80 transition hover:border-accent/50 hover:text-accent"
           >
             Transfers &amp; armband
           </Link>
           <button
             type="button"
             onClick={resetTeam}
-            className="rounded-full border border-white/12 px-4 py-2 text-[12.5px] text-cream/70 transition hover:border-usa/40 hover:text-usa"
+            className="rounded-full border border-ink/12 px-4 py-2 text-[12.5px] text-ink-soft transition hover:border-clay/40 hover:text-clay"
           >
             Start fresh
           </button>
@@ -127,13 +127,13 @@ export default function TeamPage() {
       </div>
 
       {!paid ? (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/35 bg-gold/[0.07] px-4 py-3">
-          <p className="text-[12.5px] text-cream/70">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent/35 bg-accent/[0.07] px-4 py-3">
+          <p className="text-[12.5px] text-ink-soft">
             This card is a draft. Pay the €10 entry to lock it in and appear on league tables.
           </p>
           <Link
             href="/enter"
-            className="rounded-full bg-gold px-4 py-1.5 text-[12px] font-semibold text-forest-950"
+            className="rounded-full bg-butter px-4 py-1.5 text-[12px] font-semibold text-ink"
           >
             Complete entry
           </Link>
@@ -141,7 +141,7 @@ export default function TeamPage() {
       ) : null}
 
       {/* STAT STRIP */}
-      <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.08] sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-paper-deep sm:grid-cols-3 lg:grid-cols-5">
         {[
           { label: "Projected", value: ready ? projected.toFixed(1) : "—", sub: "points", tone: "gold" as const },
           { label: "Global rank", value: `#${globalRank}`, sub: "in the open table" },
@@ -155,36 +155,36 @@ export default function TeamPage() {
         ].map((stat, index) => (
           <div
             key={stat.label}
-            className={`bg-forest-900/80 px-4 py-4 ${
+            className={`bg-surface/80 px-4 py-4 ${
               index === 4 ? "col-span-2 sm:col-span-2 lg:col-span-1" : ""
             }`}
           >
-            <p className="truncate text-[9.5px] uppercase tracking-[0.14em] text-cream/60">
+            <p className="truncate text-[9.5px] uppercase tracking-[0.14em] text-ink-soft">
               {stat.label}
             </p>
             <p
               className={`mt-1.5 font-display text-2xl tnum ${
-                stat.tone === "gold" ? "text-gold-soft" : "text-cream"
+                stat.tone === "gold" ? "text-accent" : "text-ink"
               }`}
             >
               {stat.value}
             </p>
-            <p className="text-[10.5px] text-cream/60">{stat.sub}</p>
+            <p className="text-[10.5px] text-ink-soft">{stat.sub}</p>
           </div>
         ))}
       </div>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1.05fr_0.95fr]">
         {/* TEAM SHEET */}
-        <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+        <section className="rounded-2xl border border-line bg-surface p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="eyebrow text-cream/60">Team sheet</p>
-              <h2 className="mt-1 text-xl text-cream">
+              <p className="eyebrow text-ink-soft">Team sheet</p>
+              <h2 className="mt-1 text-xl text-ink">
                 {state.squad.length}/{mode.squadSize} players
               </h2>
             </div>
-            <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10.5px] text-cream/70 tnum">
+            <span className="rounded-full border border-ink/12 px-2.5 py-1 text-[10.5px] text-ink-soft tnum">
               {credits(spend)}m
             </span>
           </div>
@@ -207,7 +207,7 @@ export default function TeamPage() {
           {errors.length > 0 ? (
             <div className="mt-4 space-y-1.5">
               {errors.map((error) => (
-                <p key={error} className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                <p key={error} className="rounded-lg bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
                   {error}
                 </p>
               ))}
@@ -218,13 +218,13 @@ export default function TeamPage() {
             <button
               type="button"
               onClick={autoFill}
-              className="rounded-full border border-white/15 py-2 text-[12px] font-medium text-cream/75 transition hover:border-gold/50 hover:text-gold-soft"
+              className="rounded-full border border-ink/15 py-2 text-[12px] font-medium text-ink-soft transition hover:border-accent/50 hover:text-accent"
             >
               Auto-pick best six
             </button>
             <Link
               href="/draft"
-              className="rounded-full bg-gold py-2 text-center text-[12px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+              className="rounded-full bg-butter py-2 text-center text-[12px] font-semibold text-ink transition hover:bg-butter-deep"
             >
               Edit card
             </Link>
@@ -233,13 +233,13 @@ export default function TeamPage() {
 
         {/* RIGHT COLUMN */}
         <div className="space-y-6">
-          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <section className="rounded-2xl border border-line bg-surface p-5">
             <div className="flex items-end justify-between">
               <div>
-                <p className="eyebrow text-cream/60">{primary.visibility === "public" ? "Open league" : "Private league"}</p>
-                <h2 className="mt-1 text-xl text-cream">{primary.name}</h2>
+                <p className="eyebrow text-ink-soft">{primary.visibility === "public" ? "Open league" : "Private league"}</p>
+                <h2 className="mt-1 text-xl text-ink">{primary.name}</h2>
               </div>
-              <span className="rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-1.5 text-[11px] tracking-[0.14em] text-gold-soft">
+              <span className="rounded-lg border border-accent/30 bg-accent/[0.08] px-3 py-1.5 text-[11px] tracking-[0.14em] text-accent">
                 {primary.code}
               </span>
             </div>
@@ -248,15 +248,15 @@ export default function TeamPage() {
             </div>
             <Link
               href="/leagues"
-              className="mt-3 inline-block text-[11.5px] text-gold-soft/80 transition hover:text-gold"
+              className="mt-3 inline-block text-[11.5px] text-accent/80 transition hover:text-accent"
             >
               Manage leagues →
             </Link>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/60">Where the points come from</p>
-            <h2 className="mt-1 text-xl text-cream">Captain&apos;s spread</h2>
+          <section className="rounded-2xl border border-line bg-surface p-5">
+            <p className="eyebrow text-ink-soft">Where the points come from</p>
+            <h2 className="mt-1 text-xl text-ink">Captain&apos;s spread</h2>
             <ul className="mt-4 space-y-3">
               {state.squad.map((id) => {
                 const player = PLAYER_BY_ID[id];
@@ -272,27 +272,27 @@ export default function TeamPage() {
                 return (
                   <li key={id}>
                     <div className="flex items-center justify-between text-[12px]">
-                      <span className="flex items-center gap-2 text-cream/80">
+                      <span className="flex items-center gap-2 text-ink/80">
                         <TeamDot side={player.side} size={6} />
                         {player.shortName}
                         {isCaptain ? (
-                          <span className="rounded bg-gold px-1 text-[8px] font-bold uppercase text-forest-950">
+                          <span className="rounded bg-butter px-1 text-[8px] font-bold uppercase text-ink">
                             C
                           </span>
                         ) : null}
                       </span>
-                      <span className="tnum text-cream/70">{value.toFixed(1)}</span>
+                      <span className="tnum text-ink-soft">{value.toFixed(1)}</span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-paper-deep">
                       <div
                         className="h-full rounded-full"
                         style={{
                           width: `${(value / max) * 100}%`,
                           background: isCaptain
-                            ? "linear-gradient(90deg,#c9a44c,#e6cd94)"
+                            ? "linear-gradient(90deg,#866314,#c79a3a)"
                             : player.side === "europe"
-                              ? "#6f9bea"
-                              : "#e0776a",
+                              ? "#4d78b0"
+                              : "#b3644f",
                           opacity: isCaptain ? 1 : 0.75,
                         }}
                       />
@@ -303,60 +303,60 @@ export default function TeamPage() {
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <section className="rounded-2xl border border-line bg-surface p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/60">Match predictor</p>
-                <h2 className="mt-1 text-xl text-cream">Your call</h2>
+                <p className="eyebrow text-ink-soft">Match predictor</p>
+                <h2 className="mt-1 text-xl text-ink">Your call</h2>
               </div>
               <Link
                 href="/predict"
-                className="text-[11.5px] text-gold-soft/80 transition hover:text-gold"
+                className="text-[11.5px] text-accent/80 transition hover:text-accent"
               >
                 {predictedCount === 0 ? "Start calling →" : "Edit →"}
               </Link>
             </div>
-            <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-forest-950/50 px-4 py-3">
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-line bg-paper/50 px-4 py-3">
               <div>
-                <p className="text-[9.5px] uppercase tracking-[0.16em] text-cream/60">Predicted cup</p>
-                <p className="font-display text-xl text-cream tnum">
-                  <span className="text-europe">{pickEurope % 1 === 0 ? pickEurope : pickEurope.toFixed(1)}</span>
-                  <span className="mx-1.5 text-cream/60">–</span>
-                  <span className="text-usa">{pickUsa % 1 === 0 ? pickUsa : pickUsa.toFixed(1)}</span>
+                <p className="text-[9.5px] uppercase tracking-[0.16em] text-ink-soft">Predicted cup</p>
+                <p className="font-display text-xl text-ink tnum">
+                  <span className="text-ocean">{pickEurope % 1 === 0 ? pickEurope : pickEurope.toFixed(1)}</span>
+                  <span className="mx-1.5 text-ink-soft">–</span>
+                  <span className="text-clay">{pickUsa % 1 === 0 ? pickUsa : pickUsa.toFixed(1)}</span>
                 </p>
               </div>
               <div className="text-right">
-                <p className="tnum text-[12px] text-cream/70">{predictedCount}/28 matches</p>
-                <p className="text-[11px] text-cream/60">{awardCount}/3 awards</p>
+                <p className="tnum text-[12px] text-ink-soft">{predictedCount}/28 matches</p>
+                <p className="text-[11px] text-ink-soft">{awardCount}/3 awards</p>
               </div>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/60">Team details</p>
+          <section className="rounded-2xl border border-line bg-surface p-5">
+            <p className="eyebrow text-ink-soft">Team details</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-ink-soft">
                   Team name
                 </span>
                 <input
                   value={state.teamName}
                   onChange={(e) => setIdentity(state.manager, e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-white/12 bg-forest-950/60 px-3 py-2 text-[13px] text-cream focus:border-gold/50 focus:outline-none"
+                  className="mt-1.5 w-full rounded-lg border border-ink/12 bg-paper/60 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none"
                 />
               </label>
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-ink-soft">
                   Manager
                 </span>
                 <input
                   value={state.manager}
                   onChange={(e) => setIdentity(e.target.value, state.teamName)}
-                  className="mt-1.5 w-full rounded-lg border border-white/12 bg-forest-950/60 px-3 py-2 text-[13px] text-cream focus:border-gold/50 focus:outline-none"
+                  className="mt-1.5 w-full rounded-lg border border-ink/12 bg-paper/60 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none"
                 />
               </label>
             </div>
-            <p className="mt-3 text-[10.5px] text-cream/60">
+            <p className="mt-3 text-[10.5px] text-ink-soft">
               Names appear on every league table you join. Max 22 characters — the database has
               feelings.
             </p>

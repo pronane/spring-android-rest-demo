@@ -33,7 +33,7 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <span className="tnum text-sm text-cream/70">
+      <span className="tnum text-sm text-ink-soft">
         {days}d {hours}h {minutes}m
       </span>
     );
@@ -46,11 +46,11 @@ export function Countdown({ compact = false }: { compact?: boolean }) {
         { label: "Hours", value: hours },
         { label: "Mins", value: minutes },
       ].map((part) => (
-        <div key={part.label} className="rounded-xl border border-white/10 bg-forest-950/60 px-3 py-2.5">
-          <p className="font-display text-2xl text-cream tnum">
+        <div key={part.label} className="rounded-xl border border-line bg-paper/60 px-3 py-2.5">
+          <p className="font-display text-2xl text-ink tnum">
             {String(part.value).padStart(2, "0")}
           </p>
-          <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-cream/60">
+          <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-ink-soft">
             {part.label}
           </p>
         </div>

@@ -91,45 +91,45 @@ export default function PayPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-10">
       <Eyebrow>Checkout</Eyebrow>
-      <h1 className="mt-2 text-4xl text-cream sm:text-5xl">
+      <h1 className="mt-2 text-4xl text-ink sm:text-5xl">
         {order?.status === "paid" ? "You are in." : "One payment. Then the games."}
       </h1>
-      <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-cream/70">
+      <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-ink-soft">
         Your entry is created the moment the payment settles — nothing is reserved before that, and
         nothing is charged twice if you refresh.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:p-6">
+      <div className="mt-8 rounded-2xl border border-line bg-surface p-5 sm:p-6">
         {loading ? (
-          <p className="text-[13px] text-cream/60">Loading your order…</p>
+          <p className="text-[13px] text-ink-soft">Loading your order…</p>
         ) : error && !order ? (
           <div>
-            <p className="text-[14px] text-usa">{error}</p>
-            <Link href="/enter" className="mt-3 inline-block text-[12.5px] text-gold hover:underline">
+            <p className="text-[14px] text-clay">{error}</p>
+            <Link href="/enter" className="mt-3 inline-block text-[12.5px] text-accent hover:underline">
               Back to entry
             </Link>
           </div>
         ) : order ? (
           <>
-            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-4">
               <div>
-                <p className="eyebrow text-cream/60">{order.planName}</p>
-                <p className="mt-1 text-[13px] text-cream/70">
+                <p className="eyebrow text-ink-soft">{order.planName}</p>
+                <p className="mt-1 text-[13px] text-ink-soft">
                   Order {order.ref} · {new Date(order.createdAt).toLocaleString("en-IE")}
                 </p>
               </div>
-              <p className="text-2xl text-cream tnum">{order.amountLabel}</p>
+              <p className="text-2xl text-ink tnum">{order.amountLabel}</p>
             </div>
 
             {order.status === "paid" && entry ? (
               <div className="mt-5">
                 <div className="flex items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-shamrock/15 text-shamrock">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-sage/15 text-sage">
                     ✓
                   </span>
                   <div>
-                    <p className="text-[14px] font-medium text-cream">Entry {entry.ref} · paid</p>
-                    <p className="text-[11.5px] text-cream/70">
+                    <p className="text-[14px] font-medium text-ink">Entry {entry.ref} · paid</p>
+                    <p className="text-[11.5px] text-ink-soft">
                       {order.provider === "stripe" ? "Card payment" : "Demo payment"} ·{" "}
                       {order.paidAt ? new Date(order.paidAt).toLocaleTimeString("en-IE") : "just now"}
                     </p>
@@ -138,19 +138,19 @@ export default function PayPage() {
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <Link
                     href="/draft"
-                    className="rounded-full bg-gold py-2.5 text-center text-[12.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+                    className="rounded-full bg-butter py-2.5 text-center text-[12.5px] font-semibold text-ink transition hover:bg-butter-deep"
                   >
                     Draft my card
                   </Link>
                   <Link
                     href="/predict"
-                    className="rounded-full border border-cream/25 py-2.5 text-center text-[12.5px] font-medium text-cream transition hover:border-gold/60"
+                    className="rounded-full border border-line/25 py-2.5 text-center text-[12.5px] font-medium text-ink transition hover:border-accent/60"
                   >
                     Call the 28
                   </Link>
                   <Link
                     href="/account"
-                    className="rounded-full border border-white/12 py-2.5 text-center text-[12.5px] text-cream/60 transition hover:text-cream"
+                    className="rounded-full border border-ink/12 py-2.5 text-center text-[12.5px] text-ink-soft transition hover:text-ink"
                   >
                     View receipt
                   </Link>
@@ -158,7 +158,7 @@ export default function PayPage() {
               </div>
             ) : order.status === "pending" && order.provider === "demo" ? (
               <div className="mt-5">
-                <p className="text-[13px] leading-relaxed text-cream/75">
+                <p className="text-[13px] leading-relaxed text-ink-soft">
                   This build has no Stripe keys, so the payment provider is a button. Pressing it
                   runs the same settlement a real webhook would: the order is marked paid, the entry
                   is created and three ledger rows are written. No card is charged.
@@ -167,22 +167,22 @@ export default function PayPage() {
                   type="button"
                   onClick={pay}
                   disabled={busy}
-                  className="mt-4 w-full rounded-full bg-gold py-3 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft disabled:opacity-60 sm:w-auto sm:px-6"
+                  className="mt-4 w-full rounded-full bg-butter py-3 text-[13px] font-semibold text-ink transition hover:bg-butter-deep disabled:opacity-60 sm:w-auto sm:px-6"
                 >
                   {busy ? "Settling…" : `Pay ${eur(order.amountCents / 100)} · demo card`}
                 </button>
-                <p className="mt-3 text-[10.5px] text-cream/55">
+                <p className="mt-3 text-[10.5px] text-ink-soft">
                   Demo checkout — no card data is stored, and entries stay refundable until the field
                   is confirmed.
                 </p>
               </div>
             ) : order.status === "pending" ? (
               <div className="mt-5">
-                <p className="text-[13px] leading-relaxed text-cream/75">
+                <p className="text-[13px] leading-relaxed text-ink-soft">
                   Waiting for Stripe to confirm the payment. This page updates itself — you can close
                   it and come back to this link.
                 </p>
-                <p className="mt-3 text-[11px] text-cream/55">
+                <p className="mt-3 text-[11px] text-ink-soft">
                   {returning
                     ? "Back from Stripe — checking the webhook."
                     : "If nothing happens in a minute, the webhook may not be configured."}
@@ -190,19 +190,19 @@ export default function PayPage() {
               </div>
             ) : (
               <div className="mt-5">
-                <p className="text-[13px] text-usa">
+                <p className="text-[13px] text-clay">
                   {order.status === "failed"
                     ? "That payment did not go through. Nothing has been charged."
                     : "This order was refunded, so the entry is no longer prize-eligible."}
                 </p>
-                <Link href="/enter" className="mt-3 inline-block text-[12.5px] text-gold hover:underline">
+                <Link href="/enter" className="mt-3 inline-block text-[12.5px] text-accent hover:underline">
                   Try again
                 </Link>
               </div>
             )}
 
             {error ? (
-              <p className="mt-4 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+              <p className="mt-4 rounded-lg border border-clay/30 bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
                 {error}
               </p>
             ) : null}

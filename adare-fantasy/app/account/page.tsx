@@ -149,8 +149,8 @@ export default function AccountPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-10">
       <Eyebrow>Account</Eyebrow>
-      <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Your entry</h1>
-      <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-cream/70">
+      <h1 className="mt-2 text-4xl text-ink sm:text-5xl">Your entry</h1>
+      <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-ink-soft">
         Your entry is stored on the server, so you can sign in on any device with Google, Apple,
         Facebook or a one-time email link.
       </p>
@@ -160,8 +160,8 @@ export default function AccountPage() {
           role={noticeIsError ? "alert" : "status"}
           className={`mt-6 rounded-lg border px-4 py-2.5 text-[12.5px] ${
             noticeIsError
-              ? "border-usa/40 bg-usa/10 text-usa"
-              : "border-gold/30 bg-gold/[0.08] text-gold-soft"
+              ? "border-clay/40 bg-clay/10 text-clay"
+              : "border-accent/30 bg-accent/[0.08] text-accent"
           }`}
         >
           {notice}
@@ -169,19 +169,19 @@ export default function AccountPage() {
       ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <p className="eyebrow text-cream/60">Signed in as</p>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <p className="eyebrow text-ink-soft">Signed in as</p>
           {loading ? (
-            <p className="mt-2 text-[13px] text-cream/60">Loading…</p>
+            <p className="mt-2 text-[13px] text-ink-soft">Loading…</p>
           ) : user ? (
             <>
-              <p className="mt-2 text-[15px] text-cream">{user.manager}</p>
-              <p className="text-[12.5px] text-cream/70">{user.email}</p>
-              <p className="mt-3 text-[11px] text-cream/60">
+              <p className="mt-2 text-[15px] text-ink">{user.manager}</p>
+              <p className="text-[12.5px] text-ink-soft">{user.email}</p>
+              <p className="mt-3 text-[11px] text-ink-soft">
                 Account created {new Date(user.createdAt).toLocaleDateString("en-IE")}
               </p>
               {user.identities && user.identities.length > 0 ? (
-                <p className="mt-1 text-[11px] text-cream/60">
+                <p className="mt-1 text-[11px] text-ink-soft">
                   Sign-in:{" "}
                   {user.identities
                     .map((identity) => `${identity.provider[0].toUpperCase()}${identity.provider.slice(1)}`)
@@ -197,14 +197,14 @@ export default function AccountPage() {
               <button
                 type="button"
                 onClick={signOut}
-                className="mt-4 rounded-full border border-white/15 px-4 py-1.5 text-[11.5px] text-cream/70 transition hover:border-usa/40 hover:text-usa"
+                className="mt-4 rounded-full border border-ink/15 px-4 py-1.5 text-[11.5px] text-ink-soft transition hover:border-clay/40 hover:text-clay"
               >
                 Sign out
               </button>
             </>
           ) : (
             <>
-              <p className="mt-2 text-[13px] text-cream/70">
+              <p className="mt-2 text-[13px] text-ink-soft">
                 Entered on another phone or laptop? Sign in with a provider, or we&apos;ll email you a
                 one-time link.
               </p>
@@ -216,25 +216,25 @@ export default function AccountPage() {
                   onChange={(e) => setLinkEmail(e.target.value)}
                   placeholder="you@example.com"
                   aria-label="Email you entered with"
-                  className="min-w-0 flex-1 rounded-full border border-white/15 bg-forest-950/60 px-3 py-1.5 text-[12.5px] text-cream placeholder:text-cream/60"
+                  className="min-w-0 flex-1 rounded-full border border-ink/15 bg-paper/60 px-3 py-1.5 text-[12.5px] text-ink placeholder:text-ink-soft"
                 />
                 <button
                   type="button"
                   onClick={requestLink}
-                  className="rounded-full bg-gold px-3 py-1.5 text-[12px] font-semibold text-forest-950"
+                  className="rounded-full bg-butter px-3 py-1.5 text-[12px] font-semibold text-ink"
                 >
                   Email me a link
                 </button>
               </div>
-              {linkMsg ? <p className="mt-2 text-[11.5px] text-cream/70">{linkMsg}</p> : null}
+              {linkMsg ? <p className="mt-2 text-[11.5px] text-ink-soft">{linkMsg}</p> : null}
               {devLink ? (
-                <a href={devLink} className="mt-1 block break-all text-[11px] text-gold-soft underline">
+                <a href={devLink} className="mt-1 block break-all text-[11px] text-accent underline">
                   Dev mode (no mail provider): open sign-in link
                 </a>
               ) : null}
               <Link
                 href="/enter"
-                className="mt-4 inline-flex rounded-full border border-white/20 px-4 py-2 text-[12px] text-cream/75"
+                className="mt-4 inline-flex rounded-full border border-ink/20 px-4 py-2 text-[12px] text-ink-soft"
               >
                 New here? Get your entry
               </Link>
@@ -242,37 +242,37 @@ export default function AccountPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-          <p className="eyebrow text-cream/60">Entry receipt</p>
+        <div className="rounded-2xl border border-line bg-surface p-5">
+          <p className="eyebrow text-ink-soft">Entry receipt</p>
           {user?.entry ? (
             <>
-              <p className="mt-2 font-display text-2xl text-gold-soft">{user.entry.ref}</p>
+              <p className="mt-2 font-display text-2xl text-accent">{user.entry.ref}</p>
               <dl className="mt-3 space-y-1.5 text-[12px]">
                 <div className="flex justify-between">
-                  <dt className="text-cream/70">Plan</dt>
-                  <dd className="text-cream/85">{user.entry.plan}</dd>
+                  <dt className="text-ink-soft">Plan</dt>
+                  <dd className="text-ink/85">{user.entry.plan}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-cream/70">Paid</dt>
-                  <dd className="text-cream/85">
+                  <dt className="text-ink-soft">Paid</dt>
+                  <dd className="text-ink/85">
                     {user.entry.prizeEligible ?? user.entry.amount > 0
                       ? `${eur(user.entry.amount)} · prize entry`
                       : `${eur(user.entry.amount)} · not prize eligible`}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-cream/70">Edition</dt>
-                  <dd className="text-cream/85">{user.entry.editionId}</dd>
+                  <dt className="text-ink-soft">Edition</dt>
+                  <dd className="text-ink/85">{user.entry.editionId}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-cream/70">Card saved</dt>
-                  <dd className="text-cream/85">{user.entry.squad?.length ?? 0} players</dd>
+                  <dt className="text-ink-soft">Card saved</dt>
+                  <dd className="text-ink/85">{user.entry.squad?.length ?? 0} players</dd>
                 </div>
               </dl>
             </>
           ) : (
             <>
-              <p className="mt-2 text-[13px] text-cream/70">
+              <p className="mt-2 text-[13px] text-ink-soft">
                 {state.entry.paid
                   ? `Local demo entry ${state.entry.ref} — no server receipt.`
                   : "No entry on this browser yet."}
@@ -280,7 +280,7 @@ export default function AccountPage() {
               {!state.entry.paid ? (
                 <Link
                   href="/enter"
-                  className="mt-4 inline-flex rounded-full border border-white/20 px-4 py-2 text-[12px] text-cream/75"
+                  className="mt-4 inline-flex rounded-full border border-ink/20 px-4 py-2 text-[12px] text-ink-soft"
                 >
                   See entry options
                 </Link>
@@ -290,14 +290,14 @@ export default function AccountPage() {
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+      <div className="mt-4 rounded-2xl border border-line bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="eyebrow text-cream/60">Your card</p>
-            <p className="mt-1 text-[15px] text-cream">
+            <p className="eyebrow text-ink-soft">Your card</p>
+            <p className="mt-1 text-[15px] text-ink">
               {state.teamName || "Untitled"} · {mode.name}
             </p>
-            <p className="text-[12px] text-cream/70">
+            <p className="text-[12px] text-ink-soft">
               {state.squad.length}/{mode.squadSize} players · {projected.toFixed(1)} projected pts ·
               captain {state.captain ? "set" : "not set"}
             </p>
@@ -305,13 +305,13 @@ export default function AccountPage() {
           <div className="flex gap-2">
             <Link
               href="/team"
-              className="rounded-full bg-cream px-4 py-2 text-[12px] font-semibold text-forest-900"
+              className="rounded-full bg-mint px-4 py-2 text-[12px] font-semibold text-ink"
             >
               Open my team
             </Link>
             <Link
               href="/predict"
-              className="rounded-full border border-white/20 px-4 py-2 text-[12px] text-cream/75"
+              className="rounded-full border border-ink/20 px-4 py-2 text-[12px] text-ink-soft"
             >
               My predictions
             </Link>
@@ -320,12 +320,12 @@ export default function AccountPage() {
       </div>
 
       {breakdown ? (
-        <div className="mt-4 rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
+        <div className="mt-4 rounded-2xl border border-accent/25 bg-accent/[0.05] p-5">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="eyebrow text-gold-soft/80">Your points</p>
-              <p className="mt-1 font-display text-3xl text-cream tnum">{breakdown.score.total.toFixed(1)}</p>
-              <p className="text-[11.5px] text-cream/70">
+              <p className="eyebrow text-accent/80">Your points</p>
+              <p className="mt-1 font-display text-3xl text-ink tnum">{breakdown.score.total.toFixed(1)}</p>
+              <p className="text-[11.5px] text-ink-soft">
                 Card {breakdown.score.card.total.toFixed(1)} · picks{" "}
                 {breakdown.score.predictions.total.toFixed(1)} ·{" "}
                 {breakdown.score.transferPenalty
@@ -334,7 +334,7 @@ export default function AccountPage() {
                 {breakdown.results.finals}/{breakdown.results.total} matches in
               </p>
               {breakdown.results.clock ? (
-                <p className="mt-1 text-[10.5px] text-cream/50">
+                <p className="mt-1 text-[10.5px] text-ink-soft">
                   {breakdown.results.clock}
                   {breakdown.results.provisional ? " · provisional" : ""}
                 </p>
@@ -342,7 +342,7 @@ export default function AccountPage() {
             </div>
             <Link
               href="/leaderboard"
-              className="rounded-full border border-gold/40 px-4 py-2 text-[12px] font-semibold text-gold-soft transition hover:bg-gold/10"
+              className="rounded-full border border-accent/40 px-4 py-2 text-[12px] font-semibold text-accent transition hover:bg-accent/10"
             >
               See the table
             </Link>
@@ -353,23 +353,23 @@ export default function AccountPage() {
               .sort((a, b) => b.total - a.total)
               .slice(0, 6)
               .map((row) => (
-                <li key={row.playerId} className="flex items-center justify-between gap-2 text-cream/80">
+                <li key={row.playerId} className="flex items-center justify-between gap-2 text-ink/80">
                   <span>
                     {PLAYER_BY_ID[row.playerId]?.shortName ?? row.playerId}
                     {row.playerId === breakdown.score.card.captainId ? (
-                      <span className="ml-1.5 rounded bg-gold/20 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-gold-soft">
+                      <span className="ml-1.5 rounded bg-accent/20 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-accent">
                         C
                       </span>
                     ) : null}
                   </span>
-                  <span className="tnum text-cream/70">
+                  <span className="tnum text-ink-soft">
                     {row.matches} {row.matches === 1 ? "match" : "matches"} · {row.total.toFixed(1)}
                   </span>
                 </li>
               ))}
           </ul>
 
-          <p className="mt-1 text-[10.5px] leading-relaxed text-cream/60">
+          <p className="mt-1 text-[10.5px] leading-relaxed text-ink-soft">
             Armband: {(["fri", "sat", "sun"] as const)
               .map((day) => {
                 const id = breakdown.score.card.sessionCaptains[day];
@@ -382,7 +382,7 @@ export default function AccountPage() {
               : ""}
           </p>
 
-          <p className="mt-1 text-[10.5px] leading-relaxed text-cream/60">
+          <p className="mt-1 text-[10.5px] leading-relaxed text-ink-soft">
             Predictor: {breakdown.score.predictions.matchHits} matches called
             {breakdown.score.predictions.awardHits.length
               ? `, ${breakdown.score.predictions.awardHits.length} award${breakdown.score.predictions.awardHits.length === 1 ? "" : "s"}`
@@ -398,18 +398,18 @@ export default function AccountPage() {
       ) : null}
 
       {user?.entry ? (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+        <div className="mt-4 rounded-2xl border border-line bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="eyebrow text-cream/60">Share your card · invite a friend</p>
-              <p className="mt-1 text-[13px] text-cream/80">
-                {user.teamName} · <Link href={`/t/${user.entry.ref}`} className="text-gold-soft underline decoration-gold/40">/t/{user.entry.ref}</Link>
+              <p className="eyebrow text-ink-soft">Share your card · invite a friend</p>
+              <p className="mt-1 text-[13px] text-ink/80">
+                {user.teamName} · <Link href={`/t/${user.entry.ref}`} className="text-accent underline decoration-accent/40">/t/{user.entry.ref}</Link>
               </p>
-              <p className="mt-1 max-w-md text-[11.5px] leading-relaxed text-cream/55">
+              <p className="mt-1 max-w-md text-[11.5px] leading-relaxed text-ink-soft">
                 The link shows your live card and your rank. Anyone who enters with it gets a free
                 transfer — and so do you.
               </p>
-              <p className="mt-2 text-[11px] text-cream/60">
+              <p className="mt-2 text-[11px] text-ink-soft">
                 Invited: {invite?.invited ?? 0} · free transfers earned: {invite?.bonusTransfers ?? 0}
                 {invite?.referredBy ? ` · you joined on ${invite.referredBy}` : ""}
               </p>
@@ -422,7 +422,7 @@ export default function AccountPage() {
               />
               <Link
                 href={`/enter?ref=${encodeURIComponent(user.entry.ref)}`}
-                className="text-[11.5px] text-cream/60 underline decoration-white/25"
+                className="text-[11.5px] text-ink-soft underline decoration-ink/25"
               >
                 Preview the invite
               </Link>
@@ -431,7 +431,7 @@ export default function AccountPage() {
         </div>
       ) : null}
 
-      <p className="mt-4 text-[10.5px] leading-relaxed text-cream/60">
+      <p className="mt-4 text-[10.5px] leading-relaxed text-ink-soft">
         Demo payments: no card data is stored or transmitted. Production swaps the JSON store for
         Postgres and the demo checkout for Stripe with server-side webhooks.
       </p>

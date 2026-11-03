@@ -62,25 +62,25 @@ export default function PlayersPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>The pool · 24 projected players</Eyebrow>
-          <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Scout the field</h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
+          <h1 className="mt-2 text-4xl text-ink sm:text-5xl">Scout the field</h1>
+          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-ink-soft">
             Every projected player on both sides, priced by the model. Tap a card to add him to
             your {mode.name} card — draft from here or from the draft room.
           </p>
         </div>
         <Link
           href="/draft"
-          className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+          className="rounded-full bg-butter px-5 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
         >
           Go to draft room
         </Link>
       </div>
 
-      <div className="sticky top-16 z-30 mt-6 -mx-4 border-y border-white/10 bg-forest-950/92 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+      <div className="sticky top-16 z-30 mt-6 -mx-4 border-y border-line bg-paper/92 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-[180px] flex-1">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/60"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft"
               width="14"
               height="14"
               viewBox="0 0 16 16"
@@ -94,35 +94,35 @@ export default function PlayersPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search players or nations"
-              className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
+              className="w-full rounded-full border border-ink/12 bg-surface-2 py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-soft focus:border-accent/50 focus:outline-none"
             />
           </div>
-          <div className="flex rounded-full border border-white/12 bg-white/[0.03] p-0.5">
+          <div className="flex rounded-full border border-ink/12 bg-surface p-0.5">
             {(["all", "europe", "usa"] as SideFilter[]).map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => setSide(option)}
                 className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition ${
-                  side === option ? "bg-cream text-forest-900" : "text-cream/70 hover:text-cream"
+                  side === option ? "bg-mint text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {option === "all" ? "All" : option === "europe" ? "Europe" : "USA"}
               </button>
             ))}
           </div>
-          <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/70">
+          <label className="flex items-center gap-2 rounded-full border border-ink/12 bg-surface px-3 py-1.5 text-[12px] text-ink-soft">
             <span>Sort</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="bg-transparent text-[12px] text-cream focus:outline-none"
+              className="bg-transparent text-[12px] text-ink focus:outline-none"
             >
-              <option value="price" className="bg-forest-900">Price</option>
-              <option value="projected" className="bg-forest-900">Projected</option>
-              <option value="ownership" className="bg-forest-900">Owned</option>
-              <option value="rank" className="bg-forest-900">World rank</option>
-              <option value="value" className="bg-forest-900">Value</option>
+              <option value="price" className="bg-surface">Price</option>
+              <option value="projected" className="bg-surface">Projected</option>
+              <option value="ownership" className="bg-surface">Owned</option>
+              <option value="rank" className="bg-surface">World rank</option>
+              <option value="value" className="bg-surface">Value</option>
             </select>
           </label>
           <button
@@ -131,20 +131,20 @@ export default function PlayersPage() {
             aria-pressed={onlyPicked}
             className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
               onlyPicked
-                ? "border-gold/50 bg-gold/15 text-gold-soft"
-                : "border-white/20 text-cream/60 hover:text-cream"
+                ? "border-accent/50 bg-accent/15 text-accent"
+                : "border-ink/20 text-ink-soft hover:text-ink"
             }`}
           >
             In my squad
           </button>
-          <div className="ml-auto flex items-center gap-4 text-[12px] text-cream/70">
+          <div className="ml-auto flex items-center gap-4 text-[12px] text-ink-soft">
             <span className="flex items-center gap-1.5">
               <TeamDot side="europe" size={6} /> {europeCount}
-              <span className="text-cream/60">/</span>
+              <span className="text-ink-soft">/</span>
               <TeamDot side="usa" size={6} /> {state.squad.length - europeCount}
             </span>
             <span className="tnum">
-              <span className="text-cream/85">{credits(remaining)}m</span> left ·{" "}
+              <span className="text-ink/85">{credits(remaining)}m</span> left ·{" "}
               {projected.toFixed(0)} proj
             </span>
           </div>
@@ -164,12 +164,12 @@ export default function PlayersPage() {
         ))}
       </div>
       {visible.length === 0 ? (
-        <p className="mt-10 text-center text-[13px] text-cream/60">
+        <p className="mt-10 text-center text-[13px] text-ink-soft">
           No players match. Clear the search or tap “In my squad” again.
         </p>
       ) : null}
 
-      <p className="mt-8 text-[11px] text-cream/60">
+      <p className="mt-8 text-[11px] text-ink-soft">
         Spend so far {credits(spend)}m of {mode.budget}m. Prices are projections and will re-price
         when the sides are named.
       </p>

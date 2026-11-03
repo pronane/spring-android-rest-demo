@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const viewport: Viewport = {
-  themeColor: "#04100c",
+  themeColor: "#fbf8f2",
   width: "device-width",
   initialScale: 1,
 };
@@ -25,11 +25,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-forest-950 font-sans text-cream antialiased">
+      <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <FantasyProvider>
           <a
             href="#main"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-forest-950"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-butter focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink"
           >
             Skip to content
           </a>

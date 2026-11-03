@@ -233,12 +233,12 @@ export default function AdminPage() {
   const statusPill = (status: string) => {
     const tone =
       status === "paid"
-        ? "bg-shamrock/15 text-shamrock"
+        ? "bg-sage/15 text-sage"
         : status === "pending"
-          ? "bg-gold/15 text-gold"
+          ? "bg-accent/15 text-accent"
           : status === "refunded"
-            ? "bg-white/10 text-cream/70"
-            : "bg-usa/15 text-usa";
+            ? "bg-ink/10 text-ink-soft"
+            : "bg-clay/15 text-clay";
     return <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] ${tone}`}>{status}</span>;
   };
 
@@ -246,13 +246,13 @@ export default function AdminPage() {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 sm:px-6">
         <Eyebrow>Operator</Eyebrow>
-        <h1 className="mt-2 text-4xl text-cream">Correction console</h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-cream/70">
-          Paste the <code className="text-cream/85">ADMIN_TOKEN</code> this build was started with.
+        <h1 className="mt-2 text-4xl text-ink">Correction console</h1>
+        <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
+          Paste the <code className="text-ink/85">ADMIN_TOKEN</code> this build was started with.
           It stays in this tab: nothing is stored on the server and it is never baked into the bundle.
         </p>
         <label className="mt-6 block">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">Admin token</span>
+          <span className="text-[10px] uppercase tracking-[0.14em] text-ink-soft">Admin token</span>
           <input
             type="password"
             value={token}
@@ -261,22 +261,22 @@ export default function AdminPage() {
               if (event.key === "Enter") void connect();
             }}
             autoComplete="off"
-            className="mt-1 w-full rounded-xl border border-white/12 bg-forest-950/60 px-3 py-2.5 text-[13px] text-cream outline-none focus:border-gold/60"
+            className="mt-1 w-full rounded-xl border border-ink/12 bg-paper/60 px-3 py-2.5 text-[13px] text-ink outline-none focus:border-accent/60"
           />
         </label>
         <button
           type="button"
           onClick={connect}
-          className="mt-4 rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+          className="mt-4 rounded-full bg-butter px-5 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
         >
           Connect
         </button>
         {error ? (
-          <p className="mt-4 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+          <p className="mt-4 rounded-lg border border-clay/30 bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
             {error}
           </p>
         ) : null}
-        <p className="mt-6 text-[11px] leading-relaxed text-cream/50">
+        <p className="mt-6 text-[11px] leading-relaxed text-ink-soft">
           Without <code>ADMIN_TOKEN</code> the admin API returns 503 rather than opening up — the
           console cannot be used on a build that has not been configured for it.
         </p>
@@ -289,8 +289,8 @@ export default function AdminPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>Operator</Eyebrow>
-          <h1 className="mt-2 text-4xl text-cream">Correction console</h1>
-          <p className="mt-2 text-[13px] text-cream/65">
+          <h1 className="mt-2 text-4xl text-ink">Correction console</h1>
+          <p className="mt-2 text-[13px] text-ink-soft">
             Results, payments and the prize ledger. Every action here is the same call the tests make.
           </p>
         </div>
@@ -299,7 +299,7 @@ export default function AdminPage() {
             type="button"
             onClick={() => void load()}
             disabled={busy}
-            className="rounded-full border border-white/15 px-4 py-2 text-[12px] text-cream/80 transition hover:border-gold/60 disabled:opacity-50"
+            className="rounded-full border border-ink/15 px-4 py-2 text-[12px] text-ink/80 transition hover:border-accent/60 disabled:opacity-50"
           >
             {busy ? "Refreshing…" : "Refresh"}
           </button>
@@ -310,7 +310,7 @@ export default function AdminPage() {
               setToken("");
               setConnected(false);
             }}
-            className="rounded-full border border-white/10 px-4 py-2 text-[12px] text-cream/50 transition hover:text-cream"
+            className="rounded-full border border-line px-4 py-2 text-[12px] text-ink-soft transition hover:text-ink"
           >
             Disconnect
           </button>
@@ -326,7 +326,7 @@ export default function AdminPage() {
             type="button"
             onClick={() => setTab(key)}
             className={`rounded-full px-3.5 py-1.5 text-[12.5px] capitalize transition ${
-              tab === key ? "bg-white/[0.08] text-cream" : "text-cream/60 hover:text-cream"
+              tab === key ? "bg-paper-deep text-ink" : "text-ink-soft hover:text-ink"
             }`}
           >
             {key}
@@ -335,12 +335,12 @@ export default function AdminPage() {
       </div>
 
       {note ? (
-        <p role="status" className="mt-4 rounded-lg border border-shamrock/25 bg-shamrock/10 px-3 py-2 text-[11.5px] text-shamrock">
+        <p role="status" className="mt-4 rounded-lg border border-sage/25 bg-sage/10 px-3 py-2 text-[11.5px] text-sage">
           {note}
         </p>
       ) : null}
       {error ? (
-        <p role="alert" className="mt-4 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+        <p role="alert" className="mt-4 rounded-lg border border-clay/30 bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
           {error}
         </p>
       ) : null}
@@ -354,17 +354,17 @@ export default function AdminPage() {
               { label: "Prize pool", value: money(summary.poolCents), hint: "95% of every entry" },
               { label: "Paid out", value: money(summary.paidOutCents), hint: `${money(summary.availableCents)} left` },
             ].map((card) => (
-              <div key={card.label} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-                <p className="eyebrow text-cream/55">{card.label}</p>
-                <p className="mt-1 text-2xl text-cream tnum">{card.value}</p>
-                <p className="text-[11px] text-cream/50">{card.hint}</p>
+              <div key={card.label} className="rounded-2xl border border-line bg-surface p-4">
+                <p className="eyebrow text-ink-soft">{card.label}</p>
+                <p className="mt-1 text-2xl text-ink tnum">{card.value}</p>
+                <p className="text-[11px] text-ink-soft">{card.hint}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-line">
             <table className="w-full text-left text-[12.5px]">
-              <thead className="bg-white/[0.04] text-[10px] uppercase tracking-[0.12em] text-cream/55">
+              <thead className="bg-surface-2 text-[10px] uppercase tracking-[0.12em] text-ink-soft">
                 <tr>
                   <th className="px-4 py-2.5">Order</th>
                   <th className="px-4 py-2.5">Email</th>
@@ -377,24 +377,24 @@ export default function AdminPage() {
               <tbody>
                 {orders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-cream/50">
+                    <td colSpan={6} className="px-4 py-6 text-center text-ink-soft">
                       No orders yet — buy an entry to see one here.
                     </td>
                   </tr>
                 ) : (
                   orders.map((order) => (
-                    <tr key={order.ref} className="border-t border-white/[0.07]">
-                      <td className="px-4 py-2.5 font-mono text-[11.5px] text-cream/80">{order.ref}</td>
-                      <td className="px-4 py-2.5 text-cream/70">{order.email}</td>
-                      <td className="px-4 py-2.5 text-cream/70">{order.planId}</td>
-                      <td className="px-4 py-2.5 text-right text-cream tnum">{money(order.amountCents)}</td>
+                    <tr key={order.ref} className="border-t border-line">
+                      <td className="px-4 py-2.5 font-mono text-[11.5px] text-ink/80">{order.ref}</td>
+                      <td className="px-4 py-2.5 text-ink-soft">{order.email}</td>
+                      <td className="px-4 py-2.5 text-ink-soft">{order.planId}</td>
+                      <td className="px-4 py-2.5 text-right text-ink tnum">{money(order.amountCents)}</td>
                       <td className="px-4 py-2.5">{statusPill(order.status)}</td>
                       <td className="px-4 py-2.5 text-right">
                         {order.status === "paid" ? (
                           <button
                             type="button"
                             onClick={() => void refund(order.ref)}
-                            className="rounded-full border border-white/15 px-3 py-1 text-[11px] text-cream/75 transition hover:border-usa/60 hover:text-usa"
+                            className="rounded-full border border-ink/15 px-3 py-1 text-[11px] text-ink-soft transition hover:border-clay/60 hover:text-clay"
                           >
                             Refund
                           </button>
@@ -412,7 +412,7 @@ export default function AdminPage() {
       {tab === "prizes" ? (
         <section className="mt-5">
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-[12px] text-cream/70">
+            <label className="flex items-center gap-2 text-[12px] text-ink-soft">
               Pot
               <select
                 value={potKey}
@@ -421,7 +421,7 @@ export default function AdminPage() {
                   setUnclaimed([]);
                   setNote(null);
                 }}
-                className="rounded-lg border border-white/15 bg-forest-950 px-2.5 py-1.5 text-[12.5px] text-cream"
+                className="rounded-lg border border-ink/15 bg-paper px-2.5 py-1.5 text-[12.5px] text-ink"
               >
                 <option value="global">Global</option>
                 {pots
@@ -434,7 +434,7 @@ export default function AdminPage() {
               </select>
             </label>
             {selected ? (
-              <p className="text-[11.5px] text-cream/50">
+              <p className="text-[11.5px] text-ink-soft">
                 {selected.label} · {money(selected.potCents)} funded by{" "}
                 {selected.potCents === 0 ? "no paid entries" : "paid entries in this pot"}
               </p>
@@ -448,9 +448,9 @@ export default function AdminPage() {
               { label: "Paid out", value: money(selected?.paidOutCents ?? 0) },
               { label: "To settle", value: money(selected?.toSettleCents ?? 0) },
             ].map((card) => (
-              <div key={card.label} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-                <p className="eyebrow text-cream/55">{card.label}</p>
-                <p className="mt-1 text-2xl text-cream tnum">{card.value}</p>
+              <div key={card.label} className="rounded-2xl border border-line bg-surface p-4">
+                <p className="eyebrow text-ink-soft">{card.label}</p>
+                <p className="mt-1 text-2xl text-ink tnum">{card.value}</p>
               </div>
             ))}
           </div>
@@ -459,35 +459,35 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => void settle(potKey === "global" ? null : potKey)}
-              className="rounded-full bg-gold px-4 py-2 text-[12.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+              className="rounded-full bg-butter px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-butter-deep"
             >
               Settle this pot
             </button>
             <button
               type="button"
               onClick={() => void payOut(potKey === "global" ? null : potKey)}
-              className="rounded-full border border-white/15 px-4 py-2 text-[12.5px] text-cream/80 transition hover:border-gold/60"
+              className="rounded-full border border-ink/15 px-4 py-2 text-[12.5px] text-ink/80 transition hover:border-accent/60"
             >
               Mark paid
             </button>
           </div>
 
           {unclaimed.length ? (
-            <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.02] p-3">
-              <p className="eyebrow text-cream/55">Not awarded</p>
-              <ul className="mt-1.5 space-y-1 text-[11.5px] text-cream/65">
+            <div className="mt-3 rounded-xl border border-line bg-surface p-3">
+              <p className="eyebrow text-ink-soft">Not awarded</p>
+              <ul className="mt-1.5 space-y-1 text-[11.5px] text-ink-soft">
                 {unclaimed.map((line) => (
                   <li key={line.label}>
-                    <span className="text-cream/85">{line.label}</span> · {money(line.cents)} — {line.why}
+                    <span className="text-ink/85">{line.label}</span> · {money(line.cents)} — {line.why}
                   </li>
                 ))}
               </ul>
             </div>
           ) : null}
 
-          <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-line">
             <table className="w-full text-left text-[12.5px]">
-              <thead className="bg-white/[0.04] text-[10px] uppercase tracking-[0.12em] text-cream/55">
+              <thead className="bg-surface-2 text-[10px] uppercase tracking-[0.12em] text-ink-soft">
                 <tr>
                   <th className="px-4 py-2.5">Place</th>
                   <th className="px-4 py-2.5">Team</th>
@@ -499,17 +499,17 @@ export default function AdminPage() {
               <tbody>
                 {potAwards.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-cream/50">
+                    <td colSpan={5} className="px-4 py-6 text-center text-ink-soft">
                       Nothing settled yet. Settle the pot to award the published split.
                     </td>
                   </tr>
                 ) : (
                   potAwards.map((award) => (
-                    <tr key={award.id} className="border-t border-white/[0.07]">
-                      <td className="px-4 py-2.5 text-cream/70 tnum">#{award.place}</td>
-                      <td className="px-4 py-2.5 text-cream">{award.team}</td>
-                      <td className="px-4 py-2.5 text-cream/70">{award.label}</td>
-                      <td className="px-4 py-2.5 text-right text-cream tnum">{money(award.amountCents)}</td>
+                    <tr key={award.id} className="border-t border-line">
+                      <td className="px-4 py-2.5 text-ink-soft tnum">#{award.place}</td>
+                      <td className="px-4 py-2.5 text-ink">{award.team}</td>
+                      <td className="px-4 py-2.5 text-ink-soft">{award.label}</td>
+                      <td className="px-4 py-2.5 text-right text-ink tnum">{money(award.amountCents)}</td>
                       <td className="px-4 py-2.5">{statusPill(award.status)}</td>
                     </tr>
                   ))
@@ -522,10 +522,10 @@ export default function AdminPage() {
 
       {tab === "results" && results ? (
         <section className="mt-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
             <div>
-              <p className="eyebrow text-cream/55">Results source</p>
-              <p className="mt-1 text-[13px] text-cream">
+              <p className="eyebrow text-ink-soft">Results source</p>
+              <p className="mt-1 text-[13px] text-ink">
                 {results.source} · {results.finals}/{results.total} finals · cup {results.cup.europe}–
                 {results.cup.usa}
               </p>
@@ -533,15 +533,15 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => void clearCorrections()}
-              className="rounded-full border border-white/15 px-4 py-2 text-[12px] text-cream/80 transition hover:border-usa/60 hover:text-usa"
+              className="rounded-full border border-ink/15 px-4 py-2 text-[12px] text-ink/80 transition hover:border-clay/60 hover:text-clay"
             >
               Clear corrections
             </button>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-line">
             <table className="w-full text-left text-[12.5px]">
-              <thead className="bg-white/[0.04] text-[10px] uppercase tracking-[0.12em] text-cream/55">
+              <thead className="bg-surface-2 text-[10px] uppercase tracking-[0.12em] text-ink-soft">
                 <tr>
                   <th className="px-4 py-2.5">Match</th>
                   <th className="px-4 py-2.5">Events</th>
@@ -550,9 +550,9 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {results.matches.slice(0, 12).map((match) => (
-                  <tr key={match.id} className="border-t border-white/[0.07]">
-                    <td className="px-4 py-2.5 font-mono text-[11.5px] text-cream/80">{match.id}</td>
-                    <td className="px-4 py-2.5 text-cream/60">{match.events}</td>
+                  <tr key={match.id} className="border-t border-line">
+                    <td className="px-4 py-2.5 font-mono text-[11.5px] text-ink/80">{match.id}</td>
+                    <td className="px-4 py-2.5 text-ink-soft">{match.events}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex gap-1.5">
                         {["europe", "half", "usa"].map((value) => (
@@ -563,8 +563,8 @@ export default function AdminPage() {
                             aria-pressed={(pending[match.id] ?? match.result) === value}
                             className={`rounded-full border px-2.5 py-1 text-[11px] capitalize transition ${
                               (pending[match.id] ?? match.result) === value
-                                ? "border-gold/60 bg-gold/15 text-gold"
-                                : "border-white/12 text-cream/60 hover:text-cream"
+                                ? "border-accent/60 bg-accent/15 text-accent"
+                                : "border-ink/12 text-ink-soft hover:text-ink"
                             }`}
                           >
                             {value}
@@ -577,7 +577,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-[11px] text-cream/50">
+          <p className="mt-2 text-[11px] text-ink-soft">
             Showing the first 12 of {results.matches.length} matches. Corrections are stored with the
             rest of the demo data and re-score the table immediately.
           </p>

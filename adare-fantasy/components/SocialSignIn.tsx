@@ -45,13 +45,13 @@ export function SocialSignIn({
           <a
             key={provider.id}
             href={`/api/auth/${provider.id}/start?next=${encodeURIComponent(next)}`}
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.04] px-4 py-2 text-[12.5px] font-medium text-cream/85 transition hover:border-gold/50 hover:text-gold-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold/60"
+            className="inline-flex items-center gap-2 rounded-full border border-ink/20 bg-surface-2 px-4 py-2 text-[12.5px] font-medium text-ink/85 transition hover:border-accent/50 hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent/60"
           >
             Continue with {provider.label}
           </a>
         ))}
       </div>
-      <p className="mt-2 text-[11px] leading-relaxed text-cream/45">
+      <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
         {note ??
           "Social sign-in uses the email your provider has verified, and joins the entry you already have on that address."}
       </p>

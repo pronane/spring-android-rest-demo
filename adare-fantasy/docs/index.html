@@ -11,23 +11,31 @@
     <meta property="og:title" content="Twenty-Eight — fantasy for the Ryder Cup" />
     <meta property="og:description" content="Draft a card, call the 28 matches, follow the cup live. Adare 2027." />
     <meta property="og:image" content="img/home.jpg" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1f17'/><text x='16' y='22' font-size='14' font-family='Georgia' fill='%23c9a227' text-anchor='middle'>28</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23cfe9da'/><text x='16' y='22' font-size='14' font-family='Georgia' fill='%2322302a' text-anchor='middle'>28</text></svg>" />
     <style>
       :root {
-        --forest: #08130f;
-        --forest-800: #0d1f17;
-        --gold: #c9a227;
-        --gold-soft: #e6c65c;
-        --cream: #f3efe4;
-        --ink: #0a1410;
-        --muted: rgba(243, 239, 228, 0.62);
-        --line: rgba(243, 239, 228, 0.14);
+        /* Pastel light palette — mirrors app/globals.css. */
+        --paper: #fbf8f1;
+        --surface: #fffdfa;
+        --butter: #f8e5b6;
+        --accent: #80600f;
+        --sage: #376350;
+        --ink: #22302a;
+        --muted: #5f6d65;
+        --line: #e2d7c2;
+        --mint: #cfe9da;
+        --forest: var(--paper);
+        --forest-800: var(--surface);
+        --gold: var(--accent);
+        --gold-soft: #8a6a17;
+        --cream: var(--ink);
       }
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      html { scroll-behavior: smooth; background: var(--paper); }
       body {
         margin: 0;
-        background: radial-gradient(120% 80% at 50% 0%, #12301f 0%, var(--forest) 55%) fixed;
+        min-height: 100vh;
+        background: radial-gradient(120% 80% at 50% 0%, #eaf4ee 0%, var(--paper) 55%) fixed;
         color: var(--cream);
         font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         line-height: 1.6;
@@ -38,8 +46,8 @@
       header.hero { padding: 72px 0 40px; }
       .brand { display: flex; align-items: center; gap: 12px; }
       .monogram {
-        width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--gold);
-        display: grid; place-items: center; color: var(--gold-soft); font-family: Georgia, "Times New Roman", serif;
+        width: 44px; height: 44px; border-radius: 12px; border: 1px solid #b8dcc8; background: var(--mint);
+        display: grid; place-items: center; color: var(--sage); font-family: Georgia, "Times New Roman", serif;
         font-size: 17px; letter-spacing: 0.02em;
       }
       .brand h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; font-size: 20px; margin: 0; letter-spacing: 0.01em; }
@@ -50,29 +58,30 @@
       .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
       .button {
         display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 999px;
-        background: var(--gold); color: var(--ink); font-weight: 600; font-size: 13.5px; text-decoration: none;
+        background: var(--butter); border: 1px solid #e0c583; color: #4a3a08;
+        font-weight: 600; font-size: 13.5px; text-decoration: none;
       }
-      .button.ghost { background: transparent; color: var(--cream); border: 1px solid var(--line); font-weight: 500; }
+      .button.ghost { background: var(--surface); color: var(--ink); border: 1px solid #d8cbb0; font-weight: 500; }
       .note {
-        margin-top: 26px; padding: 14px 18px; border: 1px solid rgba(201, 162, 39, 0.35);
-        border-radius: 14px; background: rgba(201, 162, 39, 0.07); font-size: 13px; color: var(--cream);
+        margin-top: 26px; padding: 14px 18px; border: 1px solid rgba(128, 96, 15, 0.26);
+        border-radius: 14px; background: rgba(248, 229, 182, 0.55); font-size: 13px; color: var(--ink);
       }
       .note strong { color: var(--gold-soft); }
       section { padding: 48px 0; border-top: 1px solid var(--line); }
       section h3 { font-family: Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 6px; }
       section > p.sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; max-width: 640px; }
       .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-      figure { margin: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.02); }
+      figure { margin: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); box-shadow: 0 16px 34px -26px rgba(34, 48, 42, 0.4); }
       figure img { display: block; width: 100%; height: auto; }
       figcaption { padding: 12px 16px 14px; font-size: 12.5px; color: var(--muted); }
       figcaption b { color: var(--cream); font-weight: 500; }
       .cols { display: grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-      .card { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: rgba(255,255,255,0.02); }
+      .card { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: var(--surface); }
       .card h4 { margin: 0 0 8px; font-size: 14px; letter-spacing: 0.02em; }
       .card p, .card li { color: var(--muted); font-size: 13.5px; }
       .card ul { margin: 0; padding-left: 18px; }
       code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
-      pre { background: rgba(0,0,0,0.42); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; color: #dfe9e0; }
+      pre { background: #f4eddf; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; color: var(--ink); }
       footer { padding: 40px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
       footer p { margin: 6px 0; }
       .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
