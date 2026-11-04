@@ -13,8 +13,8 @@ export default function EditionsPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
       <div className="max-w-2xl">
         <Eyebrow>{PLATFORM.name} · platform</Eyebrow>
-        <h1 className="mt-2 text-4xl text-cream sm:text-5xl">One game. Every cup.</h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-cream/70">
+        <h1 className="mt-2 text-4xl text-ink sm:text-5xl">One game. Every cup.</h1>
+        <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
           Each Ryder Cup is an edition: its own venue art, its own field, its own prize pool — the
           same card, predictor and scoring engine underneath. Adare 2027 is the live edition; the
           rest are queued.
@@ -29,8 +29,8 @@ export default function EditionsPage() {
               key={edition.id}
               className={`relative overflow-hidden rounded-2xl border p-5 transition ${
                 active
-                  ? "border-gold/45 bg-gold/[0.06]"
-                  : "border-white/10 bg-white/[0.025] hover:border-white/25"
+                  ? "border-accent/45 bg-accent/[0.06]"
+                  : "border-line bg-surface hover:border-ink/25"
               }`}
             >
               <span
@@ -40,63 +40,63 @@ export default function EditionsPage() {
               />
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-ink-soft">
                     {edition.year} · {edition.country}
                   </p>
-                  <h2 className="mt-1 font-display text-2xl text-cream">{edition.name}</h2>
-                  <p className="text-[12px] text-cream/70">
+                  <h2 className="mt-1 font-display text-2xl text-ink">{edition.name}</h2>
+                  <p className="text-[12px] text-ink-soft">
                     {edition.venue} · {edition.village}
                   </p>
                 </div>
                 <span
                   className={`shrink-0 rounded-full border px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.12em] ${
                     active
-                      ? "border-gold/50 bg-gold/15 text-gold-soft"
-                      : "border-white/15 text-cream/70"
+                      ? "border-accent/50 bg-accent/15 text-accent"
+                      : "border-ink/15 text-ink-soft"
                   }`}
                 >
                   {STATUS_LABEL[edition.status]}
                 </span>
               </div>
 
-              <p className="mt-3 text-[12.5px] leading-relaxed text-cream/70">{edition.blurb}</p>
+              <p className="mt-3 text-[12.5px] leading-relaxed text-ink-soft">{edition.blurb}</p>
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-[11px]">
                 <div>
-                  <dt className="text-cream/60">Matches</dt>
-                  <dd className="text-cream/70">{edition.matchesLabel}</dd>
+                  <dt className="text-ink-soft">Matches</dt>
+                  <dd className="text-ink-soft">{edition.matchesLabel}</dd>
                 </div>
                 <div>
-                  <dt className="text-cream/60">Captains</dt>
-                  <dd className="text-cream/70">
+                  <dt className="text-ink-soft">Captains</dt>
+                  <dd className="text-ink-soft">
                     {edition.captains.europe} / {edition.captains.usa}
                   </dd>
                 </div>
                 {edition.result ? (
                   <div className="col-span-2">
-                    <dt className="text-cream/60">Result</dt>
-                    <dd className="text-gold-soft">{edition.result}</dd>
+                    <dt className="text-ink-soft">Result</dt>
+                    <dd className="text-accent">{edition.result}</dd>
                   </div>
                 ) : null}
               </dl>
 
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-[10.5px] text-cream/60">
+                <span className="text-[10.5px] text-ink-soft">
                   {edition.fieldReady ? "Field archived" : "Field projected"}
                 </span>
                 {active ? (
                   <Link
                     href="/enter"
-                    className="rounded-full bg-gold px-4 py-1.5 text-[11.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+                    className="rounded-full bg-butter px-4 py-1.5 text-[11.5px] font-semibold text-ink transition hover:bg-butter-deep"
                   >
                     Enter this edition
                   </Link>
                 ) : edition.status === "archive" ? (
-                  <span className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
+                  <span className="text-[10px] uppercase tracking-[0.16em] text-ink-soft">
                     Result archived
                   </span>
                 ) : (
-                  <span className="rounded-full border border-white/15 px-3 py-1.5 text-[11px] text-cream/70">
+                  <span className="rounded-full border border-ink/15 px-3 py-1.5 text-[11px] text-ink-soft">
                     Notify me
                   </span>
                 )}
@@ -109,26 +109,26 @@ export default function EditionsPage() {
       <div className="mt-8 panel-cream rounded-2xl p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="max-w-lg">
-            <p className="eyebrow text-forest-700/85">How the re-skin works</p>
-            <h2 className="mt-2 font-display text-2xl text-forest-900">
+            <p className="eyebrow text-ink/85">How the re-skin works</p>
+            <h2 className="mt-2 font-display text-2xl text-ink">
               A venue is a config file, not a rewrite.
             </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-forest-900/70">
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
               Colours, hero art, venue copy, captains, field snapshot, prize pool and the free data
-              sources all live in <code className="rounded bg-forest-900/10 px-1">lib/tournaments.ts</code>{" "}
+              sources all live in <code className="rounded bg-surface/10 px-1">lib/tournaments.ts</code>{" "}
               plus a snapshot. The game engine, scoring, predictor and leagues are shared, so
               Hazeltine 2029 goes live as a data change.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-forest-900">
+          <div className="grid grid-cols-2 gap-4 text-ink">
             {[
               ["Editions configured", String(EDITIONS.length)],
               ["Live now", "1"],
               ["Shared engine", "1"],
               ["Rewrite required", "0"],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-forest-900/12 px-4 py-3">
-                <p className="text-[9.5px] uppercase tracking-[0.14em] text-forest-900/70">{label}</p>
+              <div key={label} className="rounded-xl border border-ink/12 px-4 py-3">
+                <p className="text-[9.5px] uppercase tracking-[0.14em] text-ink-soft">{label}</p>
                 <p className="font-display text-2xl tnum">{value}</p>
               </div>
             ))}

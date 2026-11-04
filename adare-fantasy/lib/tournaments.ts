@@ -51,7 +51,7 @@ export const EDITIONS: Edition[] = [
     editionLabel: "46th Ryder Cup · 100th anniversary",
     firstTee: "2027-09-17T07:35:00+01:00",
     status: "open",
-    accent: "#c9a44c",
+    accent: "#866314",
     captains: { europe: "Luke Donald", usa: "Jim Furyk" },
     blurb:
       "The 46th Ryder Cup and the 100th anniversary of the matches. Ireland's first staging since 2006.",
@@ -70,7 +70,7 @@ export const EDITIONS: Edition[] = [
     weekLabel: "September 2029",
     firstTee: "2029-09-21T08:00:00-05:00",
     status: "upcoming",
-    accent: "#6f9bea",
+    accent: "#3c648d",
     captains: { europe: "To be named", usa: "To be named" },
     blurb:
       "The 2016 host returns. Registration opens the week the qualifying lists go live.",
@@ -87,7 +87,7 @@ export const EDITIONS: Edition[] = [
     weekLabel: "September 2031",
     firstTee: "2031-09-19T08:00:00+02:00",
     status: "upcoming",
-    accent: "#e0776a",
+    accent: "#a25543",
     captains: { europe: "To be named", usa: "To be named" },
     blurb:
       "A return to Spain for the first time since 1997 was awarded here — a stadium course cut through pine.",
@@ -104,7 +104,7 @@ export const EDITIONS: Edition[] = [
     weekLabel: "23–28 September 2025",
     firstTee: "2025-09-26T07:30:00-04:00",
     status: "archive",
-    accent: "#86c9a1",
+    accent: "#3d6a56",
     captains: { europe: "Luke Donald", usa: "Keegan Bradley" },
     result: "Europe 15–13 USA",
     blurb:

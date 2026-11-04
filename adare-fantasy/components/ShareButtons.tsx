@@ -45,19 +45,19 @@ export function ShareButtons({
   };
 
   const base =
-    "rounded-full border px-3.5 py-2 text-[12px] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold/60";
+    "rounded-full border px-3.5 py-2 text-[12px] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent/60";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={copy}
-        className={`${base} border-gold/45 bg-gold/10 text-gold-soft hover:bg-gold/15`}
+        className={`${base} border-accent/45 bg-accent/10 text-accent hover:bg-accent/15`}
       >
         {copied ? "Link copied" : "Copy link"}
       </button>
       <a
-        className={`${base} border-white/15 text-cream/80 hover:border-white/35`}
+        className={`${base} border-ink/15 text-ink/80 hover:border-ink/35`}
         href={`https://wa.me/?text=${encodeURIComponent(`${text} ${link}`)}`}
         target="_blank"
         rel="noreferrer noopener"
@@ -65,7 +65,7 @@ export function ShareButtons({
         WhatsApp
       </a>
       <a
-        className={`${base} border-white/15 text-cream/80 hover:border-white/35`}
+        className={`${base} border-ink/15 text-ink/80 hover:border-ink/35`}
         href={`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`}
         target="_blank"
         rel="noreferrer noopener"
@@ -73,7 +73,7 @@ export function ShareButtons({
         Post
       </a>
       {!compact && (
-        <button type="button" onClick={native} className={`${base} border-white/15 text-cream/70 hover:border-white/35`}>
+        <button type="button" onClick={native} className={`${base} border-ink/15 text-ink-soft hover:border-ink/35`}>
           Share…
         </button>
       )}

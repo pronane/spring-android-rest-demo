@@ -1,4 +1,4 @@
-# Twenty-Eight — fantasy for the Ryder Cup · v0.10
+# Twenty-Eight — fantasy for the Ryder Cup · v0.12
 
 **Twenty-Eight** is a platform for Ryder Cup fantasy games: one brand, one scoring engine, and a
 new *edition* for every cup. The first live edition is **Adare 2027** — the 46th Ryder Cup at Adare
@@ -41,6 +41,22 @@ Full screenshot set (14 desktop/mobile captures + a GIF of the live simulation) 
 [`screenshots/`](screenshots).
 
 ---
+
+## What's new in v0.12 — the pastel restyle
+
+- **A light theme, not a repaint of the dark one.** Everything now sits on warm paper (`#fbf8f1`) with
+  pastel accents, so a card checked on a phone in the Adare sunlight reads the same as it does on a
+  laptop. The whole palette is one `@theme` block in `app/globals.css`.
+- **Colour earns its place.** Mint means "this is yours" (your live points, the league you are in),
+  butter is the one primary action and the current tab, sky and blush are Europe and the USA in the
+  predictor and the draft, and the table's top three get butter, lilac and blush medals.
+- **The photograph is a wash, not a backdrop.** Adare Manor now sits under a mint-to-sky multiply at
+  low opacity, so the hero reads as a misty morning and the headline always has paper behind it.
+- **Still accessible on the way down.** Every text token was re-checked against its composited
+  background: an AA audit over all 12 routes finds no failures, and `clay-deep` exists so 11px labels
+  on blush stay above 4.5:1. Focus rings, the skip link and reduced-motion all carry over.
+- **The docs match the product.** All 14 README captures, the live-simulation GIF and the GitHub Pages
+  gallery were re-shot from this build.
 
 ## What's new in v0.10
 
@@ -463,7 +479,7 @@ match result and every league table. All of it is labelled as projected in the U
 | Choice | Why |
 |---|---|
 | **TypeScript + Next.js 15 (App Router)** | One language for UI, route handlers and the scoring pipeline; server rendering gives real shareable links for "join my league" invites. |
-| **Tailwind v4** | Bespoke design system (forest / cream / gold, Fraunces + Inter, self-hosted `.woff2`) with no runtime CSS-in-JS. |
+| **Tailwind v4** | Bespoke design system (pastel paper / mint / butter, Fraunces + Inter, self-hosted `.woff2`) with no runtime CSS-in-JS. Tokens live in one `@theme` block in `app/globals.css`. |
 | **React context + `localStorage`** | The card, picks and mode live client-side for speed; the entry and account live server-side. `lib/store.tsx` is the only persistence boundary. |
 | **Postgres, SQLite/Turso, or a JSON file when there's neither** | `lib/server/db.ts` picks an adapter from the URL: `store-pg.ts` for `postgres://`, `store-sqlite.ts` for `file:`/`libsql://`, and the JSON file in `.data/` for nothing at all. Same interface, same document, so one test suite covers all three. `db/schema.sql` (Postgres) and `db/schema.sqlite.sql` (SQLite) are applied by `npm run db:migrate`. |
 | **HMAC cookie session** | `lib/server/auth.ts`; stateless, signed with `SESSION_SECRET`, and one account per verified email across the email and social sign-ins. |
@@ -607,8 +623,8 @@ The first pass was designed for looks; this one is designed to be usable by ever
 
 | Area | What changed |
 |---|---|
-| **Contrast** | Every muted text token was re-tuned to clear WCAG AA on the forest background: micro-labels sit at 60% cream (6.0:1), body copy at 70% (8.0:1), and the cream panels use forest at 70% (7.4:1). Blocked player tiles keep their "card full" dimming, but at 85% opacity instead of 55% so the copy inside still passes. |
-| **Keyboard** | A "Skip to content" link is the first tab stop, the `<main>` landmark takes focus, and every interactive element keeps the gold `:focus-visible` ring. Mode cards, plan cards, side filters, session tabs, match picks and playback speeds are real buttons with `aria-pressed`. |
+| **Contrast** | Every muted text token clears WCAG AA on paper (`#fbf8f1`): body copy and micro-labels use the solid `ink-soft` / `ink-muted` tokens rather than low-alpha ink, and `clay-deep` exists so 11px labels stay above 4.5:1 on blush. Blocked player tiles keep their "card full" dimming, but at 85% opacity instead of 55% so the copy inside still passes. |
+| **Keyboard** | A "Skip to content" link is the first tab stop, the `<main>` landmark takes focus, and every interactive element keeps the sage `:focus-visible` ring. Mode cards, plan cards, side filters, session tabs, match picks and playback speeds are real buttons with `aria-pressed`. |
 | **Screen readers** | `aria-current="page"` on the active nav link in both header navs, labelled nav landmarks, `role="group"` with player names on each predictor match ("Match 1: Rory McIlroy and Shane Lowry against Scottie Scheffler and Patrick Cantlay"), `aria-label` on the simulation's play/pause, speed and jump controls, `role="alert"` on checkout errors, and a hidden `<h2>` on the draft and player-pool grids so heading order never skips a level. |
 | **Forms** | Checkout fields have real types and autofill hints — `email`, `cc-number`, `cc-exp`, `cc-csc`, `name`, `organization` — plus numeric input modes, length caps and a busy state on the pay button. League name, buy-in and join code are labelled. |
 | **Motion** | `prefers-reduced-motion` stops the live dot's ping, the smooth scroll and every transition. |

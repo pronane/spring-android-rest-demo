@@ -114,23 +114,23 @@ export default function DraftPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>The draft · {ACTIVE_EDITION.name}</Eyebrow>
-          <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Build your card</h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
+          <h1 className="mt-2 text-4xl text-ink sm:text-5xl">Build your card</h1>
+          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-ink-soft">
             {mode.blurb} Locks {ACTIVE_EDITION.matchesLabel.split("–")[0]} at the first tee — free
             transfers until then.
           </p>
         </div>
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
           <div className="text-right">
-            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/60">Projected</p>
-            <p className="tnum font-display text-xl text-gold-soft">
+            <p className="text-[9px] uppercase tracking-[0.16em] text-ink-soft">Projected</p>
+            <p className="tnum font-display text-xl text-accent">
               {ready ? projected.toFixed(1) : "—"}
             </p>
           </div>
-          <div className="h-8 w-px bg-white/10" />
+          <div className="h-8 w-px bg-ink/10" />
           <div>
-            <p className="text-[9px] uppercase tracking-[0.16em] text-cream/60">Left</p>
-            <p className={`tnum font-display text-xl ${remaining < 0 ? "text-usa" : "text-cream"}`}>
+            <p className="text-[9px] uppercase tracking-[0.16em] text-ink-soft">Left</p>
+            <p className={`tnum font-display text-xl ${remaining < 0 ? "text-clay" : "text-ink"}`}>
               {credits(remaining)}m
             </p>
           </div>
@@ -152,29 +152,29 @@ export default function DraftPage() {
               aria-pressed={active}
               className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
                 active
-                  ? "border-gold/50 bg-gold/[0.07]"
-                  : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                  ? "border-accent/50 bg-accent/[0.07]"
+                  : "border-line bg-surface hover:border-ink/25"
               }`}
             >
               <span
                 className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border font-display text-[13px] ${
                   active
-                    ? "border-gold bg-gold text-forest-950"
-                    : "border-white/20 text-cream/70"
+                    ? "border-accent bg-butter text-ink"
+                    : "border-ink/20 text-ink-soft"
                 }`}
               >
                 {option.squadSize}
               </span>
               <span>
-                <span className="flex items-center gap-2 text-[13.5px] font-medium text-cream">
+                <span className="flex items-center gap-2 text-[13.5px] font-medium text-ink">
                   {option.name}
                   {active ? (
-                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em] text-gold-soft">
+                    <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em] text-accent">
                       Active
                     </span>
                   ) : null}
                 </span>
-                <span className="mt-0.5 block text-[11px] leading-relaxed text-cream/70">
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-ink-soft">
                   {option.tagline} · {option.budget}m budget · max {option.maxPerSide} per side
                 </span>
               </span>
@@ -191,7 +191,7 @@ export default function DraftPage() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative w-full sm:min-w-[180px] sm:flex-1">
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/60"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft"
                   width="14"
                   height="14"
                   viewBox="0 0 16 16"
@@ -207,10 +207,10 @@ export default function DraftPage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search players or countries"
-                  className="w-full rounded-full border border-white/12 bg-white/[0.04] py-2.5 pl-9 pr-3 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
+                  className="w-full rounded-full border border-ink/12 bg-surface-2 py-2.5 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-soft focus:border-accent/50 focus:outline-none"
                 />
               </div>
-              <div className="flex rounded-full border border-white/12 bg-white/[0.03] p-0.5">
+              <div className="flex rounded-full border border-ink/12 bg-surface p-0.5">
                 {(["all", "europe", "usa"] as SideFilter[]).map((option) => (
                   <button
                     key={option}
@@ -218,22 +218,22 @@ export default function DraftPage() {
                     onClick={() => setSide(option)}
                     aria-pressed={side === option}
                     className={`rounded-full px-3 py-1.5 text-[12px] font-medium capitalize transition ${
-                      side === option ? "bg-cream text-forest-900" : "text-cream/70 hover:text-cream"
+                      side === option ? "bg-mint text-ink" : "text-ink-soft hover:text-ink"
                     }`}
                   >
                     {option === "all" ? "All" : option === "europe" ? "Europe" : "USA"}
                   </button>
                 ))}
               </div>
-              <label className="flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[12px] text-cream/70">
+              <label className="flex items-center gap-2 rounded-full border border-ink/12 bg-surface px-3 py-1.5 text-[12px] text-ink-soft">
                 <span>Sort</span>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="bg-transparent text-[12px] text-cream focus:outline-none"
+                  className="bg-transparent text-[12px] text-ink focus:outline-none"
                 >
                   {SORTS.map((s) => (
-                    <option key={s.key} value={s.key} className="bg-forest-900">
+                    <option key={s.key} value={s.key} className="bg-surface">
                       {s.label}
                     </option>
                   ))}
@@ -258,7 +258,7 @@ export default function DraftPage() {
           </div>
 
           {visible.length === 0 ? (
-            <p className="mt-10 text-center text-[13px] text-cream/60">
+            <p className="mt-10 text-center text-[13px] text-ink-soft">
               Nobody matches that search. Try “Lowry”, “USA” or clear the filters.
             </p>
           ) : null}
@@ -266,15 +266,15 @@ export default function DraftPage() {
 
         {/* card */}
         <aside id="card" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-2xl border border-white/12 bg-forest-900/70 p-4">
+          <div className="rounded-2xl border border-ink/12 bg-surface/70 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-cream/60">{mode.name}</p>
-                <p className="mt-1 font-display text-lg text-cream">
+                <p className="eyebrow text-ink-soft">{mode.name}</p>
+                <p className="mt-1 font-display text-lg text-ink">
                   {state.squad.length}/{mode.squadSize} picked
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-cream/70">
+              <div className="flex items-center gap-2 text-[11px] text-ink-soft">
                 <span className="flex items-center gap-1">
                   <TeamDot side="europe" size={6} /> {europeCount}
                 </span>
@@ -300,7 +300,7 @@ export default function DraftPage() {
 
             <div className="mt-4 space-y-1.5">
               {errors.length === 0 ? (
-                <p className="flex items-center gap-2 rounded-lg bg-shamrock/10 px-3 py-2 text-[11.5px] text-shamrock">
+                <p className="flex items-center gap-2 rounded-lg bg-sage/10 px-3 py-2 text-[11.5px] text-sage">
                   <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
                     <path
                       d="M2 6.4 4.7 9 10 3.4"
@@ -314,7 +314,7 @@ export default function DraftPage() {
                 </p>
               ) : (
                 errors.map((error) => (
-                  <p key={error} className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                  <p key={error} className="rounded-lg bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
                     {error}
                   </p>
                 ))
@@ -329,22 +329,22 @@ export default function DraftPage() {
                   onClick={onSave}
                   className={`rounded-full py-2.5 text-[13px] font-semibold transition ${
                     complete
-                      ? "bg-gold text-forest-950 hover:bg-gold-soft"
-                      : "cursor-not-allowed bg-white/10 text-cream/60"
+                      ? "bg-butter text-ink hover:bg-butter-deep"
+                      : "cursor-not-allowed bg-ink/10 text-ink-soft"
                   }`}
                 >
                   {saved ? "Card saved ✓" : "Save my card"}
                 </button>
               ) : null}
               {paid && saveError ? (
-                <p role="alert" className="rounded-lg bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                <p role="alert" className="rounded-lg bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
                   {saveError}
                 </p>
               ) : null}
               {paid ? null : (
                 <Link
                   href="/enter"
-                  className="rounded-full bg-gold py-2.5 text-center text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+                  className="rounded-full bg-butter py-2.5 text-center text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
                 >
                   Enter €10 to save
                 </Link>
@@ -356,7 +356,7 @@ export default function DraftPage() {
                     autoFill();
                     setSaved(false);
                   }}
-                  className="rounded-full border border-white/15 py-2 text-[12px] font-medium text-cream/75 transition hover:border-gold/50 hover:text-gold-soft"
+                  className="rounded-full border border-ink/15 py-2 text-[12px] font-medium text-ink-soft transition hover:border-accent/50 hover:text-accent"
                 >
                   Auto-pick
                 </button>
@@ -366,7 +366,7 @@ export default function DraftPage() {
                     clearSquad();
                     setSaved(false);
                   }}
-                  className="rounded-full border border-white/15 py-2 text-[12px] font-medium text-cream/70 transition hover:border-usa/50 hover:text-usa"
+                  className="rounded-full border border-ink/15 py-2 text-[12px] font-medium text-ink-soft transition hover:border-clay/50 hover:text-clay"
                 >
                   Clear
                 </button>
@@ -376,37 +376,37 @@ export default function DraftPage() {
             {saved ? (
               <Link
                 href="/team"
-                className="mt-3 flex items-center justify-between rounded-lg border border-gold/30 bg-gold/[0.08] px-3 py-2 text-[12px] text-gold-soft"
+                className="mt-3 flex items-center justify-between rounded-lg border border-accent/30 bg-accent/[0.08] px-3 py-2 text-[12px] text-accent"
               >
                 View your team sheet
                 <span aria-hidden>→</span>
               </Link>
             ) : (
-              <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
-                Tap <span className="rounded bg-gold/20 px-1 text-gold-soft">C</span> to make a
+              <p className="mt-3 text-[10.5px] leading-relaxed text-ink-soft">
+                Tap <span className="rounded bg-accent/20 px-1 text-accent">C</span> to make a
                 player captain — his match points double.
                 {paid ? " Entry paid." : " Drafting is free; the card saves once you enter."}
               </p>
             )}
           </div>
 
-          <div className="mt-4 hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 lg:block">
-            <p className="eyebrow text-cream/60">Need a steer?</p>
-            <ul className="mt-2 space-y-2 text-[11.5px] leading-relaxed text-cream/70">
+          <div className="mt-4 hidden rounded-2xl border border-line bg-surface p-4 lg:block">
+            <p className="eyebrow text-ink-soft">Need a steer?</p>
+            <ul className="mt-2 space-y-2 text-[11.5px] leading-relaxed text-ink-soft">
               <li>
-                <span className="text-cream/75">Balance the sides.</span> Europe have won three of the
+                <span className="text-ink-soft">Balance the sides.</span> Europe have won three of the
                 last four on home soil; the USA own the top of the rankings.
               </li>
               <li>
-                <span className="text-cream/75">Five-match men.</span> Scheffler, McIlroy and Åberg
+                <span className="text-ink-soft">Five-match men.</span> Scheffler, McIlroy and Åberg
                 are the likeliest to play every session.
               </li>
               <li>
-                <span className="text-cream/75">Home-weather picks.</span> Wind and rain in Limerick
+                <span className="text-ink-soft">Home-weather picks.</span> Wind and rain in Limerick
                 rewards Lowry, MacIntyre and Fleetwood.
               </li>
               <li>
-                <span className="text-cream/75">Dozen mode.</span> Twelve players covers every
+                <span className="text-ink-soft">Dozen mode.</span> Twelve players covers every
                 session — but the captaincy matters less of your total.
               </li>
             </ul>
@@ -415,19 +415,19 @@ export default function DraftPage() {
       </div>
 
       {/* mobile summary bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-forest-950/95 px-4 py-3 backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/12 bg-paper/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.16em] text-cream/60">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-soft">
               {state.squad.length}/{mode.squadSize} picked · {mode.short}
             </p>
-            <p className="tnum text-[13px] text-cream/85">
+            <p className="tnum text-[13px] text-ink/85">
               {credits(remaining)}m left · {projected.toFixed(0)} projected
             </p>
           </div>
           <a
             href="#card"
-            className="rounded-full border border-white/20 px-4 py-2 text-[12px] font-medium text-cream/80"
+            className="rounded-full border border-ink/20 px-4 py-2 text-[12px] font-medium text-ink/80"
           >
             View card
           </a>
@@ -437,7 +437,7 @@ export default function DraftPage() {
               disabled={!complete}
               onClick={onSave}
               className={`rounded-full px-4 py-2 text-[12px] font-semibold ${
-                complete ? "bg-gold text-forest-950" : "bg-white/10 text-cream/60"
+                complete ? "bg-butter text-ink" : "bg-ink/10 text-ink-soft"
               }`}
             >
               {saved ? "Saved ✓" : "Save"}
@@ -445,7 +445,7 @@ export default function DraftPage() {
           ) : (
             <Link
               href="/enter"
-              className="rounded-full bg-gold px-4 py-2 text-[12px] font-semibold text-forest-950"
+              className="rounded-full bg-butter px-4 py-2 text-[12px] font-semibold text-ink"
             >
               Enter
             </Link>

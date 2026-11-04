@@ -50,32 +50,67 @@
   src: url("/fonts/inter-latin-700-normal.woff2") format("woff2");
 }
 
+/*
+ * The palette.
+ *
+ * Light, warm and pastel: ivory paper, white cards, and a set of soft tints —
+ * butter, mint, blush, sky, lilac — that carry state instead of doing the work
+ * with contrast. Depth comes from a hairline rule and a low, wide shadow rather
+ * than from a dark surface, which is what the previous (dark) theme used.
+ *
+ * Two rules keep it readable:
+ *   1. Text is ink on paper or ink on a pastel tint, never a tint on a tint.
+ *   2. A tint is only ever a *fill*. When a colour has to be read — a label, an
+ *      icon, a link — the deep version of it is used (accent, sage, clay, ocean),
+ *      which clears 4.5:1 against every surface here.
+ */
 @theme {
   --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-forest-950: #04100c;
-  --color-forest-900: #071a13;
-  --color-forest-850: #09221a;
-  --color-forest-800: #0b2a20;
-  --color-forest-700: #0f3528;
-  --color-forest-600: #154434;
-  --color-forest-500: #1d5742;
+  /* Surfaces, lightest to deepest */
+  --color-surface: #fffdfa;
+  --color-paper: #fbf8f1;
+  --color-paper-deep: #f4eddf;
+  --color-surface-2: #f6f0e3;
+  --color-line: #e2d7c2;
+  --color-line-soft: #ece3d1;
 
-  --color-cream: #f5efe2;
-  --color-cream-soft: #ece2cf;
-  --color-cream-dim: #d9cdb6;
-  --color-sand: #b9ab90;
-  --color-gold: #c9a44c;
-  --color-gold-soft: #e6cd94;
+  /* Ink */
+  --color-ink: #22302a;
+  --color-ink-soft: #4a584f;
+  --color-ink-muted: #5f6d65;
+  --color-ink-faint: #8b978f;
 
-  --color-europe: #6f9bea;
-  --color-europe-deep: #31538f;
-  --color-usa: #e0776a;
-  --color-usa-deep: #8f3a30;
-  --color-shamrock: #86c9a1;
+  /* Accents: a deep tone for anything read, a tint for anything filled */
+  --color-accent: #80600f;
+  --color-accent-soft: #f6e3b6;
+  --color-butter: #f8e5b6;
+  --color-butter-deep: #f0d494;
 
-  --radius-xl2: 1.25rem;
+  --color-sage: #376350;
+  --color-sage-deep: #284c3c;
+  --color-mint: #cfe9da;
+  --color-mint-deep: #b8dcc8;
+
+  --color-clay: #9d4f3d;
+  /* Clay that can carry 11px type on blush without dipping under AA. */
+  --color-clay-deep: #84402f;
+  --color-blush: #f9dcd7;
+
+  --color-ocean: #35608a;
+  --color-sky: #d5e6f8;
+
+  --color-lilac: #e3daf1;
+
+  /* Kept for the team dots and edition accents in lib/, which are data, not CSS */
+  --color-europe: #4d78b0;
+  --color-europe-deep: #2f527f;
+  --color-usa: #b3644f;
+  --color-usa-deep: #7f392c;
+  --color-shamrock: #4d8a6c;
+
+  --radius-xl2: 1.5rem;
 }
 
 @layer base {
@@ -85,13 +120,13 @@
     scroll-behavior: smooth;
   }
   body {
-    background-color: var(--color-forest-950);
-    color: var(--color-cream);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     font-family: var(--font-sans);
   }
   ::selection {
-    background: var(--color-gold);
-    color: #08150f;
+    background: var(--color-butter-deep);
+    color: var(--color-ink);
   }
   h1,
   h2,
@@ -101,8 +136,14 @@
     letter-spacing: -0.015em;
   }
   :focus-visible {
-    outline: 2px solid var(--color-gold);
+    outline: 2px solid var(--color-sage);
     outline-offset: 3px;
+  }
+  /* Form controls follow the theme instead of the operating system's. */
+  input,
+  textarea,
+  select {
+    color: var(--color-ink);
   }
   [id] {
     scroll-margin-top: 6rem;
@@ -136,31 +177,48 @@
     background-image: linear-gradient(
       90deg,
       transparent,
-      rgba(201, 164, 76, 0.45),
+      color-mix(in srgb, var(--color-accent) 32%, transparent),
       transparent
     );
   }
+  /* The card: a white surface, a hairline, and a shadow low enough to read as
+     paper rather than as a floating pane of glass. */
   .panel {
-    background:
-      linear-gradient(180deg, rgba(245, 239, 226, 0.045), rgba(245, 239, 226, 0.015));
-    border: 1px solid rgba(245, 239, 226, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    box-shadow:
+      0 1px 2px rgba(34, 48, 42, 0.05),
+      0 16px 34px -24px rgba(34, 48, 42, 0.4);
+  }
+  /* A card that carries colour rather than a shadow — the pastel workhorse. */
+  .panel-tint {
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
   }
   .panel-cream {
-    background: var(--color-cream);
-    color: var(--color-forest-900);
+    background: var(--color-mint);
+    color: var(--color-ink);
+    border: 1px solid color-mix(in srgb, var(--color-sage) 18%, transparent);
+  }
+  /* A soft tinted wash behind a section, for the pastel rhythm down the page. */
+  .wash-mint {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-mint) 55%, transparent), transparent);
+  }
+  .wash-butter {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-butter) 55%, transparent), transparent);
   }
   .grain::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.25;
+    opacity: 0.5;
     background-image: radial-gradient(
-        rgba(255, 255, 255, 0.06) 0.5px,
-        transparent 0.5px
-      );
-    background-size: 3px 3px;
-    mix-blend-mode: overlay;
+      color-mix(in srgb, var(--color-ink) 5%, transparent) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 4px 4px;
+    mix-blend-mode: multiply;
   }
   .text-balance {
     text-wrap: balance;

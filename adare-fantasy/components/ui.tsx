@@ -10,7 +10,7 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
-    <p className={`eyebrow text-gold/90 ${className}`}>{children}</p>
+    <p className={`eyebrow text-accent/90 ${className}`}>{children}</p>
   );
 }
 
@@ -23,7 +23,7 @@ export function TeamDot({ side, size = 8 }: { side: Side; size?: number }) {
         width: size,
         height: size,
         backgroundColor: SIDE_COLOR[side],
-        boxShadow: `0 0 0 3px ${side === "europe" ? "rgba(111,155,234,0.16)" : "rgba(224,119,106,0.16)"}`,
+        boxShadow: `0 0 0 3px ${side === "europe" ? "rgba(77,120,176,0.18)" : "rgba(179,100,79,0.18)"}`,
       }}
     />
   );
@@ -40,7 +40,7 @@ export function TeamLabel({ side, className = "" }: { side: Side; className?: st
 
 export function CountryChip({ code }: { code: string }) {
   return (
-    <span className="rounded border border-white/15 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-cream/70">
+    <span className="rounded border border-ink/15 bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.08em] text-ink-soft">
       {code}
     </span>
   );
@@ -59,15 +59,15 @@ export function Stat({
 }) {
   return (
     <div>
-      <p className="eyebrow text-cream/60">{label}</p>
+      <p className="eyebrow text-ink-soft">{label}</p>
       <p
         className={`mt-1 font-display text-2xl tnum ${
-          tone === "gold" ? "text-gold-soft" : tone === "muted" ? "text-cream/70" : "text-cream"
+          tone === "gold" ? "text-accent" : tone === "muted" ? "text-ink-soft" : "text-ink"
         }`}
       >
         {value}
       </p>
-      {sub ? <p className="mt-0.5 text-xs text-cream/70">{sub}</p> : null}
+      {sub ? <p className="mt-0.5 text-xs text-ink-soft">{sub}</p> : null}
     </div>
   );
 }
@@ -87,13 +87,13 @@ export function SectionHead({
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h2 className="mt-2 text-balance text-3xl text-cream sm:text-4xl">{title}</h2>
-        {sub ? <p className="mt-3 max-w-xl text-sm leading-relaxed text-cream/70">{sub}</p> : null}
+        <h2 className="mt-2 text-balance text-3xl text-ink sm:text-4xl">{title}</h2>
+        {sub ? <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">{sub}</p> : null}
       </div>
       {action ? (
         <Link
           href={action.href}
-          className="group inline-flex items-center gap-2 border-b border-gold/40 pb-1 text-sm font-medium text-gold-soft transition hover:border-gold hover:text-gold"
+          className="group inline-flex items-center gap-2 border-b border-accent/40 pb-1 text-sm font-medium text-accent transition hover:border-accent hover:text-accent"
         >
           {action.label}
           <span aria-hidden className="transition group-hover:translate-x-0.5">
@@ -120,10 +120,10 @@ export function ButtonLink({
     "inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition";
   const styles =
     variant === "solid"
-      ? "bg-gold text-forest-950 hover:bg-gold-soft"
+      ? "bg-butter text-ink hover:bg-butter-deep"
       : variant === "cream"
-        ? "bg-cream text-forest-900 hover:bg-cream-soft"
-        : "border border-cream/25 text-cream hover:border-cream/60 hover:bg-white/5";
+        ? "bg-mint text-ink hover:bg-mint-deep"
+        : "border border-ink/15 text-ink hover:border-ink/30 hover:bg-surface-2";
   return (
     <Link href={href} className={`${base} ${styles} ${className}`}>
       {children}
@@ -132,7 +132,7 @@ export function ButtonLink({
 }
 
 export function Divider({ className = "" }: { className?: string }) {
-  return <div className={`h-px w-full bg-white/10 ${className}`} />;
+  return <div className={`h-px w-full bg-ink/10 ${className}`} />;
 }
 
 export function Flag({ code, country }: { code: string; country: string }) {
@@ -152,7 +152,7 @@ export function Flag({ code, country }: { code: string; country: string }) {
   return (
     <span
       title={country}
-      className="inline-block h-3 w-4.5 overflow-hidden rounded-[2px] border border-white/20"
+      className="inline-block h-3 w-4.5 overflow-hidden rounded-[2px] border border-ink/20"
       style={{
         background:
           code === "USA"

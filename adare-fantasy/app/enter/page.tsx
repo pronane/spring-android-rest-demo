@@ -116,17 +116,17 @@ export default function EnterPage() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-10">
       <div className="max-w-2xl">
         <Eyebrow>Entry · {ACTIVE_EDITION.name}</Eyebrow>
-        <h1 className="mt-2 text-4xl text-cream sm:text-5xl">
+        <h1 className="mt-2 text-4xl text-ink sm:text-5xl">
           One payment. Both games. All three days.
         </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-cream/70">
+        <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
           Entry funds the prize pool. Your card and your match predictions are included — there is
           no upsell, no premium armband and no second charge at the first tee.
         </p>
       </div>
 
       {invite ? (
-        <p className="mt-5 inline-flex rounded-full border border-shamrock/35 bg-shamrock/[0.07] px-4 py-1.5 text-[11.5px] text-shamrock">
+        <p className="mt-5 inline-flex rounded-full border border-sage/35 bg-sage/[0.07] px-4 py-1.5 text-[11.5px] text-sage">
           Invited by {invite} — both cards get a free transfer when you join.
         </p>
       ) : null}
@@ -145,26 +145,26 @@ export default function EnterPage() {
                   aria-pressed={active}
                   className={`relative rounded-2xl border p-4 text-left transition ${
                     active
-                      ? "border-gold/60 bg-gold/[0.07]"
-                      : "border-white/10 bg-white/[0.025] hover:border-white/25"
+                      ? "border-accent/60 bg-accent/[0.07]"
+                      : "border-line bg-surface hover:border-ink/25"
                   }`}
                 >
                   {option.highlight ? (
-                    <span className="absolute right-3 top-3 rounded-full bg-gold px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em] text-forest-950">
+                    <span className="absolute right-3 top-3 rounded-full bg-butter px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em] text-ink">
                       Popular
                     </span>
                   ) : null}
-                  <p className="text-[13px] font-medium text-cream">{option.name}</p>
-                  <p className="mt-1 font-display text-2xl text-cream tnum">
+                  <p className="text-[13px] font-medium text-ink">{option.name}</p>
+                  <p className="mt-1 font-display text-2xl text-ink tnum">
                     {eur(option.price)}
                   </p>
-                  <p className="text-[10.5px] text-cream/60">
+                  <p className="text-[10.5px] text-ink-soft">
                     {option.entries} {option.entries === 1 ? "entry" : "entries"}
                   </p>
                   <ul className="mt-3 space-y-1">
                     {option.features.map((f) => (
-                      <li key={f} className="flex gap-1.5 text-[10.5px] leading-relaxed text-cream/70">
-                        <span className="text-shamrock">✓</span>
+                      <li key={f} className="flex gap-1.5 text-[10.5px] leading-relaxed text-ink-soft">
+                        <span className="text-sage">✓</span>
                         {f}
                       </li>
                     ))}
@@ -175,16 +175,16 @@ export default function EnterPage() {
           </div>
 
           {/* checkout */}
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
             {receipt ? (
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-shamrock/15 text-shamrock">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-sage/15 text-sage">
                     ✓
                   </span>
                   <div>
-                    <p className="text-[14px] font-medium text-cream">You are in.</p>
-                    <p className="text-[11.5px] text-cream/70">
+                    <p className="text-[14px] font-medium text-ink">You are in.</p>
+                    <p className="text-[11.5px] text-ink-soft">
                       Entry {receipt.ref} · {eur(receipt.amount)} paid
                     </p>
                   </div>
@@ -192,37 +192,37 @@ export default function EnterPage() {
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <Link
                     href="/draft"
-                    className="rounded-full bg-gold py-2.5 text-center text-[12.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+                    className="rounded-full bg-butter py-2.5 text-center text-[12.5px] font-semibold text-ink transition hover:bg-butter-deep"
                   >
                     Draft my card
                   </Link>
                   <Link
                     href="/predict"
-                    className="rounded-full border border-cream/25 py-2.5 text-center text-[12.5px] font-medium text-cream transition hover:border-gold/60"
+                    className="rounded-full border border-line/25 py-2.5 text-center text-[12.5px] font-medium text-ink transition hover:border-accent/60"
                   >
                     Call the 28
                   </Link>
                   <Link
                     href="/account"
-                    className="rounded-full border border-white/12 py-2.5 text-center text-[12.5px] text-cream/60 transition hover:text-cream"
+                    className="rounded-full border border-ink/12 py-2.5 text-center text-[12.5px] text-ink-soft transition hover:text-ink"
                   >
                     View receipt
                   </Link>
                 </div>
                 {error ? (
-                  <p className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa">
+                  <p className="mt-3 rounded-lg border border-clay/30 bg-clay/10 px-3 py-2 text-[11.5px] text-clay">
                     {error}
                   </p>
                 ) : null}
-                <p className="mt-3 text-[10.5px] text-cream/60">
+                <p className="mt-3 text-[10.5px] text-ink-soft">
                   Demo checkout — no card was charged and no card data is stored.
                 </p>
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <p className="eyebrow text-cream/60">Checkout</p>
-                  <span className="text-[11px] text-cream/60 tnum">
+                  <p className="eyebrow text-ink-soft">Checkout</p>
+                  <span className="text-[11px] text-ink-soft tnum">
                     {plan.name} · {eur(plan.price)}
                   </span>
                 </div>
@@ -265,7 +265,7 @@ export default function EnterPage() {
                 {error ? (
                   <p
                     role="alert"
-                    className="mt-3 rounded-lg border border-usa/30 bg-usa/10 px-3 py-2 text-[11.5px] text-usa"
+                    className="mt-3 rounded-lg border border-clay/30 bg-clay/10 px-3 py-2 text-[11.5px] text-clay"
                   >
                     {error}
                   </p>
@@ -278,13 +278,13 @@ export default function EnterPage() {
                   aria-busy={busy}
                   className={`mt-4 w-full rounded-full py-3 text-[13px] font-semibold transition ${
                     busy
-                      ? "cursor-wait bg-white/10 text-cream/60"
-                      : "bg-gold text-forest-950 hover:bg-gold-soft"
+                      ? "cursor-wait bg-ink/10 text-ink-soft"
+                      : "bg-butter text-ink hover:bg-butter-deep"
                   }`}
                 >
                   {busy ? "Opening checkout…" : `Continue to payment · ${eur(plan.price)}`}
                 </button>
-                <p className="mt-2 text-center text-[10.5px] text-cream/60">
+                <p className="mt-2 text-center text-[10.5px] text-ink-soft">
                   Payment is taken on the next step · your entry is created when it settles · nothing
                   is charged twice
                 </p>
@@ -293,14 +293,16 @@ export default function EnterPage() {
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {SPONSORS.map((sponsor) => (
+            {SPONSORS.map((sponsor, index) => (
               <div
                 key={sponsor.name}
-                className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5"
+                className={`rounded-xl border p-3.5 ${
+                  ["border-mint-deep bg-mint/45", "border-sky bg-sky/45", "border-blush bg-blush/45"][index % 3]
+                }`}
               >
-                <p className="text-[9px] uppercase tracking-[0.14em] text-gold/85">{sponsor.tier}</p>
-                <p className="mt-1 text-[12.5px] font-medium text-cream/85">{sponsor.name}</p>
-                <p className="text-[10.5px] text-cream/60">{sponsor.tag}</p>
+                <p className="text-[9px] uppercase tracking-[0.14em] text-accent/85">{sponsor.tier}</p>
+                <p className="mt-1 text-[12.5px] font-medium text-ink/85">{sponsor.name}</p>
+                <p className="text-[10.5px] text-ink-soft">{sponsor.tag}</p>
               </div>
             ))}
           </div>
@@ -308,37 +310,37 @@ export default function EnterPage() {
 
         {/* prize pool */}
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
-            <p className="eyebrow text-cream/60">Prize pool</p>
-            <p className="mt-1 font-display text-3xl text-gold-soft tnum">{eur(pool)}</p>
-            <p className="text-[11px] text-cream/60">
+          <div className="rounded-2xl border border-accent/25 bg-accent/[0.05] p-5">
+            <p className="eyebrow text-ink-soft">Prize pool</p>
+            <p className="mt-1 font-display text-3xl text-accent tnum">{eur(pool)}</p>
+            <p className="text-[11px] text-ink-soft">
               at {EXAMPLE_ENTRIES.toLocaleString("en-IE")} entries · 95% paid out
             </p>
             <ul className="mt-4 space-y-2">
               {PRIZE_SPLIT.map((row) => (
                 <li key={row.label} className="flex items-center gap-2 text-[11.5px]">
-                  <span className="w-28 shrink-0 text-cream/70">{row.label}</span>
-                  <span className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+                  <span className="w-28 shrink-0 text-ink-soft">{row.label}</span>
+                  <span className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
                     <span
-                      className="block h-full rounded-full bg-gold/70"
+                      className="block h-full rounded-full bg-accent/70"
                       style={{ width: `${(row.share / 0.35) * 100}%` }}
                     />
                   </span>
-                  <span className="w-14 text-right tnum text-cream/80">
+                  <span className="w-14 text-right tnum text-ink/80">
                     {eur(pool * row.share)}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[10.5px] leading-relaxed text-cream/60">
+            <p className="mt-3 text-[10.5px] leading-relaxed text-ink-soft">
               Prize pool is illustrative and scales with entries. Private leagues can add their own
               buy-in and sponsor pot on top.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/60">What the entry covers</p>
-            <ul className="mt-3 space-y-2 text-[12px] text-cream/70">
+          <div className="rounded-2xl border border-line bg-surface p-5">
+            <p className="eyebrow text-ink-soft">What the entry covers</p>
+            <ul className="mt-3 space-y-2 text-[12px] text-ink-soft">
               {[
                 "Classic Six and Captain's Dozen cards",
                 "The 28-match predictor + awards",
@@ -346,22 +348,22 @@ export default function EnterPage() {
                 "Prize-pool eligibility",
               ].map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span className="text-shamrock">✓</span>
+                  <span className="text-sage">✓</span>
                   {item}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-            <p className="eyebrow text-cream/60">League sponsor slots</p>
-            <p className="mt-2 text-[12px] leading-relaxed text-cream/70">
+          <div className="rounded-2xl border border-line bg-surface p-5">
+            <p className="eyebrow text-ink-soft">League sponsor slots</p>
+            <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">
               Commissioners can attach a sponsor to a private league — a bar, a club, a WhatsApp
               group with delusions of grandeur. Sponsor funds sit on top of the main prize pool.
             </p>
             <Link
               href="/leagues"
-              className="mt-3 inline-block text-[11.5px] text-gold-soft/80 hover:text-gold"
+              className="mt-3 inline-block text-[11.5px] text-accent/80 hover:text-accent"
             >
               Set up a league →
             </Link>
@@ -397,7 +399,7 @@ function Field({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="text-[10px] uppercase tracking-[0.14em] text-cream/60">{label}</span>
+      <span className="text-[10px] uppercase tracking-[0.14em] text-ink-soft">{label}</span>
       <input
         type={type}
         autoComplete={autoComplete}
@@ -407,7 +409,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-white/12 bg-forest-950/60 px-3 py-2 text-[13px] text-cream placeholder:text-cream/60 focus:border-gold/50 focus:outline-none"
+        className="mt-1.5 w-full rounded-lg border border-ink/12 bg-paper/60 px-3 py-2 text-[13px] text-ink placeholder:text-ink-soft focus:border-accent/50 focus:outline-none"
       />
     </label>
   );

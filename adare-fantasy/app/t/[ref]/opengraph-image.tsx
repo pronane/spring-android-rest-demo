@@ -32,14 +32,14 @@ export default async function Image({ params }: { params: Promise<{ ref: string 
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 64,
-          background: "linear-gradient(160deg, #0d2b23 0%, #04100c 62%, #04100c 100%)",
-          color: "#f5f1e6",
+          background: "linear-gradient(160deg, #fffdfa 0%, #fbf8f2 58%, #f2ede1 100%)",
+          color: "#22302a",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 22, letterSpacing: 6, color: "#c8a95f" }}>TWENTY-EIGHT</div>
+            <div style={{ fontSize: 22, letterSpacing: 6, color: "#3d6a56" }}>TWENTY-EIGHT</div>
             <div style={{ fontSize: 18, color: "rgba(245,241,230,0.55)", marginTop: 4 }}>
               Fantasy Ryder Cup · Adare 2027
             </div>
@@ -54,7 +54,7 @@ export default async function Image({ params }: { params: Promise<{ ref: string 
 
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
-            <div style={{ fontSize: 150, fontWeight: 700, color: "#e2c47e", lineHeight: 1 }}>{points}</div>
+            <div style={{ fontSize: 150, fontWeight: 700, color: "#866314", lineHeight: 1 }}>{points}</div>
             <div style={{ fontSize: 30, color: "rgba(245,241,230,0.6)", paddingBottom: 22 }}>points</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>

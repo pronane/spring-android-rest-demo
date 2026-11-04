@@ -31,12 +31,12 @@ export function SquadBoard({
           return (
             <li
               key={`empty-${index}`}
-              className="flex h-[62px] items-center gap-3 rounded-xl border border-dashed border-white/12 bg-white/[0.015] px-3"
+              className="flex h-[62px] items-center gap-3 rounded-xl border border-dashed border-ink/12 bg-ink/[0.015] px-3"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full border border-white/15 text-[11px] text-cream/60 tnum">
+              <span className="grid h-7 w-7 place-items-center rounded-full border border-ink/15 text-[11px] text-ink-soft tnum">
                 {index + 1}
               </span>
-              <span className="text-[13px] text-cream/60">Empty slot</span>
+              <span className="text-[13px] text-ink-soft">Empty slot</span>
             </li>
           );
         }
@@ -46,24 +46,24 @@ export function SquadBoard({
             key={player.id}
             className={`group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
               isCaptain
-                ? "border-gold/45 bg-gold/[0.07]"
-                : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                ? "border-accent/45 bg-accent/[0.07]"
+                : "border-line bg-surface hover:border-ink/20"
             }`}
           >
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/15 font-display text-[12px] text-cream/60 tnum">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink/15 font-display text-[12px] text-ink-soft tnum">
               {index + 1}
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <TeamDot side={player.side} size={7} />
-                <p className="truncate text-[13.5px] font-medium text-cream">{player.name}</p>
+                <p className="truncate text-[13.5px] font-medium text-ink">{player.name}</p>
                 {isCaptain ? (
-                  <span className="rounded bg-gold px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-[0.12em] text-forest-950">
+                  <span className="rounded bg-butter px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-[0.12em] text-ink">
                     C
                   </span>
                 ) : null}
               </div>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-cream/60">
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-ink-soft">
                 <CountryChip code={player.countryCode} />
                 <span className="tnum">{credits(player.price)}m</span>
                 {variant === "full" ? (
@@ -82,8 +82,8 @@ export function SquadBoard({
                   title="Make captain — points doubled"
                   className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition ${
                     isCaptain
-                      ? "border-gold bg-gold text-forest-950"
-                      : "border-white/15 text-cream/70 hover:border-gold/50 hover:text-gold-soft"
+                      ? "border-accent bg-butter text-ink"
+                      : "border-ink/15 text-ink-soft hover:border-accent/50 hover:text-accent"
                   }`}
                 >
                   C
@@ -94,7 +94,7 @@ export function SquadBoard({
                   type="button"
                   onClick={() => onRemove(player.id)}
                   aria-label={`Remove ${player.name}`}
-                  className="grid h-6 w-6 place-items-center rounded-full text-cream/60 transition hover:bg-white/10 hover:text-cream"
+                  className="grid h-6 w-6 place-items-center rounded-full text-ink-soft transition hover:bg-ink/10 hover:text-ink"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
                     <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -115,15 +115,15 @@ export function BudgetBar({ spend, budget = 100 }: { spend: number; budget?: num
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="eyebrow text-cream/60">Budget spent</span>
-        <span className={`tnum text-sm ${over ? "text-usa" : "text-cream/80"}`}>
+        <span className="eyebrow text-ink-soft">Budget spent</span>
+        <span className={`tnum text-sm ${over ? "text-clay" : "text-ink/80"}`}>
           {credits(spend)} / {budget}m
         </span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            over ? "bg-usa" : pct > 92 ? "bg-gold" : "bg-shamrock"
+            over ? "bg-clay" : pct > 92 ? "bg-butter" : "bg-sage"
           }`}
           style={{ width: `${Math.min(100, pct)}%` }}
         />
@@ -134,15 +134,15 @@ export function BudgetBar({ spend, budget = 100 }: { spend: number; budget?: num
 
 export function SquadEmpty({ label = "No team yet" }: { label?: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/12 bg-white/[0.02] p-6 text-center">
-      <p className="font-display text-lg text-cream/80">{label}</p>
-      <p className="mx-auto mt-2 max-w-xs text-[13px] text-cream/70">
+    <div className="rounded-2xl border border-dashed border-ink/12 bg-surface p-6 text-center">
+      <p className="font-display text-lg text-ink/80">{label}</p>
+      <p className="mx-auto mt-2 max-w-xs text-[13px] text-ink-soft">
         Pick your card before the lock — Classic Six (100m) or a full Captain&apos;s Dozen (200m) —
         and name one captain.
       </p>
       <Link
         href="/draft"
-        className="mt-4 inline-flex rounded-full bg-gold px-4 py-2 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+        className="mt-4 inline-flex rounded-full bg-butter px-4 py-2 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
       >
         Draft your card
       </Link>

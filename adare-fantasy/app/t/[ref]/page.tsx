@@ -55,18 +55,18 @@ export default async function PublicCardPage({ params }: Params) {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-10">
       <Eyebrow>Public card · Adare 2027</Eyebrow>
 
-      <article className="mt-4 overflow-hidden rounded-3xl border border-gold/25 bg-gradient-to-b from-gold/[0.09] via-forest-950 to-forest-950 p-6 sm:p-8">
+      <article className="mt-4 overflow-hidden rounded-3xl border border-accent/25 bg-gradient-to-b from-accent/[0.09] via-paper to-paper p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-cream/50">{user.manager}</p>
-            <h1 className="mt-1 font-display text-4xl text-cream sm:text-5xl">{user.teamName}</h1>
-            <p className="mt-2 text-[12px] text-cream/55">{user.entry.ref}</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">{user.manager}</p>
+            <h1 className="mt-1 font-display text-4xl text-ink sm:text-5xl">{user.teamName}</h1>
+            <p className="mt-2 text-[12px] text-ink-soft">{user.entry.ref}</p>
           </div>
           <div className="text-right">
-            <p className="font-display text-5xl text-gold-soft tnum">{score.total.toFixed(1)}</p>
-            <p className="text-[11px] uppercase tracking-[0.14em] text-cream/50">points</p>
+            <p className="font-display text-5xl text-accent tnum">{score.total.toFixed(1)}</p>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-ink-soft">points</p>
             {row ? (
-              <p className="mt-2 rounded-full border border-white/15 px-3 py-1 text-[11px] text-cream/70">
+              <p className="mt-2 rounded-full border border-ink/15 px-3 py-1 text-[11px] text-ink-soft">
                 Rank {row.rank} of {standings.total}
               </p>
             ) : null}
@@ -80,15 +80,15 @@ export default async function PublicCardPage({ params }: Params) {
             { label: "Transfers", value: score.transferPenalty ? `−${score.transferPenalty}` : "—" },
             { label: "Matches in", value: `${results.finals}/${results.total}` },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-cream/55">{stat.label}</dt>
-              <dd className="mt-1 font-display text-xl text-cream tnum">{stat.value}</dd>
+            <div key={stat.label} className="rounded-xl border border-line bg-surface px-3 py-2.5">
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-ink-soft">{stat.label}</dt>
+              <dd className="mt-1 font-display text-xl text-ink tnum">{stat.value}</dd>
             </div>
           ))}
         </dl>
 
         <div className="mt-6">
-          <p className="text-[10.5px] uppercase tracking-[0.16em] text-cream/55">The card</p>
+          <p className="text-[10.5px] uppercase tracking-[0.16em] text-ink-soft">The card</p>
           <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {players.map((player) => {
               const info = PLAYER_BY_ID[player.playerId];
@@ -100,24 +100,24 @@ export default async function PublicCardPage({ params }: Params) {
               return (
                 <li
                   key={player.playerId}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[12.5px]"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[12.5px]"
                 >
-                  <span className="text-cream/85">
+                  <span className="text-ink/85">
                     {info?.shortName ?? player.playerId}
                     {armband ? (
-                      <span className="ml-1.5 rounded bg-gold/20 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-gold-soft">
+                      <span className="ml-1.5 rounded bg-accent/20 px-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-accent">
                         C
                       </span>
                     ) : null}
                   </span>
-                  <span className="text-cream/55 tnum">{player.total.toFixed(1)}</span>
+                  <span className="text-ink-soft tnum">{player.total.toFixed(1)}</span>
                 </li>
               );
             })}
           </ul>
         </div>
 
-        <p className="mt-5 text-[11px] text-cream/55">
+        <p className="mt-5 text-[11px] text-ink-soft">
           {results.clock} · {results.source === "feed" ? "live feed" : results.source === "simulation" ? "simulation" : "operator results"}
           {results.provisional ? " · provisional, updates as matches finish" : ""}
         </p>
@@ -127,13 +127,13 @@ export default async function PublicCardPage({ params }: Params) {
         <ShareButtons url={`/t/${user.entry.ref}`} text={`${user.teamName} on ${score.total.toFixed(1)} points at Adare 2027. Beat that.`} />
         <Link
           href={`/enter?ref=${encodeURIComponent(user.entry.ref)}`}
-          className="rounded-full bg-gold px-4 py-2 text-[12.5px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+          className="rounded-full bg-butter px-4 py-2 text-[12.5px] font-semibold text-ink transition hover:bg-butter-deep"
         >
           Enter with this card&apos;s invite
         </Link>
       </div>
 
-      <p className="mt-8 text-[11.5px] leading-relaxed text-cream/60">
+      <p className="mt-8 text-[11.5px] leading-relaxed text-ink-soft">
         Every number on this page is scored by the server from the results snapshot — the same
         scoring function as the leaderboard. An invite adds a free transfer to both cards.
       </p>

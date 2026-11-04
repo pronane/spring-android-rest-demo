@@ -519,8 +519,8 @@ export const SIDE_LABEL: Record<Side, string> = {
 };
 
 export const SIDE_COLOR: Record<Side, string> = {
-  europe: "#6f9bea",
-  usa: "#e0776a",
+  europe: "#4d78b0",
+  usa: "#b3644f",
 };
 
 export type LeagueMember = {

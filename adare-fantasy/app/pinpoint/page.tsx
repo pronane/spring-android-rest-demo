@@ -58,8 +58,8 @@ export default function PinpointPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
       <Eyebrow>Pinpoint · side game</Eyebrow>
-      <h1 className="mt-2 text-4xl text-cream sm:text-5xl">Closest to the pin, longest off the tee</h1>
-      <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-cream/70">
+      <h1 className="mt-2 text-4xl text-ink sm:text-5xl">Closest to the pin, longest off the tee</h1>
+      <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-ink-soft">
         Each day, guess how close the best tee shot finishes on the featured par 3, and how far the
         longest drive goes on the featured par 5. A perfect call is worth {MAX_POINTS_PER_GUESS}; you
         lose a point for every foot (or every three yards) you&apos;re out. Guesses lock with your card
@@ -72,11 +72,11 @@ export default function PinpointPage() {
           const r = results[day.id];
           const s = score.byDay[day.id];
           return (
-            <section key={day.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-              <h2 className="font-display text-2xl text-cream">{day.label}</h2>
+            <section key={day.id} className="rounded-2xl border border-line bg-surface p-5">
+              <h2 className="font-display text-2xl text-ink">{day.label}</h2>
 
               <label className="mt-4 block">
-                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/60">
+                <span className="text-[11px] uppercase tracking-[0.14em] text-ink-soft">
                   Nearest the pin (feet)
                 </span>
                 <input
@@ -88,12 +88,12 @@ export default function PinpointPage() {
                   value={g.pin ?? ""}
                   onChange={(e) => update(day.id, "pin", e.target.value)}
                   placeholder="e.g. 4.5"
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/60"
+                  className="mt-1 w-full rounded-lg border border-ink/15 bg-paper/60 px-3 py-2 text-[14px] text-ink tnum placeholder:text-ink-soft"
                 />
               </label>
 
               <label className="mt-3 block">
-                <span className="text-[11px] uppercase tracking-[0.14em] text-cream/60">
+                <span className="text-[11px] uppercase tracking-[0.14em] text-ink-soft">
                   Longest drive (yards)
                 </span>
                 <input
@@ -104,19 +104,19 @@ export default function PinpointPage() {
                   value={g.drive ?? ""}
                   onChange={(e) => update(day.id, "drive", e.target.value)}
                   placeholder="e.g. 352"
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-forest-950/60 px-3 py-2 text-[14px] text-cream tnum placeholder:text-cream/60"
+                  className="mt-1 w-full rounded-lg border border-ink/15 bg-paper/60 px-3 py-2 text-[14px] text-ink tnum placeholder:text-ink-soft"
                 />
               </label>
 
               {showSim ? (
-                <dl className="mt-4 space-y-1 border-t border-white/10 pt-3 text-[12px]">
+                <dl className="mt-4 space-y-1 border-t border-line pt-3 text-[12px]">
                   <div className="flex justify-between">
-                    <dt className="text-cream/70">Pin: {r.pin} ft</dt>
-                    <dd className="tnum text-gold-soft">+{s.pin}</dd>
+                    <dt className="text-ink-soft">Pin: {r.pin} ft</dt>
+                    <dd className="tnum text-accent">+{s.pin}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-cream/70">Drive: {r.drive} yd</dt>
-                    <dd className="tnum text-gold-soft">+{s.drive}</dd>
+                    <dt className="text-ink-soft">Drive: {r.drive} yd</dt>
+                    <dd className="tnum text-accent">+{s.drive}</dd>
                   </div>
                 </dl>
               ) : null}
@@ -130,14 +130,14 @@ export default function PinpointPage() {
           <button
             type="button"
             onClick={save}
-            className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+            className="rounded-full bg-butter px-5 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
           >
             Save my guesses
           </button>
         ) : (
           <Link
             href="/enter"
-            className="rounded-full bg-gold px-5 py-2.5 text-[13px] font-semibold text-forest-950 transition hover:bg-gold-soft"
+            className="rounded-full bg-butter px-5 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-butter-deep"
           >
             Enter to save guesses
           </Link>
@@ -145,20 +145,20 @@ export default function PinpointPage() {
         <button
           type="button"
           onClick={() => setShowSim((v) => !v)}
-          className="rounded-full border border-white/15 px-4 py-2 text-[12.5px] text-cream/70 transition hover:border-gold/50"
+          className="rounded-full border border-ink/15 px-4 py-2 text-[12.5px] text-ink-soft transition hover:border-accent/50"
         >
           {showSim ? "Hide simulated results" : "Try it: simulate the results"}
         </button>
-        <span className="text-[12px] text-cream/70 tnum">
+        <span className="text-[12px] text-ink-soft tnum">
           {filled}/6 guesses{showSim ? ` · ${score.total} pts in the simulation` : ""}
         </span>
       </div>
       {saveMsg ? (
-        <p role="status" className="mt-2 text-[12px] text-cream/60">
+        <p role="status" className="mt-2 text-[12px] text-ink-soft">
           {saveMsg}
         </p>
       ) : null}
-      <p className="mt-6 text-[10.5px] leading-relaxed text-cream/60">
+      <p className="mt-6 text-[10.5px] leading-relaxed text-ink-soft">
         Simulated results are for trying the scoring before the week; real results come from the
         official shot data once the live feed is connected.
       </p>
