@@ -1,6 +1,6 @@
 # spring-android-rest-demo
 
-Two things live in this repository.
+Three things live in this repository.
 
 ## 1. Twenty-Eight — fantasy for the Ryder Cup (`adare-fantasy/`)
 
@@ -36,3 +36,18 @@ credentials, with Google, Apple and Facebook.
 The original demo this repository was created for: a small Android app talking to
 a Spring Boot REST service. It is still here, untouched, and unrelated to
 `adare-fantasy/` — build it with `./gradlew`.
+
+## 3. Aussie Rules 3D (`aussie_rules_3d/`)
+
+A full 3D **Australian rules football** game that runs on any device in the
+browser — exact 2026 AFL laws, rigged & animated players modelled in Blender,
+a Melbourne arena with a live scoreboard and crowd, and one game across
+keyboard, gamepad and touch (installable as an app, playable offline).
+
+**[▶ Play it](aussie_rules_3d/README.md#quick-start)** ·
+[Install](aussie_rules_3d/INSTALL.md) · [Controls](aussie_rules_3d/CONTROLS.md) ·
+[Rules](aussie_rules_3d/RULES.md) · [Deploy](aussie_rules_3d/DEPLOY.md)
+
+```bash
+cd aussie_rules_3d && ./install.sh && ./start.sh   # → http://localhost:8080
+```
